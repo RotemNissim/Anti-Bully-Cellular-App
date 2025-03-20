@@ -5,7 +5,7 @@ import com.example.antibully.R
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import com.example.antibully.data.api.MessageRequest
+import com.example.antibully.data.models.MessageRequest
 import com.example.antibully.data.firestore.FirestoreManager
 import com.example.antibully.data.api.RetrofitClient
 
