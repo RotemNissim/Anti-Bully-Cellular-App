@@ -1,4 +1,4 @@
-package com.example.antibully.ui.test
+package com.example.antibully.data.ui.test
 
 import android.os.Bundle
 import android.util.Log
