@@ -1,18 +1,16 @@
-package com.example.antibully.data.api
+package com.example.antibully.api
 
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 object RetrofitClient {
-    private const val API_PREFIX = "api/v1/" // Define API prefix
-    private const val BASE_URL = "https://67cd7757dd7651e464ee70df.mockapi.io/"
+    private const val BASE_URL = "https://67cd7757dd7651e464ee70df.mockapi.io/api/v1/"
 
-    val instance: FlagApiService by lazy {
-        val retrofit = Retrofit.Builder()
-            .baseUrl(BASE_URL + API_PREFIX) // Apply prefix globally
+    val apiService: MessageApiService by lazy {
+        Retrofit.Builder()
+            .baseUrl(BASE_URL)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
-
-        retrofit.create(FlagApiService::class.java)
+            .create(MessageApiService::class.java)
     }
 }
