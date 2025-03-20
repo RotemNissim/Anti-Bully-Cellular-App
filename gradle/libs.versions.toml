@@ -18,6 +18,7 @@ retrofit = "2.9.0"
 navigationFragmentKtx = "2.8.9"
 navigationUiKtx = "2.8.9"
 roomKtx = "2.6.1"
+appcompat = "1.7.0"
 
 
 [libraries]
