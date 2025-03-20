@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "486337947693",
+    "project_id": "anti-bully2025",
+    "storage_bucket": "anti-bully2025.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:486337947693:android:35f2b3297c9a6f1308f0a4",
+        "android_client_info": {
+          "package_name": "com.example.antibully"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCFycKjI_2VFRw9yfNPUIyh_KgrUR170Rc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

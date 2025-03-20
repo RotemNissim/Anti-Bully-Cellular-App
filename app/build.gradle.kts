@@ -2,6 +2,9 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+
+    id("com.google.gms.google-services")
+
 }
 
 android {
@@ -60,9 +63,12 @@ dependencies {
     implementation(libs.firebase.firestore.ktx)
     implementation (libs.retrofit)
     implementation (libs.converter.gson)
-
-// OkHttp (for network requests)
+    implementation (libs.google.firebase.firestore.ktx)
     implementation (libs.okhttp)
     implementation (libs.logging.interceptor)
     implementation (libs.firebase.bom)
+    implementation(libs.firebase.bom)
+    implementation(libs.firebase.analytics)
+
+
 }
