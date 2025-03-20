@@ -1,4 +1,4 @@
-package com.example.antibully.ui.theme
+package com.example.antibully.data.ui.theme
 
 import android.app.Activity
 import android.os.Build
