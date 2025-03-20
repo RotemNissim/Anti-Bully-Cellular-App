@@ -2,8 +2,9 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-
     id("com.google.gms.google-services")
+    id ("kotlin-kapt")
+
 
 }
 
@@ -66,9 +67,12 @@ dependencies {
     implementation (libs.google.firebase.firestore.ktx)
     implementation (libs.okhttp)
     implementation (libs.logging.interceptor)
-    implementation (libs.firebase.bom)
-    implementation(libs.firebase.bom)
+    implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.analytics)
-
+    implementation (libs.androidx.room.runtime)
+    kapt (libs.androidx.room.compiler)
+    implementation (libs.androidx.room.ktx)
+    implementation (libs.material)
 
 }
+
