@@ -1,4 +1,4 @@
-package com.example.antibully.ui.theme
+package com.example.antibully.data.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
