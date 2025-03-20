@@ -1,16 +1,43 @@
 package com.example.antibully.data.firestore
 
+import android.net.Uri
 import android.util.Log
-import com.example.antibully.api.Message
-import com.example.antibully.api.RetrofitClient
+import com.example.antibully.data.models.MessageRequest
+import com.example.antibully.data.api.RetrofitClient
+import com.example.antibully.data.models.MessageResponse
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.FirebaseStorage
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import java.util.UUID
 
 object FirestoreManager {
     private val db: FirebaseFirestore = FirebaseFirestore.getInstance()
     private val apiService = RetrofitClient.apiService
+
+    fun uploadImageToStorage(imageUri: Uri, onSuccess: (String) -> Unit, onFailure: (Exception) -> Unit) {
+        val storageRef = FirebaseStorage.getInstance().reference.child("images/${UUID.randomUUID()}")
+        storageRef.putFile(imageUri)
+            .addOnSuccessListener {
+                storageRef.downloadUrl.addOnSuccessListener { uri ->
+                    onSuccess(uri.toString()) // Get downloadable image URL
+                }
+            }
+            .addOnFailureListener {
+                onFailure(it)
+            }
+    }
+
+    fun updatePostInFirestore(postId: String, newText: String, newImageUrl: String?, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
+        val updateData = mutableMapOf<String, Any>("text" to newText)
+        newImageUrl?.let { updateData["imageUrl"] = it }
+
+        FirebaseFirestore.getInstance().collection("posts").document(postId)
+            .update(updateData)
+            .addOnSuccessListener { onSuccess() }
+            .addOnFailureListener { onFailure(it) }
+    }
 
     fun addMessage(
         messageId: String,
@@ -29,84 +56,29 @@ object FirestoreManager {
         )
         db.collection("messages").document(messageId).set(message)
             .addOnSuccessListener {
-                val apiMessage = Message(
-                    id = messageId,
+                val apiMessage = MessageRequest(  // FIXED HERE
+                    messageId = messageId,
                     userId = userId,
                     text = text ?: "",
-                    imageUrl = imageUrl,
                     flagged = false,
                     reason = null
                 )
-                apiService.addMessage(apiMessage).enqueue(object : Callback<Message> {
-                    override fun onResponse(call: Call<Message>, response: Response<Message>) {
+                    RetrofitClient.apiService.addMessage(apiMessage).enqueue(object : Callback<MessageResponse> {
+                    override fun onResponse(call: Call<MessageResponse>, response: Response<MessageResponse>) {
                         if (response.isSuccessful) onSuccess(message)
                     }
-                    override fun onFailure(call: Call<Message>, t: Throwable) {
+                    override fun onFailure(call: Call<MessageResponse>, t: Throwable) {
                         Log.e("MockAPI", "API request failed", t)
                     }
                 })
             }
             .addOnFailureListener { onFailure(it) }
     }
-
-    fun getMessageById(
-        messageId: String,
-        onSuccess: (Map<String, Any>?) -> Unit,
-        onFailure: (Exception) -> Unit
-    ) {
-        db.collection("messages").document(messageId).get()
-            .addOnSuccessListener { document ->
-                if (document.exists()) {
-                    val firestoreData = document.data
-                    if (firestoreData != null) {
-                        val apiFormattedData = mapOf<String, Any>(
-                            "id" to messageId,
-                            "userId" to (firestoreData["userId"] ?: ""),
-                            "text" to (firestoreData["text"] ?: ""),
-                            "ImageUrl" to (firestoreData["imageUrl"] ?: ""),
-                            "flagged" to (firestoreData["flagged"] ?: false),
-                            "reason" to (firestoreData["reason"] ?: "None")
-                        )
-                        onSuccess(apiFormattedData)
-                    } else {
-                        onSuccess(null)
-                    }
-                } else {
-                    onSuccess(null)
-                }
-            }
-            .addOnFailureListener { onFailure(it) }
-    }
-
-    fun getAllMessages(
-        onSuccess: (List<Map<String, Any>>) -> Unit,
-        onFailure: (Exception) -> Unit
-    ) {
-        db.collection("messages").orderBy("timestamp").get()
-            .addOnSuccessListener { querySnapshot ->
-                val messages = querySnapshot.documents.mapNotNull { document ->
-                    val firestoreData = document.data
-                    firestoreData?.let {
-                        mapOf<String, Any>(
-                            "id" to document.id,
-                            "userId" to (it["userId"] ?: ""),
-                            "text" to (it["text"] ?: ""),
-                            "ImageUrl" to (it["imageUrl"] ?: ""),
-                            "flagged" to (it["flagged"] ?: false),
-                            "reason" to (it["reason"] ?: "None")
-                        )
-                    }
-                }
-                onSuccess(messages)
-            }
-            .addOnFailureListener { onFailure(it) }
-    }
-
     fun updateMessageFlag(
         messageId: String,
         flagged: Boolean,
         reason: String?,
-        onSuccess: (Map<String, Any>) -> Unit,
+        onSuccess: () -> Unit,
         onFailure: (Exception) -> Unit
     ) {
         val updateData = mutableMapOf<String, Any>(
@@ -116,23 +88,8 @@ object FirestoreManager {
 
         db.collection("messages").document(messageId)
             .update(updateData)
-            .addOnSuccessListener {
-                db.collection("messages").document(messageId).get()
-                    .addOnSuccessListener { document ->
-                        val firestoreData = document.data
-                        if (firestoreData != null) {
-                            val apiFormattedData = mapOf<String, Any>(
-                                "id" to messageId,
-                                "userId" to (firestoreData["userId"] ?: ""),
-                                "text" to (firestoreData["text"] ?: ""),
-                                "ImageUrl" to (firestoreData["imageUrl"] ?: ""),
-                                "flagged" to (firestoreData["flagged"] ?: false),
-                                "reason" to (firestoreData["reason"] ?: "None")
-                            )
-                            onSuccess(apiFormattedData)
-                        }
-                    }
-            }
+            .addOnSuccessListener { onSuccess() }
             .addOnFailureListener { onFailure(it) }
     }
+
 }
