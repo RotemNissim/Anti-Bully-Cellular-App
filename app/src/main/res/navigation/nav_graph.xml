@@ -6,7 +6,7 @@
 
     <fragment
         android:id="@+id/loginFragment"
-        android:name="com.example.app.ui.auth.LoginFragment"
+        android:name="com.example.antibully.data.ui.auth.LoginFragment"
         android:label="Login"
         tools:layout="@layout/fragment_login">
         <action
@@ -16,7 +16,7 @@
 
     <fragment
         android:id="@+id/feedFragment"
-        android:name="com.example.app.ui.feed.FeedFragment"
+        android:name="com.example.antibully.data.ui.feed.FeedFragment"
         android:label="Feed"
         tools:layout="@layout/fragment_feed">
         <action
@@ -26,7 +26,7 @@
 
     <fragment
         android:id="@+id/profileFragment"
-        android:name="com.example.app.ui.profile.ProfileFragment"
+        android:name="com.example.antibully.data.ui.profile.ProfileFragment"
         android:label="Profile"
         tools:layout="@layout/fragment_profile"/>
 </navigation>
