@@ -9,4 +9,8 @@
     <string name="comment_text">Comment Text</string>
     <string name="_1h_ago">1h ago</string>
     <string name="comments">Comments</string>
+    <string name="reason_inappropriate_content">Reason: Inappropriate content</string>
+    <string name="write_a_comment">Write a comment...</string>
+    <string name="pick_image">Pick Image</string>
+    <string name="send">Send</string>
 </resources>

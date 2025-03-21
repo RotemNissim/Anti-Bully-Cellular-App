@@ -4,7 +4,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     id("com.google.gms.google-services")
     id ("kotlin-kapt")
-
+    id("androidx.navigation.safeargs")
 
 }
 
@@ -84,6 +84,7 @@ dependencies {
     implementation (libs.picasso)
     implementation("com.google.android.gms:play-services-auth:20.7.0")
     implementation("com.google.firebase:firebase-auth-ktx")
+
 
 
 

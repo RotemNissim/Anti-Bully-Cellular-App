@@ -1,4 +1,4 @@
-package com.example.antibully.data.ui.feed
+package com.example.antibully.data.ui.alert
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -9,60 +9,54 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.antibully.data.api.RetrofitClient
 import com.example.antibully.data.db.AppDatabase
 import com.example.antibully.data.repository.AlertRepository
-import com.example.antibully.databinding.FragmentFeedBinding
+import com.example.antibully.data.api.RetrofitClient
+import com.example.antibully.databinding.FragmentAlertsBinding
 import com.example.antibully.data.ui.adapters.AlertsAdapter
 import com.example.antibully.viewmodel.AlertViewModel
 import com.example.antibully.viewmodel.AlertViewModelFactory
 import kotlinx.coroutines.flow.collectLatest
+import com.example.antibully.data.ui.feed.FeedFragmentDirections
 import kotlinx.coroutines.launch
 
-class FeedFragment : Fragment() {
+class AlertsFragment : Fragment() {
 
-    private var _binding: FragmentFeedBinding? = null
+    private var _binding: FragmentAlertsBinding? = null
     private val binding get() = _binding!!
 
     private lateinit var viewModel: AlertViewModel
-    private lateinit var alertAdapter: AlertsAdapter
-
-    private val alertDao = AppDatabase.getDatabase(requireContext()).alertDao()
-    private val alertRepository = AlertRepository(alertDao, RetrofitClient.apiService)
-    val alertFactory = AlertViewModelFactory(alertRepository)
+    private lateinit var adapter: AlertsAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentFeedBinding.inflate(inflater, container, false)
+        _binding = FragmentAlertsBinding.inflate(inflater, container, false)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
+        val alertDao = AppDatabase.getDatabase(requireContext()).alertDao()
+        val repository = AlertRepository(alertDao, RetrofitClient.apiService)
+        val factory = AlertViewModelFactory(repository)
+        viewModel = ViewModelProvider(this, factory)[AlertViewModel::class.java]
 
-        // Initialize ViewModel
-        viewModel = ViewModelProvider(this,alertFactory)[AlertViewModel::class.java]
-
-        // Set up adapter with click listener to navigate to AlertDetailsFragment
-        alertAdapter = AlertsAdapter { alert ->
+        adapter = AlertsAdapter { alert ->
+            // Navigate to AlertDetailsFragment (you'll set this up in nav_graph)
             val action = FeedFragmentDirections.actionFeedFragmentToAlertDetailsFragment(alert.postId)
             findNavController().navigate(action)
         }
 
-        // Setup RecyclerView
         binding.alertsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
-        binding.alertsRecyclerView.adapter = alertAdapter
+        binding.alertsRecyclerView.adapter = adapter
 
-        // Collect alerts from ViewModel (Room)
         lifecycleScope.launch {
             viewModel.allAlerts.collectLatest { alerts ->
-                alertAdapter.submitList(alerts)
+                adapter.submitList(alerts)
             }
         }
 
-        // Fetch fresh alerts from API
         viewModel.fetchAlerts()
     }
 

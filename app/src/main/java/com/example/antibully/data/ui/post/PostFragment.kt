@@ -58,7 +58,8 @@ class PostFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         val postDao = AppDatabase.getDatabase(requireContext()).postDao()
-        val repository = PostRepository(postDao)
+        val firestore = FirebaseFirestore.getInstance()
+        val repository = PostRepository(postDao, firestore)
         val factory = PostViewModelFactory(repository)
 
         postViewModel = ViewModelProvider(this, factory)[PostViewModel::class.java]
