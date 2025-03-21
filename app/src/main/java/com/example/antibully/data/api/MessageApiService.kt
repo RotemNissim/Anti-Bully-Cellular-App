@@ -1,27 +1,24 @@
 package com.example.antibully.api
 
-import retrofit2.Call
+import retrofit2.Response
 import retrofit2.http.*
-
-data class Message(
-    val id: String,
-    val userId: String,
-    val text: String,
-    val imageUrl: String?,
-    val flagged: Boolean,
-    val reason: String?
-)
+import com.example.antibully.data.models.MessageRequest
+import com.example.antibully.data.models.MessageResponse
 
 interface MessageApiService {
+
     @GET("flaggedMessages")
-    fun getAllFlaggedMessages(): Call<List<Message>>
+    suspend fun getAllFlaggedMessages(): Response<List<MessageRequest>>
 
     @POST("flaggedMessages")
-    fun addMessage(@Body message: Message): Call<Message>
+    suspend fun addMessage(@Body message: MessageRequest): Response<MessageResponse>
 
     @PATCH("flaggedMessages/{id}")
-    fun updateMessageFlag(@Path("id") id: String, @Body updateData: Map<String, Any>): Call<Message>
+    suspend fun updateMessageFlag(
+        @Path("id") id: String,
+        @Body updateData: Map<String, Any>
+    ): Response<MessageRequest>
 
     @DELETE("flaggedMessages/{id}")
-    fun deleteMessage(@Path("id") id: String): Call<Void>
+    suspend fun deleteMessage(@Path("id") id:String): Response<Void>
 }

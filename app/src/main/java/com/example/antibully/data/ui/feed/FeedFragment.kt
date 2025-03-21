@@ -1,17 +1,16 @@
-package com.example.antibully.data.ui.feed
-
-import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import androidx.fragment.app.Fragment
+import com.squareup.picasso.Picasso
+import android.widget.ImageView
 import com.example.antibully.R
 
-class FeedFragment : Fragment() {
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        return inflater.inflate(R.layout.fragment_feed, container, false)
+// Inside onCreateView or RecyclerView Adapter
+fun loadImage(imageUrl: String?, imageView: ImageView) {
+    if (!imageUrl.isNullOrEmpty()) {
+        Picasso.get()
+            .load(imageUrl)
+            .placeholder(R.drawable.placeholder_image) // Show while loading
+            .error(R.drawable.error_image) // Show if fails
+            .into(imageView)
+    } else {
+        imageView.setImageResource(R.drawable.default_image)
     }
 }

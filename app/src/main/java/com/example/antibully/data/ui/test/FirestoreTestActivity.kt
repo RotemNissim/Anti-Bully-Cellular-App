@@ -7,7 +7,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.example.antibully.R
 import com.example.antibully.data.firestore.FirestoreManager
 import java.util.UUID
-
+import com.example.antibully.data.api.*
 class FirestoreTestActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -54,7 +54,7 @@ class FirestoreTestActivity : AppCompatActivity() {
 
         // 🔹 3. Test Retrieving All Messages
         btnGetAllMessages.setOnClickListener {
-            FirestoreManager.getAllMessages(
+            FirestoreManager.getAllFlaggedMessages(
                 onSuccess = { querySnapshot ->
                     for (document in querySnapshot.documents) {
                         Log.d("FirestoreTest", "Message: ${document.data}")

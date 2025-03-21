@@ -1,38 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/testLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="24dp"
+    android:gravity="center_horizontal"
+    android:background="#FFFFFF">
 
     <Button
         android:id="@+id/btnAddMessage"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Add Message" />
+        android:text="@string/add_message_to_firestore" />
 
     <Button
         android:id="@+id/btnGetMessage"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Get Message by ID" />
+        android:text="@string/get_message_by_id"
+        android:layout_marginTop="12dp" />
 
     <Button
         android:id="@+id/btnGetAllMessages"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Get All Messages" />
+        android:text="@string/get_all_flagged_messages"
+        android:layout_marginTop="12dp" />
 
     <Button
         android:id="@+id/btnUpdateMessage"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Update Message Flag" />
+        android:text="@string/update_message_flag"
+        android:layout_marginTop="12dp" />
 
     <Button
         android:id="@+id/btnDeleteMessage"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Delete Message" />
-
+        android:text="@string/delete_message"
+        android:layout_marginTop="12dp" />
 </LinearLayout>

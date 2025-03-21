@@ -15,4 +15,7 @@ interface PostDao {
 
     @Delete
     suspend fun deletePost(post: Post)
+
+    @Update
+    suspend fun updatePost(post: Post)
 }

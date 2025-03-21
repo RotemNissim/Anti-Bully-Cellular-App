@@ -18,7 +18,13 @@ class PostViewModel(private val repository: PostRepository) : ViewModel() {
     fun delete(post: Post) = viewModelScope.launch {
         repository.delete(post)
     }
+
+    fun update(post: Post) = viewModelScope.launch {
+        repository.update(post)
+    }
 }
+
+
 
 class PostViewModelFactory(private val repository: PostRepository) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -28,4 +34,5 @@ class PostViewModelFactory(private val repository: PostRepository) : ViewModelPr
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }
+
 }
