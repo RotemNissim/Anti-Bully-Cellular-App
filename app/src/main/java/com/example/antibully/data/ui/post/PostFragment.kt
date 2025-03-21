@@ -1,52 +1,120 @@
 package com.example.antibully.data.ui.post
 
+import android.app.AlertDialog
+import android.net.Uri
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.widget.EditText
+import android.widget.ImageView
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AlertDialog
-import androidx.core.content.ContentProviderCompat.requireContext
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.ViewModelProvider
+import com.example.antibully.data.db.AppDatabase
 import com.example.antibully.data.firestore.FirestoreManager
-import com.example.antibully.data.firestore.FirestoreManager.uploadImageToStorage
 import com.example.antibully.data.models.Post
+import com.example.antibully.data.repository.PostRepository
+import com.example.antibully.databinding.FragmentPostBinding
+import com.example.antibully.viewmodel.PostViewModel
+import com.example.antibully.viewmodel.PostViewModelFactory
 import com.google.firebase.firestore.FirebaseFirestore
+import com.example.antibully.data.db.dao.PostDao
 
-private val pickImage = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-    uri?.let {
-        uploadImageToStorage(it)
+class PostFragment : Fragment() {
+
+    private var _binding: FragmentPostBinding? = null
+    private val binding get() = _binding!!
+
+    private lateinit var post: Post
+
+    private lateinit var postViewModel: PostViewModel
+
+
+
+    private val pickImage = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+        uri?.let {
+            FirestoreManager.uploadImageToStorage(it,
+                onSuccess = { imageUrl ->
+                    // save post with imageUrl
+                },
+                onFailure = {
+                    // handle error
+                }
+            )
+        }
     }
-}
 
-fun openImagePicker() {
-    pickImage.launch("image/*")
-}
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentPostBinding.inflate(inflater, container, false)
+        return binding.root
+    }
 
-fun showEditDeleteOptions(post: Post) {
-    AlertDialog.Builder(requireContext())
-        .setTitle("Manage Post")
-        .setItems(arrayOf("Edit", "Delete")) { _, which ->
-            when (which) {
-                0 -> editPost(post)  // Edit
-                1 -> deletePost(post) // Delete
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        val postDao = AppDatabase.getDatabase(requireContext()).postDao()
+        val repository = PostRepository(postDao)
+        val factory = PostViewModelFactory(repository)
+
+        postViewModel = ViewModelProvider(this, factory)[PostViewModel::class.java]
+
+        // Now you can use postViewModel
+    }
+
+
+    private fun openImagePicker() {
+        pickImage.launch("image/*")
+    }
+
+    private fun showEditDeleteOptions(post: Post) {
+        AlertDialog.Builder(requireContext())
+            .setTitle("Manage Post")
+            .setItems(arrayOf("Edit", "Delete")) { _, which ->
+                when (which) {
+                    0 -> editPost(post)
+                    1 -> deletePost(post)
+                }
             }
+            .show()
+    }
+
+    private fun editPost(post: Post) {
+        val editText = EditText(requireContext()).apply {
+            setText(post.text)
         }
-        .show()
-}
 
-fun editPost(post: Post) {
-    val editText = EditText(requireContext()).apply { setText(post.text) }
+        AlertDialog.Builder(requireContext())
+            .setTitle("Edit Post")
+            .setView(editText)
+            .setPositiveButton("Save") { _, _ ->
+                val newText = editText.text.toString()
+                val updatedPost = post.copy(text = newText)
+                postViewModel.update(updatedPost)
 
-    AlertDialog.Builder(requireContext())
-        .setTitle("Edit Post")
-        .setView(editText)
-        .setPositiveButton("Save") { _, _ ->
-            val newText = editText.text.toString()
-            postViewModel.update(post.copy(text = newText)) // Update in ROOM
-            FirestoreManager.updatePostInFirestore(post.id.toString(), newText, post.imageUrl, {}, {}) // Update in Firestore
-        }
-        .setNegativeButton("Cancel", null)
-        .show()
-}
+                FirestoreManager.updatePostInFirestore(
+                    postId = post.id.toString(),
+                    newText = newText,
+                    newImageUrl = post.imageUrl,
+                    onSuccess = {},
+                    onFailure = {}
+                )
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
 
-fun deletePost(post: Post) {
-    postViewModel.delete(post) // Delete from ROOM
-    FirebaseFirestore.getInstance().collection("posts").document(post.id.toString()).delete()
+    private fun deletePost(post: Post) {
+        postViewModel.delete(post)
+        FirebaseFirestore.getInstance().collection("posts").document(post.id.toString()).delete()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
 }

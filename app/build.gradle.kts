@@ -43,6 +43,7 @@ android {
     }
     buildFeatures {
         compose = true
+        viewBinding = true
     }
 }
 
@@ -80,6 +81,7 @@ dependencies {
     implementation (libs.androidx.room.ktx)
     implementation (libs.material)
     implementation (libs.picasso)
+
 
 
 }

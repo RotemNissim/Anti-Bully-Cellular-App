@@ -1,16 +1,16 @@
-package com.example.antibully.ui
+package com.example.antibully.data.ui
 
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import com.example.antibully.R
 import com.example.antibully.data.models.MessageRequest
-import com.example.antibully.data.models.MessageResponse
 import com.example.antibully.data.api.RetrofitClient
 import com.example.antibully.data.firestore.FirestoreManager
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -35,30 +35,34 @@ class MainActivity : AppCompatActivity() {
             onSuccess = {
                 Log.d("FIRESTORE", "Message added to Firestore")
 
-                // Send message to Mock API (FIX: Use `apiService`, NOT `instance`)
-                RetrofitClient.apiService.addMessage(request).enqueue(object : Callback<MessageResponse> {
-                    override fun onResponse(call: Call<MessageResponse>, response: Response<MessageResponse>) {
+                // 🔥 Use coroutine for suspend API call
+                CoroutineScope(Dispatchers.IO).launch {
+                    try {
+                        val response = RetrofitClient.apiService.addMessage(request)
                         if (response.isSuccessful) {
                             val result = response.body()
                             if (result?.flagged == true) {
-                                // If flagged, update Firestore
-                                FirestoreManager.updateMessageFlag(
-                                    messageId = request.messageId,
-                                    flagged = true,
-                                    reason = result.reason ?: "Not specified",
-                                    onSuccess = { Log.d("FIRESTORE", "Message flagged!") },
-                                    onFailure = { e -> Log.e("FIRESTORE", "Failed to update: ${e.message}") }
-                                )
+                                withContext(Dispatchers.Main) {
+                                    FirestoreManager.updateMessageFlag(
+                                        messageId = request.messageId,
+                                        flagged = true,
+                                        reason = result.reason ?: "Not specified",
+                                        onSuccess = {
+                                            Log.d("FIRESTORE", "Message flagged!")
+                                        },
+                                        onFailure = { e ->
+                                            Log.e("FIRESTORE", "Failed to update: ${e.message}")
+                                        }
+                                    )
+                                }
                             }
                         } else {
                             Log.e("API_ERROR", "MockAPI returned error: ${response.errorBody()?.string()}")
                         }
+                    } catch (e: Exception) {
+                        Log.e("API_ERROR", "MockAPI failed: ${e.message}")
                     }
-
-                    override fun onFailure(call: Call<MessageResponse>, t: Throwable) {
-                        Log.e("API_ERROR", "MockAPI failed: ${t.message}")
-                    }
-                })
+                }
             },
             onFailure = { e -> Log.e("FIRESTORE", "Failed to add: ${e.message}") }
         )
