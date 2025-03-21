@@ -12,7 +12,20 @@
           "package_name": "com.example.antibully"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "486337947693-nc51iqvsjvjhsftl39e11j4d587cslmq.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.antibully",
+            "certificate_hash": "4adc53fabe9f20c715331fcb4067ec1c94c07d4b"
+          }
+        },
+        {
+          "client_id": "486337947693-p24rhnp669jl8f622q8g0ei7jb0i0s2o.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyCFycKjI_2VFRw9yfNPUIyh_KgrUR170Rc"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "486337947693-p24rhnp669jl8f622q8g0ei7jb0i0s2o.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

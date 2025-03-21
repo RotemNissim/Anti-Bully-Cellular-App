@@ -6,17 +6,30 @@
 
     <fragment
         android:id="@+id/loginFragment"
-        android:name="com.example.app.ui.auth.LoginFragment"
+        android:name="com.example.antibully.data.ui.auth.LoginFragment"
         android:label="Login"
         tools:layout="@layout/fragment_login">
+
         <action
             android:id="@+id/action_login_to_feed"
             app:destination="@id/feedFragment" />
+
+        <!-- 🔹 הוספנו את המסלול להרשמה -->
+        <action
+            android:id="@+id/action_loginFragment_to_signUpFragment"
+            app:destination="@id/signUpFragment" />
     </fragment>
+
+    <!-- 🔹 הוספנו את מסך ההרשמה -->
+    <fragment
+        android:id="@+id/signUpFragment"
+        android:name="com.example.antibully.data.ui.auth.SignUpFragment"
+        android:label="Sign Up"
+        tools:layout="@layout/fragment_sign_up"/>
 
     <fragment
         android:id="@+id/feedFragment"
-        android:name="com.example.app.ui.feed.FeedFragment"
+        android:name="com.example.antibully.data.ui.feed.FeedFragment"
         android:label="Feed"
         tools:layout="@layout/fragment_feed">
         <action
@@ -26,7 +39,7 @@
 
     <fragment
         android:id="@+id/profileFragment"
-        android:name="com.example.app.ui.profile.ProfileFragment"
+        android:name="com.example.antibully.data.ui.profile.ProfileFragment"
         android:label="Profile"
         tools:layout="@layout/fragment_profile"/>
 </navigation>
