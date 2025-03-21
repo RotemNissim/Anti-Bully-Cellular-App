@@ -5,6 +5,7 @@
     <string name="delete_message">Delete Message</string>
     <string name="get_message_by_id">Get Message by ID</string>
     <string name="add_message_to_firestore">Add Message to Firestore</string>
+    <string name="default_web_client_id">486337947693-p24rhnp669jl8f622q8g0ei7jb0i0s2o.apps.googleusercontent.com</string>
     <string name="comment_text">Comment Text</string>
     <string name="_1h_ago">1h ago</string>
     <string name="comments">Comments</string>
