@@ -7,6 +7,8 @@ import com.example.antibully.data.api.RetrofitClient
 import com.example.antibully.data.models.MessageResponse
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import retrofit2.Call
@@ -41,7 +43,29 @@ object FirestoreManager {
             .addOnFailureListener { onFailure(it) }
     }
 
-    fun addMessage(
+    fun addMessageToFirestoreOnly(
+        messageId: String,
+        userId: String,
+        text: String?,
+        imageUrl: String?,
+        onSuccess: (Map<String, Any>) -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        val message = mutableMapOf<String, Any>(
+            "userId" to userId,
+            "text" to (text ?: ""),
+            "imageUrl" to (imageUrl ?: ""),
+            "timestamp" to System.currentTimeMillis(),
+            "flagged" to false
+        )
+
+        db.collection("messages").document(messageId).set(message)
+            .addOnSuccessListener { onSuccess(message) }
+            .addOnFailureListener { onFailure(it) }
+    }
+
+
+    fun addMessageWithApi(
         messageId: String,
         userId: String,
         text: String?,
@@ -140,6 +164,26 @@ object FirestoreManager {
             .addOnSuccessListener { onSuccess() }
             .addOnFailureListener { onFailure(it) }
     }
+
+    fun fetchAndStoreFlaggedMessagesFromApi() {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val response = RetrofitClient.apiService.getAllFlaggedMessages()
+                if (response.isSuccessful) {
+                    val flaggedMessages = response.body() ?: emptyList()
+
+                    // Optionally store in Firestore
+                    FirebaseFirestore.getInstance()
+                        .collection("flaggedMessagesCache")
+                        .document("latest")
+                        .set(mapOf("messages" to flaggedMessages))
+                }
+            } catch (e: Exception) {
+                Log.e("FirestoreManager", "API fetch failed", e)
+            }
+        }
+    }
+
 
 
 }

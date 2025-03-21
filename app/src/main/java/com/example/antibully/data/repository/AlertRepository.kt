@@ -1,4 +1,4 @@
-import com.example.antibully.api.MessageApiService
+import com.example.antibully.data.api.MessageApiService
 import com.example.antibully.data.api.ApiHelper
 import com.example.antibully.data.models.Alert
 import com.example.antibully.data.db.dao.AlertDao

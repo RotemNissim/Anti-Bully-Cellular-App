@@ -1,4 +1,4 @@
-package com.example.antibully.api
+package com.example.antibully.data.api
 
 import retrofit2.Response
 import retrofit2.http.*

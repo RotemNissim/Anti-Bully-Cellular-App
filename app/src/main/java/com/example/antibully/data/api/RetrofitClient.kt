@@ -1,6 +1,5 @@
 package com.example.antibully.data.api
 
-import com.example.antibully.api.MessageApiService
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 

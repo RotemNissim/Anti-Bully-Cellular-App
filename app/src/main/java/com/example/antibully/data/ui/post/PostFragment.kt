@@ -63,7 +63,7 @@ class PostFragment : Fragment() {
 
         postViewModel = ViewModelProvider(this, factory)[PostViewModel::class.java]
 
-        // Now you can use postViewModel
+
     }
 
 
