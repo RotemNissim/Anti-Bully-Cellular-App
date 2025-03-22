@@ -17,6 +17,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.firestore.FirebaseFirestore
 
 class LoginFragment : Fragment() {
 
@@ -46,7 +47,6 @@ class LoginFragment : Fragment() {
 
         auth = FirebaseAuth.getInstance()
 
-        // פה אתה חייב לאתחל את זה לפני השימוש
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken(getString(R.string.default_web_client_id))
             .requestEmail()
@@ -95,13 +95,36 @@ class LoginFragment : Fragment() {
         auth.signInWithCredential(credential)
             .addOnCompleteListener(requireActivity()) { task ->
                 if (task.isSuccessful) {
-                    Toast.makeText(requireContext(), "Google Sign-In Successful!", Toast.LENGTH_SHORT).show()
-                    val actionId = Constants.NAV_AFTER_LOGIN_ACTIONS["login"]
-                    if (actionId != null) {
-                        findNavController().navigate(actionId)
-                    } else {
-                        Toast.makeText(requireContext(), "Navigation error", Toast.LENGTH_SHORT).show()
+                    val firebaseUser = auth.currentUser
+                    val uid = firebaseUser?.uid ?: return@addOnCompleteListener
+                    val name = firebaseUser.displayName ?: "No Name"
+                    val email = firebaseUser.email ?: ""
+                    val profileImageUrl = firebaseUser.photoUrl?.toString() ?: ""
+
+                    val db = FirebaseFirestore.getInstance()
+                    val userDocRef = db.collection("users").document(uid)
+
+                    userDocRef.get().addOnSuccessListener { document ->
+                        if (!document.exists()) {
+                            val newUser = hashMapOf(
+                                "fullName" to name,
+                                "email" to email,
+                                "profileImageUrl" to profileImageUrl
+                            )
+                            userDocRef.set(newUser)
+                        }
+
+                        Toast.makeText(requireContext(), "Google Sign-In Successful!", Toast.LENGTH_SHORT).show()
+                        val actionId = Constants.NAV_AFTER_LOGIN_ACTIONS["login"]
+                        if (actionId != null) {
+                            findNavController().navigate(actionId)
+                        } else {
+                            Toast.makeText(requireContext(), "Navigation error", Toast.LENGTH_SHORT).show()
+                        }
+                    }.addOnFailureListener { e ->
+                        Toast.makeText(requireContext(), "Failed to check/create Firestore user: ${e.message}", Toast.LENGTH_SHORT).show()
                     }
+
                 } else {
                     Toast.makeText(requireContext(), "Google Sign-In Failed!", Toast.LENGTH_SHORT).show()
                 }
