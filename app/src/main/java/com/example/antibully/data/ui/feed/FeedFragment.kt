@@ -1,3 +1,5 @@
+package com.example.antibully.data.ui.feed
+
 import com.squareup.picasso.Picasso
 import android.widget.ImageView
 import com.example.antibully.R

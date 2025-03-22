@@ -41,5 +41,6 @@
         android:id="@+id/profileFragment"
         android:name="com.example.antibully.data.ui.profile.ProfileFragment"
         android:label="Profile"
-        tools:layout="@layout/fragment_profile"/>
+        tools:layout="@layout/fragment_profile" />
+
 </navigation>

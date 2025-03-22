@@ -31,9 +31,6 @@ android {
             )
         }
     }
-
-
-
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
@@ -42,7 +39,6 @@ android {
         jvmTarget = "11"
     }
     buildFeatures {
-        compose = true
         viewBinding = true
     }
 }
@@ -60,7 +56,6 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.navigation.fragment.ktx)
     implementation(libs.androidx.navigation.ui.ktx)
-    implementation(libs.firebase.storage.ktx)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -80,11 +75,10 @@ dependencies {
     kapt (libs.androidx.room.compiler)
     implementation (libs.androidx.room.ktx)
     implementation (libs.material)
-    implementation (libs.picasso)
-    implementation("com.google.android.gms:play-services-auth:20.7.0")
     implementation("com.google.firebase:firebase-auth-ktx")
-
-
+    implementation("com.google.firebase:firebase-storage-ktx")
+    apply(plugin = "com.google.gms.google-services")
+    implementation("com.google.android.gms:play-services-auth:21.0.0")
+    implementation("com.squareup.picasso:picasso:2.8")
 
 }
-
