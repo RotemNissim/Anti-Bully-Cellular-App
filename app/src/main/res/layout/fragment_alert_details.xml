@@ -1,78 +1,89 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="12dp">
+    android:fitsSystemWindows="true">
 
-    <!-- Alert Details Section -->
+
+    <!-- Content Layout: Scrollable, fills space above comment bar -->
     <LinearLayout
-        android:id="@+id/alertDetailsSection"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:id="@+id/scrollableContent"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="12dp"
+        android:layout_marginBottom="72dp"> <!-- Make room for comment bar -->
 
-        <TextView
-            android:id="@+id/alertText"
+        <!-- Alert Details Section -->
+        <LinearLayout
+            android:id="@+id/alertDetailsSection"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Alert text goes here"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:layout_marginBottom="8dp"/>
+            android:orientation="vertical"
+            android:padding="16dp">
 
-        <TextView
-            android:id="@+id/alertReason"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Reason goes here"
-            android:layout_marginBottom="4dp"/>
+            <TextView
+                android:id="@+id/alertText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Alert text goes here"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:layout_marginBottom="8dp"/>
 
-        <TextView
-            android:id="@+id/alertReporterId"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Reporter ID goes here"
-            android:layout_marginBottom="4dp"/>
+            <TextView
+                android:id="@+id/alertReason"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Reason goes here"
+                android:layout_marginBottom="4dp"/>
 
-        <TextView
-            android:id="@+id/alertTimestamp"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Timestamp goes here"
-            android:layout_marginBottom="8dp"/>
+            <TextView
+                android:id="@+id/alertReporterId"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Reporter ID goes here"
+                android:layout_marginBottom="4dp"/>
 
-        <ImageView
-            android:id="@+id/alertImage"
+            <TextView
+                android:id="@+id/alertTimestamp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Timestamp goes here"
+                android:layout_marginBottom="8dp"/>
+
+            <ImageView
+                android:id="@+id/alertImage"
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:scaleType="centerCrop"
+                android:visibility="gone"
+                android:layout_marginTop="8dp"/>
+        </LinearLayout>
+
+        <!-- RecyclerView -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/commentsRecyclerView"
             android:layout_width="match_parent"
-            android:layout_height="200dp"
-            android:scaleType="centerCrop"
-            android:visibility="gone"
-            android:layout_marginTop="8dp"/>
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:clipToPadding="false" />
     </LinearLayout>
 
-    <!-- Comments RecyclerView -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/commentsRecyclerView"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:clipToPadding="false"
-        android:paddingBottom="72dp"  />
-
-    <!-- Comment Input Section -->
+    <!-- 🔥 Pinned Comment Bar 🔥 -->
     <LinearLayout
         android:id="@+id/commentSection"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:layout_marginBottom="56dp"
         android:orientation="horizontal"
         android:padding="8dp"
-        android:elevation="8dp"
         android:background="#F0F0F0"
-        android:gravity="center_vertical">
+        android:gravity="center_vertical"
+        android:elevation="8dp">
 
-        <!-- Profile Picture -->
+        <!-- Profile Pic -->
         <ImageView
             android:id="@+id/profileImage"
             android:layout_width="20dp"
@@ -82,18 +93,16 @@
             android:scaleType="centerCrop"
             android:src="@drawable/ic_default_profile" />
 
-        <!-- Input Container -->
+        <!-- Input + Icon -->
         <RelativeLayout
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="wrap_content">
 
-            <!-- Comment Input -->
             <EditText
                 android:id="@+id/commentInput"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:autofillHints="@string/comment_text"
                 android:hint="@string/write_a_comment"
                 android:paddingStart="12dp"
                 android:paddingEnd="36dp"
@@ -102,7 +111,6 @@
                 android:textColor="#000"
                 android:textColorHint="#888" />
 
-            <!-- Image Picker Icon (inside the input) -->
             <ImageView
                 android:id="@+id/commentImagePicker"
                 android:layout_width="24dp"
@@ -115,7 +123,6 @@
                 android:padding="4dp" />
         </RelativeLayout>
 
-        <!-- Send Button -->
         <ImageView
             android:id="@+id/sendCommentButton"
             android:layout_width="40dp"
@@ -126,4 +133,4 @@
             android:background="?attr/selectableItemBackgroundBorderless"
             android:padding="6dp" />
     </LinearLayout>
-</LinearLayout>
+</FrameLayout>
