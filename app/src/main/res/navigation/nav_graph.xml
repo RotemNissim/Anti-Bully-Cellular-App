@@ -9,14 +9,10 @@
         android:name="com.example.antibully.data.ui.auth.LoginFragment"
         android:label="Login"
         tools:layout="@layout/fragment_login">
+
         <action
-            android:id="@+id/action_login_to_profile"
+            android:id="@+id/action_nav_after_login_from_login"
             app:destination="@id/profileFragment" />
-
-
-        <action
-            android:id="@+id/action_login_to_feed"
-            app:destination="@id/feedFragment" />
 
         <action
             android:id="@+id/action_loginFragment_to_signUpFragment"
@@ -25,11 +21,17 @@
 
 
     <fragment
-        android:id="@+id/signUpFragment"
-        android:name="com.example.antibully.data.ui.auth.SignUpFragment"
-        android:label="Sign Up"
-        tools:layout="@layout/fragment_sign_up"/>
+    android:id="@+id/signUpFragment"
+    android:name="com.example.antibully.data.ui.auth.SignUpFragment"
+    android:label="Sign Up"
+    tools:layout="@layout/fragment_sign_up">
 
+
+        <action
+            android:id="@+id/action_nav_after_login_from_signup"
+            app:destination="@id/profileFragment" />
+
+    </fragment>
     <fragment
         android:id="@+id/feedFragment"
         android:name="com.example.antibully.data.ui.feed.FeedFragment"
