@@ -1,5 +1,6 @@
 package com.example.antibully.data.db.dao
 
+import androidx.lifecycle.LiveData
 import androidx.room.*
 import com.example.antibully.data.models.Alert
 import kotlinx.coroutines.flow.Flow
@@ -12,6 +13,12 @@ interface AlertDao {
 
     @Query("SELECT * FROM alerts ORDER BY timestamp DESC")
     fun getAllAlerts(): Flow<List<Alert>>
+
+    @Query("DELETE FROM alerts")
+    suspend fun deleteAll()
+
+    @Query("SELECT * FROM alerts WHERE postId = :postId LIMIT 1")
+    fun getAlertByPostId(postId: String): LiveData<Alert>
 
     @Delete
     suspend fun deleteAlert(alert: Alert)

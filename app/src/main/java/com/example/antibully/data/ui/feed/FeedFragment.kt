@@ -27,9 +27,15 @@ class FeedFragment : Fragment() {
     private lateinit var viewModel: AlertViewModel
     private lateinit var alertAdapter: AlertsAdapter
 
-    private val alertDao = AppDatabase.getDatabase(requireContext()).alertDao()
-    private val alertRepository = AlertRepository(alertDao, RetrofitClient.apiService)
-    val alertFactory = AlertViewModelFactory(alertRepository)
+    private lateinit var alertFactory: AlertViewModelFactory
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        val alertDao = AppDatabase.getDatabase(requireContext()).alertDao()
+        val alertRepository = AlertRepository(alertDao, RetrofitClient.apiService)
+        alertFactory = AlertViewModelFactory(alertRepository)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -42,27 +48,22 @@ class FeedFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Initialize ViewModel
-        viewModel = ViewModelProvider(this,alertFactory)[AlertViewModel::class.java]
+        viewModel = ViewModelProvider(this, alertFactory)[AlertViewModel::class.java]
 
-        // Set up adapter with click listener to navigate to AlertDetailsFragment
         alertAdapter = AlertsAdapter { alert ->
             val action = FeedFragmentDirections.actionFeedFragmentToAlertDetailsFragment(alert.postId)
             findNavController().navigate(action)
         }
 
-        // Setup RecyclerView
         binding.alertsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.alertsRecyclerView.adapter = alertAdapter
 
-        // Collect alerts from ViewModel (Room)
         lifecycleScope.launch {
             viewModel.allAlerts.collectLatest { alerts ->
                 alertAdapter.submitList(alerts)
             }
         }
 
-        // Fetch fresh alerts from API
         viewModel.fetchAlerts()
     }
 

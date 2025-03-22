@@ -88,7 +88,8 @@ object FirestoreManager {
                     userId = userId,
                     text = text ?: "",
                     flagged = false,
-                    reason = null
+                    reason = null,
+                    imageUrl = imageUrl
                 )
 
                 // 🔥 LAUNCH A COROUTINE to call suspend API

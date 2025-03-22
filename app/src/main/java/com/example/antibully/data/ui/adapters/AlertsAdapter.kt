@@ -21,7 +21,7 @@ class AlertsAdapter(
             val reason = itemView.findViewById<TextView>(R.id.alertReason)
             val time = itemView.findViewById<TextView>(R.id.alertTime)
 
-            title.text = "Reported by ${alert.reporterId}"
+            title.text = "Child's ID ${alert.reporterId}"
             reason.text = alert.reason
             time.text = DateUtils.getRelativeTimeSpanString(
                 alert.timestamp,
@@ -46,7 +46,7 @@ class AlertsAdapter(
 
 class AlertDiffCallback : DiffUtil.ItemCallback<Alert>() {
     override fun areItemsTheSame(oldItem: Alert, newItem: Alert): Boolean {
-        return oldItem.id == newItem.id
+        return oldItem.postId == newItem.postId
     }
 
     override fun areContentsTheSame(oldItem: Alert, newItem: Alert): Boolean {

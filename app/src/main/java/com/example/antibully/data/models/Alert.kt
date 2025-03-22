@@ -5,9 +5,23 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "alerts")
 data class Alert(
-    @PrimaryKey(autoGenerate = true) val id: Int = 0,
-    val postId: String,
+    @PrimaryKey val postId:String,
     val reporterId: String,
+    val text: String,
     val reason: String,
+    val imageUrl: String?,
     val timestamp: Long = System.currentTimeMillis()
-)
+) {
+    companion object {
+        fun fromApi(response: MessageRequest): Alert {
+            return Alert(
+                postId = response.messageId,
+                reporterId = response.userId,
+                text = response.text,
+                reason = response.reason ?:"No reason provided",
+                imageUrl = response.imageUrl,
+                timestamp = System.currentTimeMillis()
+            )
+        }
+    }
+}

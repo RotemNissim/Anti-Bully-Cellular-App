@@ -23,7 +23,8 @@ class MainActivity : AppCompatActivity() {
             userId = "user456",
             text = "You're ugly!",
             flagged = false,
-            reason = null
+            reason = null,
+            imageUrl = null
         )
 
         // Save message in Firestore first
