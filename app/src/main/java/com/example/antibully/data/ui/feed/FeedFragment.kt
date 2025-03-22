@@ -21,10 +21,6 @@ import com.example.antibully.viewmodel.AlertViewModelFactory
 import com.squareup.picasso.Picasso
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import android.widget.ImageView
-import com.example.antibully.R
-import com.squareup.picasso.Picasso
-
 
 class FeedFragment : Fragment() {
 
