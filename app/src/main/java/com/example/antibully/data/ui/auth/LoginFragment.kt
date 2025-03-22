@@ -1,8 +1,6 @@
 package com.example.antibully.data.ui.auth
 
-import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,7 +11,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.example.antibully.R
-import com.google.android.gms.common.api.ApiException
+import com.example.antibully.utils.Constants
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -24,6 +22,17 @@ class LoginFragment : Fragment() {
 
     private lateinit var auth: FirebaseAuth
     private lateinit var googleSignInClient: GoogleSignInClient
+
+    private val googleSignInLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+        try {
+            val account = task.getResult(Exception::class.java)!!
+            firebaseAuthWithGoogle(account.idToken!!)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Toast.makeText(requireContext(), "Google sign-in failed: ${e.message}", Toast.LENGTH_LONG).show()
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -37,19 +46,19 @@ class LoginFragment : Fragment() {
 
         auth = FirebaseAuth.getInstance()
 
+        // פה אתה חייב לאתחל את זה לפני השימוש
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestIdToken(getString(R.string.default_web_client_id))
+            .requestEmail()
+            .build()
+
+        googleSignInClient = GoogleSignIn.getClient(requireActivity(), gso)
+
         val emailInput = view.findViewById<EditText>(R.id.etEmail)
         val passwordInput = view.findViewById<EditText>(R.id.etPassword)
         val loginButton = view.findViewById<Button>(R.id.btnLogin)
         val signUpButton = view.findViewById<Button>(R.id.btnSignUp)
         val googleSignInButton = view.findViewById<Button>(R.id.btnGoogleLogin)
-
-        // Configure Google Sign-In
-        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken(getString(R.string.default_web_client_id)) // Ensure this matches Firebase
-            .requestEmail()
-            .build()
-
-        googleSignInClient = GoogleSignIn.getClient(requireActivity(), gso)
 
         loginButton.setOnClickListener {
             val email = emailInput.text.toString().trim()
@@ -67,20 +76,12 @@ class LoginFragment : Fragment() {
         }
 
         googleSignInButton.setOnClickListener {
-            signInWithGoogle()
-        }
-    }
-
-    private val googleSignInLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
-        try {
-            val account = task.getResult(Exception::class.java)!!
-            firebaseAuthWithGoogle(account.idToken!!)
-        } catch (e: Exception) {
-            e.printStackTrace()
-            Toast.makeText(requireContext(), "Google sign-in failed: ${e.message}", Toast.LENGTH_LONG).show()
-
-            Toast.makeText(requireContext(), "Google sign-in failed", Toast.LENGTH_SHORT).show()
+            val actionId = Constants.NAV_AFTER_LOGIN_ACTIONS["login"]
+            if (actionId != null) {
+                signInWithGoogle()
+            } else {
+                Toast.makeText(requireContext(), "Navigation error", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
@@ -95,7 +96,13 @@ class LoginFragment : Fragment() {
             .addOnCompleteListener(requireActivity()) { task ->
                 if (task.isSuccessful) {
                     Toast.makeText(requireContext(), "Google Sign-In Successful!", Toast.LENGTH_SHORT).show()
-                    findNavController().navigate(R.id.action_login_to_profile)                } else {
+                    val actionId = Constants.NAV_AFTER_LOGIN_ACTIONS["login"]
+                    if (actionId != null) {
+                        findNavController().navigate(actionId)
+                    } else {
+                        Toast.makeText(requireContext(), "Navigation error", Toast.LENGTH_SHORT).show()
+                    }
+                } else {
                     Toast.makeText(requireContext(), "Google Sign-In Failed!", Toast.LENGTH_SHORT).show()
                 }
             }
@@ -106,7 +113,13 @@ class LoginFragment : Fragment() {
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     Toast.makeText(requireContext(), "Login successful!", Toast.LENGTH_SHORT).show()
-                    findNavController().navigate(R.id.action_login_to_profile)                } else {
+                    val actionId = Constants.NAV_AFTER_LOGIN_ACTIONS["login"]
+                    if (actionId != null) {
+                        findNavController().navigate(actionId)
+                    } else {
+                        Toast.makeText(requireContext(), "Navigation error", Toast.LENGTH_SHORT).show()
+                    }
+                } else {
                     Toast.makeText(requireContext(), "Login failed: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
                 }
             }

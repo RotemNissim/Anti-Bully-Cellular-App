@@ -8,7 +8,9 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import com.example.antibully.R
+import com.example.antibully.utils.Constants
 import com.google.firebase.auth.FirebaseAuth
 
 class SignUpFragment : Fragment() {
@@ -47,8 +49,20 @@ class SignUpFragment : Fragment() {
         auth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    Toast.makeText(requireContext(), "Registration successful!", Toast.LENGTH_SHORT).show()
-                    // TODO: Navigate back to login screen ***************************************************************************************
+                    auth.signInWithEmailAndPassword(email, password)
+                        .addOnCompleteListener { loginTask ->
+                            if (loginTask.isSuccessful) {
+                                Toast.makeText(requireContext(), "Welcome!", Toast.LENGTH_SHORT).show()
+                                val actionId = Constants.NAV_AFTER_LOGIN_ACTIONS["signup"]
+                                if (actionId != null) {
+                                    findNavController().navigate(actionId)
+                                } else {
+                                    Toast.makeText(requireContext(), "Navigation error", Toast.LENGTH_SHORT).show()
+                                }
+                            } else {
+                                Toast.makeText(requireContext(), "Auto-login failed: ${loginTask.exception?.message}", Toast.LENGTH_SHORT).show()
+                            }
+                        }
                 } else {
                     Toast.makeText(requireContext(), "Registration failed: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
                 }
