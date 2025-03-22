@@ -18,11 +18,18 @@ import com.example.antibully.viewmodel.AlertViewModel
 import com.example.antibully.viewmodel.AlertViewModelFactory
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import android.widget.ImageView
+import androidx.fragment.app.Fragment
+import com.example.antibully.R
+import com.example.antibully.databinding.FragmentFeedBinding
+import com.squareup.picasso.Picasso
+
 
 class FeedFragment : Fragment() {
 
     private var _binding: FragmentFeedBinding? = null
     private val binding get() = _binding!!
+
 
     private lateinit var viewModel: AlertViewModel
     private lateinit var alertAdapter: AlertsAdapter
@@ -70,5 +77,21 @@ class FeedFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+}
+
+fun ImageView.loadImage(imageUrl: String?) {
+    if (!imageUrl.isNullOrEmpty()) {
+        Picasso.get()
+            .load(imageUrl)
+            .placeholder(R.drawable.placeholder_image)
+            .error(R.drawable.error_image)
+            .into(this)
+    } else {
+        setImageResource(R.drawable.default_image)
     }
 }
