@@ -27,7 +27,7 @@ class FirestoreTestActivity : AppCompatActivity() {
 
         // 🔹 1. Test Adding a Message
         btnAddMessage.setOnClickListener {
-            FirestoreManager.addMessage(
+            FirestoreManager.addMessageToFirestoreOnly(
                 messageId = messageId,
                 userId = userId,
                 text = "Hello Firestore!",

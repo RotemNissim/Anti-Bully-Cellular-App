@@ -19,7 +19,7 @@
             app:destination="@id/signUpFragment" />
     </fragment>
 
-    <!-- 🔹 הוספנו את מסך ההרשמה -->
+
     <fragment
     android:id="@+id/signUpFragment"
     android:name="com.example.antibully.data.ui.auth.SignUpFragment"
@@ -37,9 +37,26 @@
         android:name="com.example.antibully.data.ui.feed.FeedFragment"
         android:label="Feed"
         tools:layout="@layout/fragment_feed">
+
+        <!-- Navigate to AlertDetailsFragment when an alert is clicked -->
         <action
-            android:id="@+id/action_feed_to_profile"
-            app:destination="@id/profileFragment" />
+            android:id="@+id/action_feedFragment_to_alertDetailsFragment"
+            app:destination="@id/alertDetailsFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/alertDetailsFragment"
+        android:name="com.example.antibully.data.ui.alert.AlertDetailsFragment"
+        android:label="Alert Details"
+        tools:layout="@layout/fragment_alert_details">
+
+        <argument
+            android:name="postId"
+            app:argType="string" />
     </fragment>
 
     <fragment

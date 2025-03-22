@@ -10,8 +10,11 @@ interface PostDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertPost(post: Post)
 
-    @Query("SELECT * FROM posts ORDER BY timestamp DESC")
-    fun getAllPosts(): Flow<List<Post>>
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(posts: List<Post>)  // Bulk insert for Firestore sync
+
+    @Query("SELECT * FROM posts WHERE alertId = :alertId ORDER BY timestamp DESC")
+    fun getPostsForAlert(alertId: String): Flow<List<Post>>
 
     @Delete
     suspend fun deletePost(post: Post)
