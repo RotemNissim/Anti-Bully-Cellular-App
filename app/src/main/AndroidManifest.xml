@@ -3,8 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <application
-
-        android:name = ".MyApp"
+        android:name=".MyApp"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -15,20 +14,22 @@
         android:theme="@style/Theme.AntiBully"
         tools:targetApi="31">
 
+        <!-- MAIN ACTIVITY - Launches when app opens -->
         <activity
-            android:name=".data.ui.test.FirestoreTestActivity"
+            android:name=".data.ui.MainActivity"
             android:exported="true"
             android:label="@string/app_name"
             android:theme="@style/Theme.AntiBully">
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- Firestore test activity - still available, but not auto-launched -->
         <activity
-            android:name=".data.ui.MainActivity"
+            android:name=".data.ui.test.FirestoreTestActivity"
             android:exported="true"
             android:label="@string/app_name"
             android:theme="@style/Theme.AntiBully" />
