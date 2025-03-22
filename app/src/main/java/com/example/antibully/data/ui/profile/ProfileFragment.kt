@@ -8,6 +8,7 @@ import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import com.example.antibully.R
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -40,7 +41,7 @@ class ProfileFragment : Fragment() {
             db.collection("users").document(userId).get()
                 .addOnSuccessListener { document ->
                     if (document.exists()) {
-                        val username = document.getString("username") ?: "No Name"
+                        val username = document.getString("fullName") ?: "No Name"
                         val profileImageUrl = document.getString("profileImageUrl") ?: ""
 
                         usernameTextView.text = username
@@ -56,7 +57,7 @@ class ProfileFragment : Fragment() {
         }
 
         editProfileButton.setOnClickListener {
-            // TODO: ננווט לעריכת פרופיל כשזה יהיה מוכן
+            findNavController().navigate(R.id.action_profileFragment_to_editProfileFragment)
         }
     }
 }
