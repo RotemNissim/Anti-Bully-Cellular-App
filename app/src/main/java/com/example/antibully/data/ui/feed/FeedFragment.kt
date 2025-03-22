@@ -21,6 +21,9 @@ import com.example.antibully.viewmodel.AlertViewModelFactory
 import com.squareup.picasso.Picasso
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import android.widget.ImageView
+import com.example.antibully.R
+import com.squareup.picasso.Picasso
 
 class FeedFragment : Fragment() {
 
@@ -53,7 +56,8 @@ class FeedFragment : Fragment() {
         viewModel = ViewModelProvider(this, alertFactory)[AlertViewModel::class.java]
 
         alertAdapter = AlertsAdapter { alert ->
-            val action = FeedFragmentDirections.actionFeedFragmentToAlertDetailsFragment(alert.postId)
+            val action =
+                FeedFragmentDirections.actionFeedFragmentToAlertDetailsFragment(alert.postId)
             findNavController().navigate(action)
         }
 
@@ -73,16 +77,17 @@ class FeedFragment : Fragment() {
         super.onDestroyView()
         _binding = null
     }
-}
 
-fun ImageView.loadImage(imageUrl: String?) {
-    if (!imageUrl.isNullOrEmpty()) {
-        Picasso.get()
-            .load(imageUrl)
-            .placeholder(R.drawable.placeholder_image)
-            .error(R.drawable.error_image)
-            .into(this)
-    } else {
-        setImageResource(R.drawable.default_image)
+    fun ImageView.loadImage(imageUrl: String?) {
+        if (!imageUrl.isNullOrEmpty()) {
+            Picasso.get()
+                .load(imageUrl)
+                .placeholder(R.drawable.placeholder_image)
+                .error(R.drawable.error_image)
+                .into(this)
+        } else {
+            setImageResource(R.drawable.default_image)
+        }
     }
 }
+
