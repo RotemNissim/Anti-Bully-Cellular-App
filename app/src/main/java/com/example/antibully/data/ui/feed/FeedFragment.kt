@@ -4,36 +4,31 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.antibully.R
 import com.example.antibully.data.api.RetrofitClient
 import com.example.antibully.data.db.AppDatabase
 import com.example.antibully.data.repository.AlertRepository
-import com.example.antibully.databinding.FragmentFeedBinding
 import com.example.antibully.data.ui.adapters.AlertsAdapter
+import com.example.antibully.databinding.FragmentFeedBinding
 import com.example.antibully.viewmodel.AlertViewModel
 import com.example.antibully.viewmodel.AlertViewModelFactory
+import com.squareup.picasso.Picasso
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import android.widget.ImageView
-import androidx.fragment.app.Fragment
-import com.example.antibully.R
-import com.example.antibully.databinding.FragmentFeedBinding
-import com.squareup.picasso.Picasso
-
 
 class FeedFragment : Fragment() {
 
     private var _binding: FragmentFeedBinding? = null
     private val binding get() = _binding!!
 
-
     private lateinit var viewModel: AlertViewModel
     private lateinit var alertAdapter: AlertsAdapter
-
     private lateinit var alertFactory: AlertViewModelFactory
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -73,10 +68,6 @@ class FeedFragment : Fragment() {
 
         viewModel.fetchAlerts()
     }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
 
     override fun onDestroyView() {
         super.onDestroyView()

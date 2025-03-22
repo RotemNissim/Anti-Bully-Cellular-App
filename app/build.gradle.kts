@@ -4,8 +4,8 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     id("com.google.gms.google-services")
     id ("kotlin-kapt")
-    id("androidx.navigation.safeargs")
-
+//    id("androidx.navigation.safeargs")
+    id("androidx.navigation.safeargs.kotlin")
 }
 
 android {
@@ -82,6 +82,7 @@ dependencies {
     apply(plugin = "com.google.gms.google-services")
     implementation("com.google.android.gms:play-services-auth:21.0.0")
     implementation("com.squareup.picasso:picasso:2.8")
+    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.6.2")
 
 
 }
