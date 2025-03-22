@@ -1,4 +1,6 @@
-import com.example.antibully.api.MessageApiService
+package com.example.antibully.data.repository
+
+import com.example.antibully.data.api.MessageApiService
 import com.example.antibully.data.api.ApiHelper
 import com.example.antibully.data.models.Alert
 import com.example.antibully.data.db.dao.AlertDao
@@ -10,21 +12,21 @@ class AlertRepository(private val alertDao: AlertDao, private val apiService: Me
 
     suspend fun fetchAlertsFromApi() {
         val response = ApiHelper.safeApiCall { apiService.getAllFlaggedMessages() }
-        response.onSuccess { apiAlerts ->
-            val alerts = apiAlerts.map { apiMessage ->
-                Alert(
-                    postId = apiMessage.messageId,
-                    reporterId = apiMessage.userId,
-                    reason = apiMessage.reason ?: "No reason",
-                    timestamp = System.currentTimeMillis()
-                )
-            }
-            alertDao.insertAll(alerts) // Store in ROOM
+
+        response.onSuccess { apiMessages ->
+            val alerts = apiMessages
+                .filter { it.flagged } // Only flagged messages
+                .map { Alert.fromApi(it) }
+
+            alertDao.insertAll(alerts) // Save to local Room DB
         }
+
         response.onFailure { error ->
             println("API Error: ${error.message}") // Handle failure
         }
     }
+
+
 
     suspend fun insert(alert: Alert) {
         alertDao.insertAlert(alert)

@@ -4,7 +4,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     id("com.google.gms.google-services")
     id ("kotlin-kapt")
-
+    id("androidx.navigation.safeargs")
 
 }
 
@@ -56,6 +56,8 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.navigation.fragment.ktx)
     implementation(libs.androidx.navigation.ui.ktx)
+    implementation(libs.firebase.storage.ktx)
+    implementation(libs.androidx.recyclerview)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -80,5 +82,6 @@ dependencies {
     apply(plugin = "com.google.gms.google-services")
     implementation("com.google.android.gms:play-services-auth:21.0.0")
     implementation("com.squareup.picasso:picasso:2.8")
+
 
 }

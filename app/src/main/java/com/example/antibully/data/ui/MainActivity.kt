@@ -23,11 +23,12 @@ class MainActivity : AppCompatActivity() {
             userId = "user456",
             text = "You're ugly!",
             flagged = false,
-            reason = null
+            reason = null,
+            imageUrl = null
         )
 
         // Save message in Firestore first
-        FirestoreManager.addMessage(
+        FirestoreManager.addMessageToFirestoreOnly(
             messageId = request.messageId,
             userId = request.userId,
             text = request.text,

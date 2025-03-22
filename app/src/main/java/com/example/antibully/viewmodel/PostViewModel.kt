@@ -1,7 +1,9 @@
 package com.example.antibully.viewmodel
 
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.antibully.data.models.Post
 import com.example.antibully.data.repository.PostRepository
@@ -9,7 +11,9 @@ import kotlinx.coroutines.launch
 
 class PostViewModel(private val repository: PostRepository) : ViewModel() {
 
-    val allPosts = repository.allPosts
+    fun getPostsForAlert(alertId: String): LiveData<List<Post>> {
+        return repository.getPostsForAlert(alertId).asLiveData()
+    }
 
     fun insert(post: Post) = viewModelScope.launch {
         repository.insert(post)
@@ -22,7 +26,12 @@ class PostViewModel(private val repository: PostRepository) : ViewModel() {
     fun update(post: Post) = viewModelScope.launch {
         repository.update(post)
     }
+
+    fun syncPostsFromFirestore() = viewModelScope.launch {
+        repository.syncPostsFromFirestore()
+    }
 }
+
 
 
 

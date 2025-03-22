@@ -9,7 +9,7 @@ import com.example.antibully.data.db.dao.AlertDao
 import com.example.antibully.data.models.Post
 import com.example.antibully.data.models.Alert
 
-@Database(entities = [Post::class, Alert::class], version = 1, exportSchema = false)
+@Database(entities = [Post::class, Alert::class], version = 3, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun postDao(): PostDao
@@ -25,7 +25,10 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     "anti_bully_db"
-                ).build()
+                )
+                    .fallbackToDestructiveMigration()
+                    .build()
+
                 INSTANCE = instance
                 instance
             }
