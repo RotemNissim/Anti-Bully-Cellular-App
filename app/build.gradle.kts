@@ -77,12 +77,15 @@ dependencies {
     kapt (libs.androidx.room.compiler)
     implementation (libs.androidx.room.ktx)
     implementation (libs.material)
-    implementation("com.google.firebase:firebase-auth-ktx")
-    implementation("com.google.firebase:firebase-storage-ktx")
+    implementation(libs.firebase.auth.ktx)
+    implementation(libs.google.firebase.storage.ktx)
     apply(plugin = "com.google.gms.google-services")
-    implementation("com.google.android.gms:play-services-auth:21.0.0")
-    implementation("com.squareup.picasso:picasso:2.8")
-    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.6.2")
+    implementation(libs.play.services.auth)
+    implementation(libs.picasso.v28)
+    implementation (libs.androidx.lifecycle.livedata.ktx)
+    implementation (libs.material)
+    implementation (libs.androidx.navigation.fragment.ktx.v277)
+    implementation (libs.androidx.navigation.ui.ktx.v277)
 
 
 }
