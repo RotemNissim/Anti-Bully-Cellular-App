@@ -6,14 +6,17 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.example.antibully.data.db.dao.PostDao
 import com.example.antibully.data.db.dao.AlertDao
+import com.example.antibully.data.db.dao.UserDao
 import com.example.antibully.data.models.Post
 import com.example.antibully.data.models.Alert
+import com.example.antibully.data.models.User
 
-@Database(entities = [Post::class, Alert::class], version = 3, exportSchema = false)
+@Database(entities = [Post::class, Alert::class, User::class], version = 4, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun postDao(): PostDao
     abstract fun alertDao(): AlertDao
+    abstract fun userDao(): UserDao  // <-- הוספה זהירה ונקייה
 
     companion object {
         @Volatile
