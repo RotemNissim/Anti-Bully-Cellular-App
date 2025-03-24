@@ -11,9 +11,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 import java.util.UUID
 
 object FirestoreManager {
@@ -48,6 +45,7 @@ object FirestoreManager {
         userId: String,
         text: String?,
         imageUrl: String?,
+        timestamp: Long,
         onSuccess: (Map<String, Any>) -> Unit,
         onFailure: (Exception) -> Unit
     ) {
@@ -55,7 +53,7 @@ object FirestoreManager {
             "userId" to userId,
             "text" to (text ?: ""),
             "imageUrl" to (imageUrl ?: ""),
-            "timestamp" to System.currentTimeMillis(),
+            "timestamp" to timestamp,
             "flagged" to false
         )
 
@@ -70,6 +68,7 @@ object FirestoreManager {
         userId: String,
         text: String?,
         imageUrl: String?,
+        timestamp: Long,
         onSuccess: (Map<String, Any>) -> Unit,
         onFailure: (Exception) -> Unit
     ) {
@@ -77,7 +76,7 @@ object FirestoreManager {
             "userId" to userId,
             "text" to (text ?: ""),
             "imageUrl" to (imageUrl ?: ""),
-            "timestamp" to System.currentTimeMillis(),
+            "timestamp" to timestamp,
             "flagged" to false
         )
 
@@ -89,15 +88,16 @@ object FirestoreManager {
                     text = text ?: "",
                     flagged = false,
                     reason = null,
-                    imageUrl = imageUrl
+                    imageUrl = imageUrl,
+                    timestamp = timestamp
                 )
 
                 // 🔥 LAUNCH A COROUTINE to call suspend API
-                kotlinx.coroutines.GlobalScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+                kotlinx.coroutines.GlobalScope.launch(Dispatchers.IO) {
                     try {
                         val response = apiService.addMessage(apiMessage)
                         if (response.isSuccessful) {
-                            withContext(kotlinx.coroutines.Dispatchers.Main) {
+                            withContext(Dispatchers.Main) {
                                 onSuccess(message)
                             }
                         } else {

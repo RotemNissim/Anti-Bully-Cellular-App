@@ -23,14 +23,14 @@ class PostRepository(private val postDao: PostDao, private val firestore: Fireba
         } else {
             post
         }
-        postDao.insertPost(post)  // Save locally first
-        savePostToFirestore(post) // Sync to Firestore
+        postDao.insertPost(postWithFirebaseId)  // Save locally first
+        savePostToFirestore(postWithFirebaseId) // Sync to Firestore
     }
 
     // Delete post from ROOM + Firestore
     suspend fun delete(post: Post) {
         postDao.deletePost(post)
-        deletePostFromFirestore(post.id)
+        deletePostFromFirestore(post.firebaseId)
     }
 
     // Update post in ROOM + Firestore
@@ -50,13 +50,12 @@ class PostRepository(private val postDao: PostDao, private val firestore: Fireba
             val posts = snapshot.documents.mapNotNull { doc ->
                 val firebaseId = doc.getString("firebaseId") ?: return@mapNotNull null
                 Post(
-                    id = 0,
                     firebaseId = firebaseId,
                     alertId = alertId,
                     userId = doc.getString("userId") ?: "",
                     text = doc.getString("text") ?: "",
                     imageUrl = doc.getString("imageUrl"),
-                    timestamp = doc.getLong("timestamp") ?: System.currentTimeMillis()
+                    timestamp = doc.getLong("timestamp")?.times(1000) ?: System.currentTimeMillis()
                 )
             }
             postDao.insertAll(posts)
@@ -70,7 +69,6 @@ class PostRepository(private val postDao: PostDao, private val firestore: Fireba
     private fun savePostToFirestore(post: Post) {
         val data = mapOf(
             "firebaseId" to post.firebaseId,
-            "id" to post.id,
             "alertId" to post.alertId,
             "userId" to post.userId,
             "text" to post.text,
@@ -80,12 +78,12 @@ class PostRepository(private val postDao: PostDao, private val firestore: Fireba
         firestore.collection("posts").document(post.firebaseId).set(data)
     }
 
-    private fun deletePostFromFirestore(postId: Int) {
-        firestore.collection("posts").document(postId.toString()).delete()
+    private fun deletePostFromFirestore(postId: String) {
+        firestore.collection("posts").document(postId).delete()
     }
 
     private fun updatePostInFirestore(post: Post) {
-        firestore.collection("posts").document(post.id.toString())
+        firestore.collection("posts").document(post.firebaseId)
             .update("text", post.text, "imageUrl", post.imageUrl)
     }
 }
