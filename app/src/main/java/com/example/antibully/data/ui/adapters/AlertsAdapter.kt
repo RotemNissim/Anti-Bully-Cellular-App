@@ -20,11 +20,16 @@ class AlertsAdapter(
             val title = itemView.findViewById<TextView>(R.id.alertTitle)
             val reason = itemView.findViewById<TextView>(R.id.alertReason)
             val time = itemView.findViewById<TextView>(R.id.alertTime)
+            val displayTime = if (alert.timestamp < 1000000000000L) {
+                alert.timestamp * 1000 // Convert seconds to millis if needed
+            } else {
+                alert.timestamp // Already in millis
+            }
 
             title.text = "Child's ID ${alert.reporterId}"
             reason.text = alert.reason
             time.text = DateUtils.getRelativeTimeSpanString(
-                alert.timestamp,
+                displayTime, // 🔥 convert seconds to millis
                 System.currentTimeMillis(),
                 DateUtils.MINUTE_IN_MILLIS
             )

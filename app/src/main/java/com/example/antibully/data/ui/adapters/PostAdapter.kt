@@ -25,7 +25,7 @@ class PostAdapter : ListAdapter<Post, PostAdapter.ViewHolder>(PostDiffCallback()
     }
 
     class PostDiffCallback : DiffUtil.ItemCallback<Post>() {
-        override fun areItemsTheSame(oldItem: Post, newItem: Post) = oldItem.id == newItem.id
+        override fun areItemsTheSame(oldItem: Post, newItem: Post) = oldItem.firebaseId == newItem.firebaseId
         override fun areContentsTheSame(oldItem: Post, newItem: Post) = oldItem == newItem
     }
 

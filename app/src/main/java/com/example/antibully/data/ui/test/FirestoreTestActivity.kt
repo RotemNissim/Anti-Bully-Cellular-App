@@ -32,6 +32,7 @@ class FirestoreTestActivity : AppCompatActivity() {
                 userId = userId,
                 text = "Hello Firestore!",
                 imageUrl = null,
+                timestamp = System.currentTimeMillis(),
                 onSuccess = { Log.d("FirestoreTest", "Message added successfully!") },
                 onFailure = { e -> Log.e("FirestoreTest", "Failed to add message", e) }
             )
