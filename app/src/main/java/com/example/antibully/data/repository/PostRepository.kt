@@ -18,6 +18,11 @@ class PostRepository(private val postDao: PostDao, private val firestore: Fireba
 
     // Insert post into ROOM + Firestore
     suspend fun insert(post: Post) {
+        val postWithFirebaseId = if (post.firebaseId.isEmpty()) {
+            post.copy(firebaseId = firestore.collection("posts").document().id)
+        } else {
+            post
+        }
         postDao.insertPost(post)  // Save locally first
         savePostToFirestore(post) // Sync to Firestore
     }
@@ -35,28 +40,36 @@ class PostRepository(private val postDao: PostDao, private val firestore: Fireba
     }
 
     // Sync ROOM with Firestore (in case new posts were added from another device)
-    suspend fun syncPostsFromFirestore() = withContext(Dispatchers.IO) {
+    suspend fun syncPostsFromFirestore(alertId: String) = withContext(Dispatchers.IO) {
         try {
-            val snapshot = firestore.collection("posts").get().await() // Use await() for suspend
-            val posts = snapshot.documents.map { doc ->
+            val snapshot = firestore.collection("posts")
+                .whereEqualTo("alertId", alertId)
+                .get()
+                .await()
+
+            val posts = snapshot.documents.mapNotNull { doc ->
+                val firebaseId = doc.getString("firebaseId") ?: return@mapNotNull null
                 Post(
-                    id = doc.getLong("id")?.toInt() ?: 0,
-                    alertId = doc.getString("alertId") ?: "",
+                    id = 0,
+                    firebaseId = firebaseId,
+                    alertId = alertId,
                     userId = doc.getString("userId") ?: "",
                     text = doc.getString("text") ?: "",
                     imageUrl = doc.getString("imageUrl"),
                     timestamp = doc.getLong("timestamp") ?: System.currentTimeMillis()
                 )
             }
-            postDao.insertAll(posts) // Now inside coroutine, so it works!
+            postDao.insertAll(posts)
         } catch (e: Exception) {
             Log.e("Firestore", "Failed to sync posts", e)
         }
     }
 
 
+
     private fun savePostToFirestore(post: Post) {
         val data = mapOf(
+            "firebaseId" to post.firebaseId,
             "id" to post.id,
             "alertId" to post.alertId,
             "userId" to post.userId,
@@ -64,7 +77,7 @@ class PostRepository(private val postDao: PostDao, private val firestore: Fireba
             "imageUrl" to post.imageUrl,
             "timestamp" to post.timestamp
         )
-        firestore.collection("posts").document(post.id.toString()).set(data)
+        firestore.collection("posts").document(post.firebaseId).set(data)
     }
 
     private fun deletePostFromFirestore(postId: Int) {

@@ -27,8 +27,8 @@ class PostViewModel(private val repository: PostRepository) : ViewModel() {
         repository.update(post)
     }
 
-    fun syncPostsFromFirestore() = viewModelScope.launch {
-        repository.syncPostsFromFirestore()
+    fun syncPostsFromFirestore(alertId: String) = viewModelScope.launch {
+        repository.syncPostsFromFirestore(alertId)
     }
 }
 
