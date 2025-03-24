@@ -56,9 +56,9 @@ class SignUpFragment : Fragment() {
             val email = emailInput.text.toString().trim()
             val password = passwordInput.text.toString().trim()
 
-            if (fullName.isEmpty() || email.isEmpty() || password.length < 6 || selectedImageUri == null) {
-                Toast.makeText(requireContext(), "Fill all fields & select image", Toast.LENGTH_SHORT).show()
-            } else {
+            if (fullName.isEmpty() || email.isEmpty() || password.length < 6) {
+                Toast.makeText(requireContext(), "Please fill all fields correctly", Toast.LENGTH_SHORT).show()
+            }else {
                 registerUserLocallyAndRemotely(fullName, email, password)
             }
         }
@@ -67,6 +67,7 @@ class SignUpFragment : Fragment() {
     private fun registerUserLocallyAndRemotely(fullName: String, email: String, password: String) {
         auth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
                 if (task.isSuccessful) {
                     val uid = auth.currentUser?.uid ?: return@addOnCompleteListener
 
@@ -78,7 +79,9 @@ class SignUpFragment : Fragment() {
                     FirebaseFirestore.getInstance().collection("users").document(uid).set(userMap)
                         .addOnSuccessListener {
                             val apiUser = UserApiResponse(id = uid, name = fullName, email = email)
-                            val userEntity = User.fromApi(apiUser, selectedImageUri.toString())
+                            val imagePath = selectedImageUri?.toString() ?: ""
+                            val userEntity = User.fromApi(apiUser, imagePath)
+
 
                             lifecycleScope.launch(Dispatchers.IO) {
                                 userDao.insertUser(userEntity)
@@ -96,8 +99,8 @@ class SignUpFragment : Fragment() {
                     Toast.makeText(requireContext(), "Registration failed: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
                 }
             }
+        }
     }
-
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
