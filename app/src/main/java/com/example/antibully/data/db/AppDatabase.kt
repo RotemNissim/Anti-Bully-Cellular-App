@@ -11,7 +11,7 @@ import com.example.antibully.data.models.Post
 import com.example.antibully.data.models.Alert
 import com.example.antibully.data.models.User
 
-@Database(entities = [Post::class, Alert::class, User::class], version = 4, exportSchema = false)
+@Database(entities = [Post::class, Alert::class, User::class], version = 5, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun postDao(): PostDao
