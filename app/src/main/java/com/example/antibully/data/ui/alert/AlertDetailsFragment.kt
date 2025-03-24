@@ -71,7 +71,7 @@ class AlertDetailsFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         postViewModel = ViewModelProvider(this, postFactory)[PostViewModel::class.java]
-
+        postViewModel.syncPostsFromFirestore(alertId)
         postAdapter = PostAdapter()
         binding.commentsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.commentsRecyclerView.adapter = postAdapter
