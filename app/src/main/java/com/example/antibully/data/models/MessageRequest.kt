@@ -11,6 +11,6 @@ data class MessageRequest(
     val reason: String?,
     @SerializedName("imageUrl")
     val imageUrl: String?,
-    @SerializedName("timestamp")
+    @SerializedName("messageReceived")
     val timestamp: Long
 )

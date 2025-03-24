@@ -3,12 +3,16 @@ package com.example.antibully.data.ui.alert
 import android.net.Uri
 import android.os.Bundle
 import android.view.*
+import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.antibully.R
 import com.example.antibully.data.db.AppDatabase
 import com.example.antibully.data.firestore.FirestoreManager
 import com.example.antibully.data.models.Post
@@ -70,6 +74,7 @@ class AlertDetailsFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+
         postViewModel = ViewModelProvider(this, postFactory)[PostViewModel::class.java]
         postViewModel.syncPostsFromFirestore(alertId)
         postAdapter = PostAdapter()
@@ -106,6 +111,7 @@ class AlertDetailsFragment : Fragment() {
                     userId = "parentUser", // 🛠️ Replace with actual user logic later
                     text = text,
                     imageUrl = selectedImageUrl,
+                    timestamp = System.currentTimeMillis()
 
                 )
                 postViewModel.insert(post)
