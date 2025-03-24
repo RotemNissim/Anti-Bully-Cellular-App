@@ -7,81 +7,85 @@
     android:gravity="center"
     android:padding="16dp">
 
-    <!-- Email Input Field -->
+
+    <!-- Email -->
+
+    <ImageView
+        android:id="@+id/appLogo"
+        android:layout_width="274dp"
+        android:layout_height="210dp"
+        android:src="@drawable/ic_app_logo" />
+
     <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/emailLayout"
-        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Enter Email"
-        app:startIconDrawable="@drawable/ic_email"
-        app:startIconContentDescription="Email icon">
-        <!-- TODO: Make sure you add ic_email.xml in res/drawable (e.g., from Material Icons) -->
+        android:hint="Email"
+        android:layout_marginTop="8dp"
+        app:endIconMode="clear_text"
+        app:boxStrokeColor="@color/purple_500"
+        app:boxBackgroundMode="outline">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/etEmail"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="textEmailAddress"
-            android:textSize="16sp" />
+            android:inputType="textEmailAddress" />
     </com.google.android.material.textfield.TextInputLayout>
 
-    <!-- Password Input Field with Toggle Visibility -->
+    <!-- Password -->
     <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/passwordLayout"
-        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:hint="Password"
         android:layout_marginTop="12dp"
-        android:hint="Enter Password"
         app:endIconMode="password_toggle"
-        app:startIconDrawable="@drawable/ic_lock"
-        app:startIconContentDescription="Password icon">
-        <!-- TODO: Make sure you add ic_lock.xml in res/drawable -->
+        app:boxStrokeColor="@color/purple_500"
+        app:boxBackgroundMode="outline">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/etPassword"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="textPassword"
-            android:textSize="16sp" />
+            android:inputType="textPassword" />
     </com.google.android.material.textfield.TextInputLayout>
 
-    <!-- Forgot Password Button (low emphasis) -->
-    <!-- TODO: Implement logic in code if you use this -->
-    <com.google.android.material.button.MaterialButton
-        style="@style/Widget.Material3.Button.TextButton"
-        android:id="@+id/btnForgotPassword"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Forgot Password?"
-        android:layout_marginTop="4dp"
-        android:layout_gravity="end" />
-
-    <!-- Login Button (high emphasis) -->
-    <com.google.android.material.button.MaterialButton
-        style="@style/Widget.Material3.Button"
+    <!-- Login Button -->
+    <Button
+        style="@style/Widget.Material3.Button.ElevatedButton"
         android:id="@+id/btnLogin"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="56dp"
         android:text="Login"
-        android:layout_marginTop="16dp" />
+        android:textSize="16sp"
+        android:layout_marginTop="16dp"
+        android:textColor="@color/white"
+        app:backgroundTint="@color/purple_500"
+        android:padding="12dp" />
 
-    <!-- Sign-Up Button (tonal style) -->
-    <com.google.android.material.button.MaterialButton
-        style="@style/Widget.Material3.Button.TonalButton"
-        android:id="@+id/btnSignUp"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Sign Up"
-        android:layout_marginTop="8dp" />
-
-    <!-- Google Sign-In Button (outlined style) -->
-    <com.google.android.material.button.MaterialButton
-        style="@style/Widget.Material3.Button.OutlinedButton"
+    <com.google.android.gms.common.SignInButton
         android:id="@+id/btnGoogleLogin"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Sign in with Google"
-        android:layout_marginTop="8dp" />
+
+        android:layout_marginTop="16dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Don't Have an Account?"/>
+
+    <Button
+        android:id="@+id/btnSignUp"
+        style="@style/Widget.Material3.Button.ElevatedButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:textAlignment="center"
+        android:text="Sign Up"
+        android:textAppearance="?attr/textAppearanceBody1"
+        android:textColor="@color/white"
+        app:backgroundTint="@color/purple_500" />
+
 </LinearLayout>
