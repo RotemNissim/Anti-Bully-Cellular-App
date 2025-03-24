@@ -48,22 +48,21 @@ class EditProfileFragment : Fragment() {
         val fullNameEditText = view.findViewById<EditText>(R.id.etEditFullName)
         val passwordEditText = view.findViewById<EditText>(R.id.etEditPassword)
         val saveButton = view.findViewById<Button>(R.id.btnSaveProfile)
+        val changeImageButton = view.findViewById<Button>(R.id.btnChangeProfileImage) // NEW
 
         val uid = auth.currentUser?.uid ?: return
 
-        // Load local user data from Room (to remember image if not changed)
         lifecycleScope.launch(Dispatchers.IO) {
             val localUser = userDao.getUserById(uid)
             existingImagePath = localUser?.localProfileImagePath ?: ""
 
             withContext(Dispatchers.Main) {
-                if (!existingImagePath.isNullOrEmpty()) {
+                if (existingImagePath.isNotEmpty()) {
                     profileImageView.setImageURI(Uri.parse(existingImagePath))
                 }
             }
         }
 
-        // Load Firestore data to populate name
         db.collection("users").document(uid).get()
             .addOnSuccessListener { document ->
                 if (document.exists()) {
@@ -75,7 +74,8 @@ class EditProfileFragment : Fragment() {
                 }
             }
 
-        profileImageView.setOnClickListener {
+        // Moved here: click listener for change image button (not the ImageView!)
+        changeImageButton.setOnClickListener {
             val intent = Intent(Intent.ACTION_PICK).apply { type = "image/*" }
             startActivityForResult(intent, PICK_IMAGE_REQUEST)
         }
@@ -96,7 +96,6 @@ class EditProfileFragment : Fragment() {
                         auth.currentUser?.updatePassword(newPassword)
                     }
 
-                    // Use selected URI or fallback to existing path
                     val finalImagePath = selectedImageUri?.toString() ?: existingImagePath
 
                     val apiResponse = UserApiResponse(

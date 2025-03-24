@@ -16,7 +16,7 @@ abstract class AppDatabase : RoomDatabase() {
 
     abstract fun postDao(): PostDao
     abstract fun alertDao(): AlertDao
-    abstract fun userDao(): UserDao  // <-- הוספה זהירה ונקייה
+    abstract fun userDao(): UserDao
 
     companion object {
         @Volatile

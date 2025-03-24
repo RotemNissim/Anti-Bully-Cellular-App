@@ -18,7 +18,6 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.util.*
 
 class SignUpFragment : Fragment() {
 
@@ -44,10 +43,11 @@ class SignUpFragment : Fragment() {
         val passwordInput = view.findViewById<EditText>(R.id.etSignUpPassword)
         val signUpButton = view.findViewById<Button>(R.id.btnRegister)
         val profileImageView = view.findViewById<ImageView>(R.id.ivProfileImage)
+        val chooseImageButton = view.findViewById<Button>(R.id.btnChangeProfileImage)
 
-        profileImageView.setOnClickListener {
-            val intent = Intent(Intent.ACTION_PICK)
-            intent.type = "image/*"
+        // Open gallery when "Choose Image" button is clicked
+        chooseImageButton.setOnClickListener {
+            val intent = Intent(Intent.ACTION_PICK).apply { type = "image/*" }
             startActivityForResult(intent, PICK_IMAGE_REQUEST)
         }
 
@@ -70,7 +70,6 @@ class SignUpFragment : Fragment() {
                 if (task.isSuccessful) {
                     val uid = auth.currentUser?.uid ?: return@addOnCompleteListener
 
-                    // Save to Firebase (without image URL)
                     val userMap = hashMapOf(
                         "fullName" to fullName,
                         "email" to email
@@ -78,7 +77,6 @@ class SignUpFragment : Fragment() {
 
                     FirebaseFirestore.getInstance().collection("users").document(uid).set(userMap)
                         .addOnSuccessListener {
-                            // Save to local Room with image URI
                             val apiUser = UserApiResponse(id = uid, name = fullName, email = email)
                             val userEntity = User.fromApi(apiUser, selectedImageUri.toString())
 
