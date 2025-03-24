@@ -7,17 +7,23 @@ import android.os.Bundle
 import android.view.*
 import android.widget.*
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.example.antibully.R
+import com.example.antibully.data.db.AppDatabase
+import com.example.antibully.data.models.User
+import com.example.antibully.data.models.UserApiResponse
 import com.example.antibully.utils.Constants
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.storage.FirebaseStorage
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.util.*
 
 class SignUpFragment : Fragment() {
 
     private lateinit var auth: FirebaseAuth
+    private lateinit var userDao: com.example.antibully.data.db.dao.UserDao
     private var selectedImageUri: Uri? = null
 
     private val PICK_IMAGE_REQUEST = 1
@@ -31,6 +37,7 @@ class SignUpFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         auth = FirebaseAuth.getInstance()
+        userDao = AppDatabase.getDatabase(requireContext()).userDao()
 
         val fullNameInput = view.findViewById<EditText>(R.id.etFullName)
         val emailInput = view.findViewById<EditText>(R.id.etSignUpEmail)
@@ -52,53 +59,40 @@ class SignUpFragment : Fragment() {
             if (fullName.isEmpty() || email.isEmpty() || password.length < 6 || selectedImageUri == null) {
                 Toast.makeText(requireContext(), "Fill all fields & select image", Toast.LENGTH_SHORT).show()
             } else {
-                uploadProfileImageAndRegister(fullName, email, password)
+                registerUserLocallyAndRemotely(fullName, email, password)
             }
         }
     }
 
-    private fun uploadProfileImageAndRegister(fullName: String, email: String, password: String) {
-        val filename = UUID.randomUUID().toString()
-        val storageRef = FirebaseStorage.getInstance().getReference("/profile_images/$filename")
-
-        selectedImageUri?.let { uri ->
-            storageRef.putFile(uri)
-                .addOnSuccessListener {
-                    storageRef.downloadUrl.addOnSuccessListener { imageUrl ->
-                        registerUser(fullName, email, password, imageUrl.toString())
-                    }
-                }
-                .addOnFailureListener {
-                    Toast.makeText(requireContext(), "Image upload failed: ${it.message}", Toast.LENGTH_SHORT).show()
-                }
-        }
-    }
-
-    private fun registerUser(fullName: String, email: String, password: String, profileImageUrl: String) {
+    private fun registerUserLocallyAndRemotely(fullName: String, email: String, password: String) {
         auth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     val uid = auth.currentUser?.uid ?: return@addOnCompleteListener
+
+                    // Save to Firebase (without image URL)
                     val userMap = hashMapOf(
                         "fullName" to fullName,
-                        "email" to email,
-                        "profileImageUrl" to profileImageUrl
+                        "email" to email
                     )
-                    FirebaseFirestore.getInstance()
-                        .collection("users")
-                        .document(uid)
-                        .set(userMap)
+
+                    FirebaseFirestore.getInstance().collection("users").document(uid).set(userMap)
                         .addOnSuccessListener {
+                            // Save to local Room with image URI
+                            val apiUser = UserApiResponse(id = uid, name = fullName, email = email)
+                            val userEntity = User.fromApi(apiUser, selectedImageUri.toString())
+
+                            lifecycleScope.launch(Dispatchers.IO) {
+                                userDao.insertUser(userEntity)
+                            }
+
                             Toast.makeText(requireContext(), "Welcome, $fullName!", Toast.LENGTH_SHORT).show()
-                            val actionId = Constants.NAV_AFTER_LOGIN_ACTIONS["signup"]
-                            if (actionId != null) {
-                                findNavController().navigate(actionId)
-                            } else {
-                                Toast.makeText(requireContext(), "Navigation error", Toast.LENGTH_SHORT).show()
+                            Constants.NAV_AFTER_LOGIN_ACTIONS["signup"]?.let {
+                                findNavController().navigate(it)
                             }
                         }
                         .addOnFailureListener {
-                            Toast.makeText(requireContext(), "Failed to save user data: ${it.message}", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(requireContext(), "Failed to save user data", Toast.LENGTH_SHORT).show()
                         }
                 } else {
                     Toast.makeText(requireContext(), "Registration failed: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
