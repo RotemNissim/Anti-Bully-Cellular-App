@@ -1,18 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:gravity="center"
     android:padding="16dp">
 
+    <!-- Profile Picture -->
     <ImageView
         android:id="@+id/ivProfileImage"
         android:layout_width="120dp"
         android:layout_height="120dp"
         android:scaleType="centerCrop"
-        android:src="@drawable/ic_profile_placeholder" />
+        android:src="@drawable/ic_profile_placeholder"
+        android:contentDescription="Profile picture" />
+    <!-- TODO: Replace ic_profile_placeholder in res/drawable with an actual placeholder or user image -->
 
+    <!-- Username Display -->
     <TextView
         android:id="@+id/tvUsername"
         android:layout_width="wrap_content"
@@ -20,12 +25,14 @@
         android:text="Username"
         android:textSize="20sp"
         android:textStyle="bold"
-        android:layout_marginTop="12dp"/>
+        android:layout_marginTop="12dp" />
 
-    <Button
+    <!-- Edit Profile Button -->
+    <com.google.android.material.button.MaterialButton
+        style="@style/Widget.Material3.Button.TonalButton"
         android:id="@+id/btnEditProfile"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Edit Profile"
-        android:layout_marginTop="16dp"/>
+        android:layout_marginTop="16dp" />
 </LinearLayout>

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="16dp">
@@ -10,36 +11,64 @@
         android:orientation="vertical"
         android:gravity="center_horizontal">
 
+        <!-- Profile Image (not clickable anymore) -->
         <ImageView
             android:id="@+id/ivEditProfileImage"
             android:layout_width="120dp"
             android:layout_height="120dp"
-            android:layout_marginBottom="16dp"
+            android:layout_marginBottom="8dp"
             android:src="@drawable/ic_profile_placeholder"
             android:scaleType="centerCrop"
-            android:background="@android:color/darker_gray"
-            android:clickable="true"
-            android:focusable="true"/>
+            android:contentDescription="Profile picture"
+            android:clickable="false"
+            android:focusable="false"
+            android:background="@android:color/darker_gray" />
+        <!-- TODO: Replace 'ic_profile_placeholder' with actual drawable if needed -->
 
-        <EditText
-            android:id="@+id/etEditFullName"
+        <!-- Button to change profile picture -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnChangeProfileImage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Change Profile Picture"
+            android:layout_marginBottom="16dp"/>
+
+        <!-- Full Name Field (Material Design) -->
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Full Name"
-            android:inputType="textPersonName"
-            android:padding="12dp"
-            android:layout_marginBottom="12dp"/>
+            android:layout_marginBottom="12dp">
 
-        <EditText
-            android:id="@+id/etEditPassword"
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etEditFullName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textPersonName" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- New Password Field (Optional) -->
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="New Password (optional)"
-            android:inputType="textPassword"
-            android:padding="12dp"
-            android:layout_marginBottom="12dp"/>
+            android:layout_marginBottom="12dp"
+            app:endIconMode="password_toggle"
+            app:startIconDrawable="@drawable/ic_lock"
+            app:startIconContentDescription="Password icon">
+            <!-- TODO: Add ic_lock drawable -->
 
-        <Button
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etEditPassword"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textPassword" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Save Button -->
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnSaveProfile"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
