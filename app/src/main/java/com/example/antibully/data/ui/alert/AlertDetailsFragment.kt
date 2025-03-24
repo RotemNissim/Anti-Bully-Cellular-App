@@ -97,13 +97,16 @@ class AlertDetailsFragment : Fragment() {
 
         // Submit comment
         binding.sendCommentButton.setOnClickListener {
+            val generatedFirebaseId = FirebaseFirestore.getInstance().collection("posts").document().id
             val text = binding.commentInput.text.toString().trim()
             if (text.isNotEmpty()) {
                 val post = Post(
+                    firebaseId = generatedFirebaseId,
                     alertId = alertId,
                     userId = "parentUser", // 🛠️ Replace with actual user logic later
                     text = text,
-                    imageUrl = selectedImageUrl
+                    imageUrl = selectedImageUrl,
+
                 )
                 postViewModel.insert(post)
                 binding.commentInput.setText("")

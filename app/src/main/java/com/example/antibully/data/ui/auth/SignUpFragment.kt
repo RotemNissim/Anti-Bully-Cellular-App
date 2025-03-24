@@ -58,7 +58,7 @@ class SignUpFragment : Fragment() {
 
             if (fullName.isEmpty() || email.isEmpty() || password.length < 6) {
                 Toast.makeText(requireContext(), "Please fill all fields correctly", Toast.LENGTH_SHORT).show()
-            }else {
+            } else {
                 registerUserLocallyAndRemotely(fullName, email, password)
             }
         }
