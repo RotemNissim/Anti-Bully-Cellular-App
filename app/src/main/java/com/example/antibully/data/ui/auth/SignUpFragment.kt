@@ -56,7 +56,7 @@ class SignUpFragment : Fragment() {
             val email = emailInput.text.toString().trim()
             val password = passwordInput.text.toString().trim()
 
-            if (fullName.isEmpty() || email.isEmpty() || password.length < 6 || selectedImageUri == null) {
+            if (fullName.isEmpty() || email.isEmpty() || password.length < 6 ) {
                 Toast.makeText(requireContext(), "Fill all fields & select image", Toast.LENGTH_SHORT).show()
             } else {
                 registerUserLocallyAndRemotely(fullName, email, password)

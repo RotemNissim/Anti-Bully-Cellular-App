@@ -98,7 +98,7 @@ class PostFragment : Fragment() {
                 postViewModel.update(updatedPost)
 
                 FirestoreManager.updatePostInFirestore(
-                    postId = post.id.toString(),
+                    postId = post.firebaseId,
                     newText = newText,
                     newImageUrl = post.imageUrl,
                     onSuccess = {},
@@ -111,7 +111,7 @@ class PostFragment : Fragment() {
 
     private fun deletePost(post: Post) {
         postViewModel.delete(post)
-        FirebaseFirestore.getInstance().collection("posts").document(post.id.toString()).delete()
+        FirebaseFirestore.getInstance().collection("posts").document(post.firebaseId).delete()
     }
 
     override fun onDestroyView() {

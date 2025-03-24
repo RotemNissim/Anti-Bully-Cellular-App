@@ -20,7 +20,7 @@ data class Alert(
                 text = response.text,
                 reason = response.reason ?:"No reason provided",
                 imageUrl = response.imageUrl,
-                timestamp = System.currentTimeMillis()
+                timestamp = response.timestamp  * 1000
             )
         }
     }

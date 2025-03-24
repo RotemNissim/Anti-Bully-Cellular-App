@@ -9,7 +9,8 @@ data class MessageRequest(
     val text: String,
     val flagged: Boolean,
     val reason: String?,
-
     @SerializedName("imageUrl")
-    val imageUrl: String?
+    val imageUrl: String?,
+    @SerializedName("timestamp")
+    val timestamp: Long
 )
