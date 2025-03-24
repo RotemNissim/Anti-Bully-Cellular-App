@@ -17,7 +17,7 @@
         android:clickable="true"
         android:focusable="true"
         android:scaleType="centerCrop"
-        android:src="@drawable/ic_app_logo" />
+        android:src="@drawable/ic_profile_placeholder" />
 
     <!-- Full Name -->
     <com.google.android.material.textfield.TextInputLayout
@@ -72,12 +72,15 @@
 
     <!-- Register button -->
     <Button
+        style="@style/Widget.Material3.Button.ElevatedButton"
         android:id="@+id/btnRegister"
         android:layout_width="match_parent"
         android:layout_height="56dp"
-        android:text="Register"
+        android:text="Sign Up"
         android:textSize="16sp"
         android:layout_marginTop="16dp"
+        android:textColor="@color/white"
+        app:backgroundTint="@color/purple_500"
         android:padding="12dp" />
 
 </LinearLayout>
