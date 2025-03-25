@@ -1,21 +1,57 @@
-<LinearLayout android:orientation="vertical"
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="horizontal"
     android:padding="8dp"
-    xmlns:android="http://schemas.android.com/apk/res/android">
+    android:gravity="start">
 
-    <TextView
-        android:id="@+id/commentText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textStyle="bold"
-        android:text="@string/comment_text" />
+    <!-- Profile Picture -->
+    <com.google.android.material.imageview.ShapeableImageView
+        android:id="@+id/commentProfileImage"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:src="@drawable/ic_default_profile"
+        android:scaleType="centerCrop"
+        app:shapeAppearanceOverlay="@style/CircleImage"
+        android:layout_marginEnd="8dp"
+        android:contentDescription="@string/profile_image" />
 
-    <TextView
-        android:id="@+id/commentTimestamp"
-        android:layout_width="wrap_content"
+    <!-- Comment Bubble -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_weight="1"
         android:layout_height="wrap_content"
-        android:text="@string/_1h_ago"
-        android:textSize="12sp"
-        android:textColor="#777777" />
+        android:orientation="vertical"
+        android:background="@drawable/comment_bubble_background"
+        android:padding="12dp">
+
+        <TextView
+            android:id="@+id/commentAuthor"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Username"
+            android:textStyle="bold"
+            android:textSize="13sp"
+            android:textColor="#444" />
+
+        <TextView
+            android:id="@+id/commentText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="This is a comment"
+            android:textSize="14sp"
+            android:textColor="#000"
+            android:layout_marginTop="2dp" />
+
+        <TextView
+            android:id="@+id/commentTimestamp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="5 min ago"
+            android:textSize="12sp"
+            android:textColor="#888"
+            android:layout_marginTop="4dp" />
+    </LinearLayout>
 </LinearLayout>
