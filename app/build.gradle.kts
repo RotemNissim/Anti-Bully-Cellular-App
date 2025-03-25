@@ -86,6 +86,7 @@ dependencies {
     implementation (libs.material)
     implementation (libs.androidx.navigation.fragment.ktx.v277)
     implementation (libs.androidx.navigation.ui.ktx.v277)
+    implementation ("com.google.android.material:material:1.11.0")
 
 
 }
