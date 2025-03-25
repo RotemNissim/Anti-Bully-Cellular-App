@@ -52,6 +52,7 @@
                         android:textSize="16sp"
                         android:textStyle="bold" />
 
+
                     <TextView
                         android:id="@+id/alertReason"
                         android:layout_width="match_parent"
@@ -61,6 +62,7 @@
                         android:text="Reason: Hate Speech"
                         android:textColor="#444"
                         android:textSize="14sp" />
+
 
                     <TextView
                         android:id="@+id/alertReporterId"

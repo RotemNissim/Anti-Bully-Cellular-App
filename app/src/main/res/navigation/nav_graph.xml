@@ -2,29 +2,32 @@
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    app:startDestination="@id/loginFragment">
+    app:startDestination="@id/splashFragment">
 
     <fragment
         android:id="@+id/loginFragment"
         android:name="com.example.antibully.data.ui.auth.LoginFragment"
         android:label="Login"
         tools:layout="@layout/fragment_login">
-
         <action
             android:id="@+id/action_nav_after_login_from_login"
             app:destination="@id/profileFragment" />
-
         <action
             android:id="@+id/action_loginFragment_to_signUpFragment"
             app:destination="@id/signUpFragment" />
     </fragment>
 
     <fragment
+        android:id="@+id/splashFragment"
+        android:name="com.example.antibully.data.ui.auth.SplashFragment"
+        android:label="Splash"
+        tools:layout="@layout/fragment_splash" />
+
+    <fragment
         android:id="@+id/signUpFragment"
         android:name="com.example.antibully.data.ui.auth.SignUpFragment"
         android:label="Sign Up"
         tools:layout="@layout/fragment_sign_up">
-
         <action
             android:id="@+id/action_nav_after_login_from_signup"
             app:destination="@id/profileFragment" />
@@ -35,7 +38,6 @@
         android:name="com.example.antibully.data.ui.feed.FeedFragment"
         android:label="Feed"
         tools:layout="@layout/fragment_feed">
-
         <action
             android:id="@+id/action_feedFragment_to_alertDetailsFragment"
             app:destination="@id/alertDetailsFragment"
@@ -50,7 +52,6 @@
         android:name="com.example.antibully.data.ui.alert.AlertDetailsFragment"
         android:label="Alert Details"
         tools:layout="@layout/fragment_alert_details">
-
         <argument
             android:name="postId"
             app:argType="string" />
@@ -61,10 +62,12 @@
         android:name="com.example.antibully.data.ui.profile.ProfileFragment"
         android:label="Profile"
         tools:layout="@layout/fragment_profile">
-
         <action
             android:id="@+id/action_profileFragment_to_editProfileFragment"
             app:destination="@id/editProfileFragment" />
+        <action
+            android:id="@+id/action_profileFragment_to_addChildFragment"
+            app:destination="@id/addChildFragment" />
     </fragment>
 
     <fragment
@@ -72,4 +75,10 @@
         android:name="com.example.antibully.data.ui.profile.EditProfileFragment"
         android:label="Edit Profile"
         tools:layout="@layout/fragment_edit_profile" />
+
+    <fragment
+        android:id="@+id/addChildFragment"
+        android:name="com.example.antibully.data.ui.profile.AddChildFragment"
+        android:label="Add Child"
+        tools:layout="@layout/fragment_add_child" />
 </navigation>
