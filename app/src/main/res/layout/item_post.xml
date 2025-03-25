@@ -31,27 +31,30 @@
             android:id="@+id/commentAuthor"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:fontFamily="@font/assistant_bold"
             android:text="Username"
-            android:textStyle="bold"
+            android:textColor="#444"
             android:textSize="13sp"
-            android:textColor="#444" />
+            android:textStyle="bold" />
 
         <TextView
             android:id="@+id/commentText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:fontFamily="@font/assistant_semi_bold"
             android:text="This is a comment"
-            android:textSize="14sp"
             android:textColor="#000"
-            android:layout_marginTop="2dp" />
+            android:textSize="14sp" />
 
         <TextView
             android:id="@+id/commentTimestamp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:fontFamily="@font/assistant_regular"
             android:text="5 min ago"
-            android:textSize="12sp"
             android:textColor="#888"
-            android:layout_marginTop="4dp" />
+            android:textSize="12sp" />
     </LinearLayout>
 </LinearLayout>

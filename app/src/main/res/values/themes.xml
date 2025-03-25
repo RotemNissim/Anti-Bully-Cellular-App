@@ -1,9 +1,10 @@
 <!-- themes.xml -->
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <style name="Theme.AntiBully" parent="Theme.Material3.Dark.NoActionBar">
+    <style name="Theme.AntiBully" parent="Theme.Material3.DayNight.NoActionBar">
     </style>
     <style name="CircleImage" parent="">
         <item name="cornerFamily">rounded</item>
         <item name="cornerSize">50%</item>
+        <item name="android:fontFamily">@font/my_font_family</item>
     </style>
 </resources>

@@ -45,38 +45,42 @@
                         android:id="@+id/alertText"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:layout_marginBottom="8dp"
+                        android:fontFamily="@font/assistant_extra_bold"
                         android:text="Alert Text"
-                        android:textSize="16sp"
-                        android:textStyle="bold"
                         android:textColor="@android:color/black"
-                        android:layout_marginBottom="8dp" />
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
 
                     <TextView
                         android:id="@+id/alertReason"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:layout_marginBottom="4dp"
+                        android:fontFamily="@font/assistant_semi_bold"
                         android:text="Reason: Hate Speech"
-                        android:textSize="14sp"
                         android:textColor="#444"
-                        android:layout_marginBottom="4dp" />
+                        android:textSize="14sp" />
 
                     <TextView
                         android:id="@+id/alertReporterId"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:layout_marginBottom="4dp"
+                        android:fontFamily="@font/assistant_bold"
                         android:text="Reported by ID: 123456"
-                        android:textSize="14sp"
                         android:textColor="#444"
-                        android:layout_marginBottom="4dp" />
+                        android:textSize="14sp" />
 
                     <TextView
                         android:id="@+id/alertTimestamp"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:layout_marginBottom="8dp"
+                        android:fontFamily="@font/assistant_medium"
                         android:text="5 minutes ago"
-                        android:textSize="12sp"
                         android:textColor="@android:color/darker_gray"
-                        android:layout_marginBottom="8dp" />
+                        android:textSize="12sp" />
 
                     <ImageView
                         android:id="@+id/alertImage"

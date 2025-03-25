@@ -28,6 +28,7 @@
             android:id="@+id/etEmail"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:fontFamily="@font/assistant_semi_bold"
             android:inputType="textEmailAddress" />
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -45,21 +46,23 @@
             android:id="@+id/etPassword"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:fontFamily="@font/assistant_semi_bold"
             android:inputType="textPassword" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <!-- Login Button -->
     <Button
-        style="@style/Widget.Material3.Button.ElevatedButton"
         android:id="@+id/btnLogin"
+        style="@style/Widget.Material3.Button.ElevatedButton"
         android:layout_width="match_parent"
         android:layout_height="56dp"
-        android:text="Login"
-        android:textSize="16sp"
         android:layout_marginTop="16dp"
+        android:fontFamily="@font/assistant_semi_bold"
+        android:padding="12dp"
+        android:text="Login"
         android:textColor="@color/white"
-        app:backgroundTint="@color/purple_500"
-        android:padding="12dp" />
+        android:textSize="16sp"
+        app:backgroundTint="@color/purple_500" />
 
     <com.google.android.gms.common.SignInButton
         android:id="@+id/btnGoogleLogin"
@@ -73,7 +76,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:text="Don't Have an Account?"/>
+        android:fontFamily="@font/assistant_extra_bold"
+        android:text="Don't Have an Account?" />
 
     <Button
         android:id="@+id/btnSignUp"
@@ -81,8 +85,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:textAlignment="center"
+        android:fontFamily="@font/assistant_semi_bold"
         android:text="Sign Up"
+        android:textAlignment="center"
         android:textAppearance="?attr/textAppearanceBody1"
         android:textColor="@color/white"
         app:backgroundTint="@color/purple_500" />
