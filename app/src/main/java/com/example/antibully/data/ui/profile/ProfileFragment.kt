@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.antibully.R
 import com.example.antibully.data.db.AppDatabase
 import com.example.antibully.data.models.ChildLocalData
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -37,7 +38,7 @@ class ProfileFragment : Fragment() {
 
         val profileImageView = view.findViewById<ImageView>(R.id.ivProfileImage)
         val usernameTextView = view.findViewById<TextView>(R.id.tvUsername)
-        val editProfileButton = view.findViewById<Button>(R.id.btnEditProfile)
+        val editProfileButton = view.findViewById<FloatingActionButton>(R.id.btnEditProfile)
         val addChildButton = view.findViewById<Button>(R.id.btnAddChild)
         val recyclerView = view.findViewById<RecyclerView>(R.id.rvChildren)
         val noChildrenText = view.findViewById<TextView>(R.id.tvNoChildren) // נדרש ב-XML

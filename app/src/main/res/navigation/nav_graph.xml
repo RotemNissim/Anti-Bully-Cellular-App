@@ -24,6 +24,12 @@
         tools:layout="@layout/fragment_splash" />
 
     <fragment
+        android:id="@+id/statisticsFragment"
+        android:name="com.example.antibully.data.ui.statistics.StatisticsFragment"
+        android:label="Statistics"
+        tools:layout="@layout/fragment_statistics" />
+
+    <fragment
         android:id="@+id/signUpFragment"
         android:name="com.example.antibully.data.ui.auth.SignUpFragment"
         android:label="Sign Up"

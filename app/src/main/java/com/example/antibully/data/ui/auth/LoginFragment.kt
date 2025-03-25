@@ -9,8 +9,12 @@ import android.widget.EditText
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.example.antibully.R
+import com.example.antibully.data.db.AppDatabase
+import com.example.antibully.data.models.User
+import com.example.antibully.data.models.UserApiResponse
 import com.example.antibully.utils.Constants
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
@@ -18,6 +22,8 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class LoginFragment : Fragment() {
 
@@ -38,9 +44,7 @@ class LoginFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        return inflater.inflate(R.layout.fragment_login, container, false)
-    }
+    ): View = inflater.inflate(R.layout.fragment_login, container, false)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -114,12 +118,17 @@ class LoginFragment : Fragment() {
                             userDocRef.set(newUser)
                         }
 
+                        // Save to Room to persist login
+                        val apiUser = UserApiResponse(uid, name, email, profileImageUrl)
+                        val userEntity = User.fromApi(apiUser, localImagePath = "")
+                        val userDao = AppDatabase.getDatabase(requireContext()).userDao()
+                        lifecycleScope.launch(Dispatchers.IO) {
+                            userDao.insertUser(userEntity)
+                        }
+
                         Toast.makeText(requireContext(), "Google Sign-In Successful!", Toast.LENGTH_SHORT).show()
-                        val actionId = Constants.NAV_AFTER_LOGIN_ACTIONS["login"]
-                        if (actionId != null) {
-                            findNavController().navigate(actionId)
-                        } else {
-                            Toast.makeText(requireContext(), "Navigation error", Toast.LENGTH_SHORT).show()
+                        Constants.NAV_AFTER_LOGIN_ACTIONS["login"]?.let {
+                            findNavController().navigate(it)
                         }
                     }.addOnFailureListener { e ->
                         Toast.makeText(requireContext(), "Failed to check/create Firestore user: ${e.message}", Toast.LENGTH_SHORT).show()
@@ -136,11 +145,8 @@ class LoginFragment : Fragment() {
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     Toast.makeText(requireContext(), "Login successful!", Toast.LENGTH_SHORT).show()
-                    val actionId = Constants.NAV_AFTER_LOGIN_ACTIONS["login"]
-                    if (actionId != null) {
-                        findNavController().navigate(actionId)
-                    } else {
-                        Toast.makeText(requireContext(), "Navigation error", Toast.LENGTH_SHORT).show()
+                    Constants.NAV_AFTER_LOGIN_ACTIONS["login"]?.let {
+                        findNavController().navigate(it)
                     }
                 } else {
                     Toast.makeText(requireContext(), "Login failed: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
