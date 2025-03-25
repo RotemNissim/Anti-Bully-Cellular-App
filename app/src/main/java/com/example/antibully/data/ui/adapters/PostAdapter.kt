@@ -10,17 +10,38 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.antibully.R
 import com.example.antibully.data.models.Post
+import com.example.antibully.data.models.User
+import com.google.android.material.imageview.ShapeableImageView
+import com.squareup.picasso.Picasso
 
-class PostAdapter : ListAdapter<Post, PostAdapter.ViewHolder>(PostDiffCallback()) {
+class PostAdapter(
+    private val userMap: Map<String, User>  = emptyMap() // user.firebaseId -> User(name, profilePicUrl)
+) : ListAdapter<Post, PostAdapter.ViewHolder>(PostDiffCallback()) {
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        fun bind(post: Post) {
+        fun bind(post: Post, user: User?) {
             itemView.findViewById<TextView>(R.id.commentText).text = post.text
-            itemView.findViewById<TextView>(R.id.commentTimestamp).text = DateUtils.getRelativeTimeSpanString(
-                post.timestamp,
-                System.currentTimeMillis(),
-                DateUtils.MINUTE_IN_MILLIS
-            )
+            itemView.findViewById<TextView>(R.id.commentTimestamp).text =
+                DateUtils.getRelativeTimeSpanString(
+                    post.timestamp,
+                    System.currentTimeMillis(),
+                    DateUtils.MINUTE_IN_MILLIS
+                )
+
+            val nameView = itemView.findViewById<TextView>(R.id.commentAuthor)
+            val imageView = itemView.findViewById<ShapeableImageView>(R.id.commentProfileImage)
+
+            nameView.text = user?.name ?: "Unknown"
+
+            if (!user?.localProfileImagePath.isNullOrEmpty()) {
+                Picasso.get()
+                    .load(user?.localProfileImagePath)
+                    .placeholder(R.drawable.ic_default_profile)
+                    .error(R.drawable.ic_default_profile)
+                    .into(imageView)
+            } else {
+                imageView.setImageResource(R.drawable.ic_default_profile)
+            }
         }
     }
 
@@ -35,6 +56,8 @@ class PostAdapter : ListAdapter<Post, PostAdapter.ViewHolder>(PostDiffCallback()
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.bind(getItem(position))
+        val post = getItem(position)
+        val user = userMap[post.userId]  // Make sure Post has this field!
+        holder.bind(post, user)
     }
 }
