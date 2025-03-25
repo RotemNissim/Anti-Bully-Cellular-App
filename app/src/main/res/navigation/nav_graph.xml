@@ -2,7 +2,7 @@
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    app:startDestination="@id/loginFragment">
+    app:startDestination="@id/splashFragment">
 
     <fragment
         android:id="@+id/loginFragment"
@@ -16,6 +16,12 @@
             android:id="@+id/action_loginFragment_to_signUpFragment"
             app:destination="@id/signUpFragment" />
     </fragment>
+
+    <fragment
+        android:id="@+id/splashFragment"
+        android:name="com.example.antibully.data.ui.auth.SplashFragment"
+        android:label="Splash"
+        tools:layout="@layout/fragment_splash" />
 
     <fragment
         android:id="@+id/signUpFragment"

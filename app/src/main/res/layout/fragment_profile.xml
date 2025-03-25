@@ -54,16 +54,17 @@
             android:textSize="18sp"
             android:textStyle="bold" />
 
-        <com.google.android.material.button.MaterialButton
+        <Button
             android:id="@+id/btnAddChild"
-            style="@style/Widget.Material3.Button.Icon"
-            android:icon="@drawable/ic_add"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:text="+"
-            android:backgroundTint="?attr/colorPrimary"
-            android:layout_marginStart="8dp"
-            />
+            style="?attr/materialIconButtonOutlinedStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="12dp"
+            android:contentDescription="add child desc"
+            app:icon="@drawable/ic_add_24dp" />
+
     </LinearLayout>
 
     <!-- No children message -->
