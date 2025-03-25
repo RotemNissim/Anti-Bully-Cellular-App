@@ -1,112 +1,155 @@
-<?xml version="1.0" encoding="utf-8"?>
-<FrameLayout
+<androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/rootLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/white"
     android:fitsSystemWindows="true">
 
+    <!-- Scrollable Alert + Comments -->
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/scrollView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/commentDivider"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
-    <!-- Content Layout: Scrollable, fills space above comment bar -->
-    <LinearLayout
-        android:id="@+id/scrollableContent"
-        android:orientation="vertical"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:padding="12dp"
-        android:layout_marginBottom="72dp"> <!-- Make room for comment bar -->
-
-        <!-- Alert Details Section -->
         <LinearLayout
-            android:id="@+id/alertDetailsSection"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:padding="16dp">
 
-            <TextView
-                android:id="@+id/alertText"
+            <!-- ALERT CARD -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/alertCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Alert text goes here"
-                android:textAppearance="?android:attr/textAppearanceMedium"
-                android:layout_marginBottom="8dp"/>
+                app:cardCornerRadius="12dp"
+                app:cardElevation="4dp"
+                app:strokeColor="@color/purple_200"
+                app:strokeWidth="1dp"
+                android:backgroundTint="@android:color/white">
 
-            <TextView
-                android:id="@+id/alertReason"
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:id="@+id/alertText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Alert Text"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:textColor="@android:color/black"
+                        android:layout_marginBottom="8dp" />
+
+                    <TextView
+                        android:id="@+id/alertReason"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Reason: Hate Speech"
+                        android:textSize="14sp"
+                        android:textColor="#444"
+                        android:layout_marginBottom="4dp" />
+
+                    <TextView
+                        android:id="@+id/alertReporterId"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Reported by ID: 123456"
+                        android:textSize="14sp"
+                        android:textColor="#444"
+                        android:layout_marginBottom="4dp" />
+
+                    <TextView
+                        android:id="@+id/alertTimestamp"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="5 minutes ago"
+                        android:textSize="12sp"
+                        android:textColor="@android:color/darker_gray"
+                        android:layout_marginBottom="8dp" />
+
+                    <ImageView
+                        android:id="@+id/alertImage"
+                        android:layout_width="match_parent"
+                        android:layout_height="200dp"
+                        android:scaleType="centerCrop"
+                        android:visibility="gone"
+                        android:layout_marginTop="8dp"
+                        android:background="@color/white" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- COMMENTS SECTION -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/commentsRecyclerView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Reason goes here"
-                android:layout_marginBottom="4dp"/>
-
-            <TextView
-                android:id="@+id/alertReporterId"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Reporter ID goes here"
-                android:layout_marginBottom="4dp"/>
-
-            <TextView
-                android:id="@+id/alertTimestamp"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Timestamp goes here"
-                android:layout_marginBottom="8dp"/>
-
-            <ImageView
-                android:id="@+id/alertImage"
-                android:layout_width="match_parent"
-                android:layout_height="200dp"
-                android:scaleType="centerCrop"
-                android:visibility="gone"
-                android:layout_marginTop="8dp"/>
+                android:nestedScrollingEnabled="false"
+                android:layout_marginTop="16dp"
+                android:clipToPadding="false"
+                android:paddingBottom="12dp" />
         </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
 
-        <!-- RecyclerView -->
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/commentsRecyclerView"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:clipToPadding="false" />
-    </LinearLayout>
+    <!-- Divider -->
+    <com.google.android.material.divider.MaterialDivider
+        android:id="@+id/commentDivider"
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:layout_marginHorizontal="16dp"
+        app:dividerColor="@color/black"
+        app:layout_constraintBottom_toTopOf="@+id/commentSection"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- 🔥 Pinned Comment Bar 🔥 -->
+    <!-- COMMENT INPUT SECTION -->
     <LinearLayout
         android:id="@+id/commentSection"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        android:layout_marginBottom="56dp"
+        android:background="@color/white"
+        android:elevation="8dp"
+        android:gravity="center_vertical"
         android:orientation="horizontal"
         android:padding="8dp"
-        android:background="#F0F0F0"
-        android:gravity="center_vertical"
-        android:elevation="8dp">
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
 
-        <!-- Profile Pic -->
-        <ImageView
+        <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/profileImage"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
             android:layout_marginEnd="8dp"
-            android:contentDescription="profile image"
+            android:contentDescription="@string/profile_image"
             android:scaleType="centerCrop"
-            android:src="@drawable/ic_default_profile" />
+            android:src="@drawable/ic_default_profile"
+            app:shapeAppearanceOverlay="@style/CircleImage" />
 
-        <!-- Input + Icon -->
         <RelativeLayout
             android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:layout_weight="1">
 
             <EditText
                 android:id="@+id/commentInput"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:background="@drawable/comment_input_background"
                 android:hint="@string/write_a_comment"
                 android:paddingStart="12dp"
-                android:paddingEnd="36dp"
                 android:paddingTop="10dp"
+                android:paddingEnd="40dp"
                 android:paddingBottom="10dp"
                 android:textColor="#000"
                 android:textColorHint="#888" />
@@ -117,10 +160,10 @@
                 android:layout_height="24dp"
                 android:layout_alignParentEnd="true"
                 android:layout_centerVertical="true"
-                android:src="@drawable/ic_add_image"
-                android:contentDescription="@string/pick_image"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:padding="4dp" />
+                android:contentDescription="@string/pick_image"
+                android:padding="4dp"
+                android:src="@drawable/ic_add_image" />
         </RelativeLayout>
 
         <ImageView
@@ -128,9 +171,10 @@
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:layout_marginStart="8dp"
-            android:src="@drawable/ic_send_1"
-            android:contentDescription="@string/send"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:padding="6dp" />
+            android:contentDescription="@string/send"
+            android:padding="6dp"
+            android:src="@drawable/ic_send_1" />
     </LinearLayout>
-</FrameLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

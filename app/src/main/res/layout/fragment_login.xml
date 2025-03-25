@@ -7,7 +7,6 @@
     android:gravity="center"
     android:padding="16dp">
 
-
     <!-- Email -->
 
     <ImageView
@@ -87,5 +86,6 @@
         android:textAppearance="?attr/textAppearanceBody1"
         android:textColor="@color/white"
         app:backgroundTint="@color/purple_500" />
+
 
 </LinearLayout>

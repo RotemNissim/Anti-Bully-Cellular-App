@@ -19,6 +19,7 @@
             android:name=".data.ui.MainActivity"
             android:exported="true"
             android:label="@string/app_name"
+            android:windowSoftInputMode="adjustResize"
             android:theme="@style/Theme.AntiBully">
 
             <intent-filter>

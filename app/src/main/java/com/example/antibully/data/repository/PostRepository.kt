@@ -55,7 +55,7 @@ class PostRepository(private val postDao: PostDao, private val firestore: Fireba
                     userId = doc.getString("userId") ?: "",
                     text = doc.getString("text") ?: "",
                     imageUrl = doc.getString("imageUrl"),
-                    timestamp = doc.getLong("timestamp")?.times(1000) ?: System.currentTimeMillis()
+                    timestamp = doc.getLong("timestamp") ?: 0
                 )
             }
             postDao.insertAll(posts)
