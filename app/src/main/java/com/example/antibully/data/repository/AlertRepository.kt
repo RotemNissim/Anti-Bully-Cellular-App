@@ -35,4 +35,9 @@ class AlertRepository(private val alertDao: AlertDao, private val apiService: Me
     suspend fun delete(alert: Alert) {
         alertDao.deleteAlert(alert)
     }
+
+    fun getAlertsByReason(reason: String): Flow<List<Alert>> {
+        return alertDao.getAlertsByReason(reason)
+    }
+
 }

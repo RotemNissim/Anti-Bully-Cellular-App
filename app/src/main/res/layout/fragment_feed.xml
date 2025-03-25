@@ -1,10 +1,67 @@
-<?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <!-- Horizontally scrollable and centered toggle buttons -->
+    <HorizontalScrollView
+        android:id="@+id/horizontalFilterScroll"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:fillViewport="false"
+        android:scrollbars="none"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <com.google.android.material.button.MaterialButtonToggleGroup
+                android:id="@+id/reasonToggleGroup"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:orientation="horizontal"
+                app:singleSelection="true"
+                app:selectionRequired="false">
+
+                <!-- Buttons -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnAll"
+                    style="@style/Widget.AntiBully.ToggleButton"
+                    android:text="All" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnHarassment"
+                    style="@style/Widget.AntiBully.ToggleButton"
+                    android:text="Harassment" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnExclusion"
+                    style="@style/Widget.AntiBully.ToggleButton"
+                    android:text="Social Exclusion" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnHateSpeech"
+                    style="@style/Widget.AntiBully.ToggleButton"
+                    android:text="Hate Speech" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnCursing"
+                    style="@style/Widget.AntiBully.ToggleButton"
+                    android:text="Cursing" />
+
+            </com.google.android.material.button.MaterialButtonToggleGroup>
+        </FrameLayout>
+    </HorizontalScrollView>
+
+    <!-- RecyclerView -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/alertsRecyclerView"
         android:layout_width="0dp"
@@ -12,8 +69,8 @@
         android:clipToPadding="false"
         android:padding="12dp"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/horizontalFilterScroll"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintEnd_toEndOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>
