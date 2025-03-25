@@ -36,7 +36,9 @@ class MainActivity : AppCompatActivity() {
         // 🔄 Handle visibility and toolbar config
         navController.addOnDestinationChangedListener { _, destination, _ ->
             when (destination.id) {
+
                 R.id.loginFragment, R.id.signUpFragment, R.id.alertDetailsFragment, R.id.splashFragment -> {
+
                     bottomNav.visibility = View.GONE
                     topAppBar.visibility = View.GONE
                 }

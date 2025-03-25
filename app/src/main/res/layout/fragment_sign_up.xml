@@ -25,11 +25,12 @@
         <!-- Change Image Button -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnChangeProfileImage"
+            style="@style/Widget.Material3.Button.OutlinedButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Choose Image"
-            style="@style/Widget.Material3.Button.OutlinedButton"
-            android:layout_marginBottom="16dp" />
+            android:layout_marginBottom="16dp"
+            android:fontFamily="@font/assistant_semi_bold"
+            android:text="Choose Image" />
 
         <!-- Full Name -->
         <com.google.android.material.textfield.TextInputLayout
@@ -44,6 +45,7 @@
                 android:id="@+id/etFullName"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:fontFamily="@font/assistant_semi_bold"
                 android:inputType="textPersonName" />
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -60,6 +62,7 @@
                 android:id="@+id/etSignUpEmail"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:fontFamily="@font/assistant_semi_bold"
                 android:inputType="textEmailAddress" />
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -76,6 +79,7 @@
                 android:id="@+id/etSignUpPassword"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:fontFamily="@font/assistant_semi_bold"
                 android:inputType="textPassword" />
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -84,6 +88,7 @@
             android:id="@+id/btnRegister"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:fontFamily="@font/assistant_bold"
             android:text="Sign Up" />
     </LinearLayout>
 </ScrollView>

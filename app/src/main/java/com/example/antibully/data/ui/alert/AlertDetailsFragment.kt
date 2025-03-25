@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.antibully.R
 import com.example.antibully.data.db.AppDatabase
 import com.example.antibully.data.firestore.FirestoreManager
+import com.example.antibully.data.firestore.FirestoreManager.fetchAllUsers
 import com.example.antibully.data.models.Post
 import com.example.antibully.data.repository.PostRepository
 import com.example.antibully.data.repository.AlertRepository
@@ -23,6 +24,7 @@ import com.example.antibully.databinding.FragmentAlertDetailsBinding
 import com.example.antibully.data.ui.adapters.PostAdapter
 import com.example.antibully.viewmodel.PostViewModel
 import com.example.antibully.viewmodel.PostViewModelFactory
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.squareup.picasso.Picasso
 import java.util.Date
@@ -97,7 +99,12 @@ class AlertDetailsFragment : Fragment() {
 
         // Observe posts
         postViewModel.getPostsForAlert(alertId).observe(viewLifecycleOwner) { posts ->
-            postAdapter.submitList(posts)
+            fetchAllUsers { userMap ->
+
+                postAdapter = PostAdapter(userMap)
+                binding.commentsRecyclerView.adapter = postAdapter
+                postAdapter.submitList(posts) // ← this is your post list
+            }
         }
 
         // Submit comment
@@ -108,7 +115,7 @@ class AlertDetailsFragment : Fragment() {
                 val post = Post(
                     firebaseId = generatedFirebaseId,
                     alertId = alertId,
-                    userId = "parentUser", // 🛠️ Replace with actual user logic later
+                    userId = FirebaseAuth.getInstance().currentUser?.uid ?: "unknownUser", // 🛠️ Replace with actual user logic later
                     text = text,
                     imageUrl = selectedImageUrl,
                     timestamp = System.currentTimeMillis()

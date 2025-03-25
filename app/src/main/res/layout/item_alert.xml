@@ -1,63 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
 <com.google.android.material.card.MaterialCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_marginVertical="4dp"
     android:layout_marginHorizontal="8dp"
-    android:padding="12dp"
+    android:backgroundTint="@android:color/white"
+    android:padding="16dp"
     app:cardCornerRadius="12dp"
-    app:cardElevation="4dp">
-
+    app:cardElevation="4dp"
+    app:strokeColor="@color/purple_200"
+    app:strokeWidth="1dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical">
+        android:orientation="vertical">
 
+        <TextView
+            android:id="@+id/alertTitle"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginBottom="6dp"
+            android:fontFamily="@font/assistant_extra_bold"
+            android:text="Alert Text"
+            android:textColor="@android:color/black"
+            android:textSize="16sp"
+            android:textStyle="bold" />
 
-        <com.google.android.material.imageview.ShapeableImageView
-            android:id="@+id/ivProfile"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_marginEnd="12dp"
-            android:src="@drawable/ic_default_profile"
-            app:shapeAppearanceOverlay="@style/CircleImage"
-            android:scaleType="centerCrop"
-            android:contentDescription="@string/profile_image"/>
-
-
-        <LinearLayout
-            android:layout_width="0dp"
+        <TextView
+            android:id="@+id/alertReason"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical">
+            android:layout_marginBottom="4dp"
+            android:fontFamily="@font/assistant_semi_bold"
+            android:text="Reason: Hate Speech"
+            android:textColor="#444"
+            android:textSize="14sp" />
 
-            <TextView
-                android:id="@+id/alertTitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Child's ID 12345"
-                android:textSize="14sp"
-                android:textColor="@android:color/black"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/alertReason"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Bullying in chat"
-                android:textSize="14sp"
-                android:textColor="@android:color/black" />
-
-            <TextView
-                android:id="@+id/alertTime"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="3 minutes ago"
-                android:textSize="12sp"
-                android:textColor="@android:color/darker_gray" />
-        </LinearLayout>
+        <TextView
+            android:id="@+id/alertTime"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:fontFamily="@font/assistant_medium"
+            android:text="5 minutes ago"
+            android:textColor="@android:color/darker_gray"
+            android:textSize="12sp" />
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

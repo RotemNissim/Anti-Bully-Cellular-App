@@ -5,6 +5,7 @@ import android.util.Log
 import com.example.antibully.data.models.MessageRequest
 import com.example.antibully.data.api.RetrofitClient
 import com.example.antibully.data.models.MessageResponse
+import com.example.antibully.data.models.User
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.CoroutineScope
@@ -16,6 +17,34 @@ import java.util.UUID
 object FirestoreManager {
     private val db: FirebaseFirestore = FirebaseFirestore.getInstance()
     private val apiService = RetrofitClient.apiService
+
+    fun fetchAllUsers(onResult: (Map<String, User>) -> Unit) {
+        FirebaseFirestore.getInstance()
+            .collection("users")
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                val userMap = mutableMapOf<String, User>()
+                for (doc in querySnapshot.documents) {
+                    val id = doc.id // Firebase UID
+                    val name = doc.getString("fullName") ?: ""
+                    val email = doc.getString("email") ?: ""
+                    val profileImage = "" // or doc.getString("profileImageUrl") if you add it later
+
+                    userMap[id] = User(
+                        id = id,
+                        name = name,
+                        email = email,
+                        localProfileImagePath = profileImage
+                    )
+                }
+                onResult(userMap)
+            }
+            .addOnFailureListener { e ->
+                Log.e("FirestoreFetch", "Failed to fetch users", e)
+                onResult(emptyMap()) // fallback so your adapter still initializes
+            }
+    }
+
 
     fun uploadImageToStorage(imageUri: Uri, onSuccess: (String) -> Unit, onFailure: (Exception) -> Unit) {
         val storageRef = FirebaseStorage.getInstance().reference.child("images/${UUID.randomUUID()}")
