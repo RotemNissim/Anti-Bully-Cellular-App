@@ -4,7 +4,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:gravity="center"
     android:padding="16dp">
 
     <!-- Profile Picture -->
@@ -12,12 +11,12 @@
         android:id="@+id/ivProfileImage"
         android:layout_width="120dp"
         android:layout_height="120dp"
+        android:layout_gravity="center"
         android:scaleType="centerCrop"
         android:src="@drawable/ic_profile_placeholder"
         android:contentDescription="Profile picture" />
-    <!-- TODO: Replace ic_profile_placeholder in res/drawable with an actual placeholder or user image -->
 
-    <!-- Username Display -->
+    <!-- Username -->
     <TextView
         android:id="@+id/tvUsername"
         android:layout_width="wrap_content"
@@ -25,14 +24,65 @@
         android:text="Username"
         android:textSize="20sp"
         android:textStyle="bold"
+        android:layout_gravity="center"
         android:layout_marginTop="12dp" />
 
     <!-- Edit Profile Button -->
     <com.google.android.material.button.MaterialButton
-        style="@style/Widget.Material3.Button.TonalButton"
         android:id="@+id/btnEditProfile"
+        style="@style/Widget.Material3.Button.TonalButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Edit Profile"
         android:layout_marginTop="16dp" />
+
+    <!-- Children Section Title + Add Button -->
+    <LinearLayout
+        android:id="@+id/sectionMyKids"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginTop="24dp">
+
+        <TextView
+            android:id="@+id/tvChildrenTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="My Kids"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnAddChild"
+            style="@style/Widget.Material3.Button.Icon"
+            android:icon="@drawable/ic_add"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:text="+"
+            android:backgroundTint="?attr/colorPrimary"
+            android:layout_marginStart="8dp"
+            />
+    </LinearLayout>
+
+    <!-- No children message -->
+    <TextView
+        android:id="@+id/tvNoChildren"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="No children added yet"
+        android:textSize="14sp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="8dp"
+        android:visibility="gone" />
+
+    <!-- RecyclerView for displaying kids -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvChildren"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginTop="8dp"
+        android:clipToPadding="false" />
 </LinearLayout>
