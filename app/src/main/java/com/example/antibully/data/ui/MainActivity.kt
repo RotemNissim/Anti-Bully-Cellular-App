@@ -96,7 +96,7 @@ class MainActivity : AppCompatActivity() {
                 supportActionBar?.title = ""
 
                 // 🔥 Show logo
-                supportActionBar?.setLogo(R.drawable.ic_app_logo)
+                supportActionBar?.setLogo(R.drawable.ic_logo_text_only)
             }
 
         }
