@@ -5,26 +5,44 @@
     android:padding="16dp">
 
     <LinearLayout
+        android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:layout_height="wrap_content">
 
+        <!-- Pie Chart Section -->
         <TextView
-            android:id="@+id/tvStatisticsTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Child Statistics"
-            android:textSize="24sp"
+            android:text="Alerts Per Child"
+            android:textSize="18sp"
             android:textStyle="bold"
+            android:layout_marginBottom="8dp" />
+
+        <com.github.mikephil.charting.charts.PieChart
+            android:id="@+id/pieChart"
+            android:layout_width="match_parent"
+            android:layout_height="300dp"
+            android:layout_marginBottom="24dp" />
+
+        <!-- Line Chart Section -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Alert Trend (Per Day)"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Spinner only for line chart -->
+        <Spinner
+            android:id="@+id/spinnerChildren"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:layout_marginBottom="16dp" />
 
-        <!-- כאן תוכל להכניס את הגרפים בעתיד -->
-        <TextView
-            android:id="@+id/tvGraphPlaceholder"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Graphs will be shown here."
-            android:textSize="16sp"
-            android:layout_marginTop="8dp" />
+        <com.github.mikephil.charting.charts.LineChart
+            android:id="@+id/lineChart"
+            android:layout_width="match_parent"
+            android:layout_height="300dp" />
     </LinearLayout>
 </ScrollView>

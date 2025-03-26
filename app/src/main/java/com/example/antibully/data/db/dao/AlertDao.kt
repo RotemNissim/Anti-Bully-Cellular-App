@@ -28,5 +28,9 @@ interface AlertDao {
 
     @Query("SELECT * FROM alerts WHERE reason = :reason")
     fun getAlertsByReason(reason: String):Flow<List<Alert>>
+
+    @Query("SELECT * FROM alerts WHERE reporterId = :childId")
+    fun getAlertsForChild(childId: String): Flow<List<Alert>>
+
 }
 

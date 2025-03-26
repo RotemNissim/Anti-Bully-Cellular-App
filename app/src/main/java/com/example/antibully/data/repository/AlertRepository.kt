@@ -40,4 +40,8 @@ class AlertRepository(private val alertDao: AlertDao, private val apiService: Me
         return alertDao.getAlertsByReason(reason)
     }
 
+    fun getAlertsForChild(childId: String): Flow<List<Alert>> {
+        return alertDao.getAlertsForChild(childId)
+    }
+
 }
