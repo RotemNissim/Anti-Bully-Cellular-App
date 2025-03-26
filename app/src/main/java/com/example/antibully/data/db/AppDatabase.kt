@@ -9,9 +9,7 @@ import com.example.antibully.data.models.*
 
 @Database(
     entities = [Post::class, Alert::class, User::class, ChildLocalData::class],
-    version = 6, // העליתי את הגרסה מ-5 ל-6 בגלל שינוי ב-entities
-    exportSchema = false
-)
+    version = 9,exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun postDao(): PostDao

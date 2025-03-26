@@ -20,4 +20,7 @@ interface ChildDao {
 
     @Query("UPDATE child_local_data SET localImagePath = :newPath WHERE childId = :childId AND parentUserId = :userId")
     suspend fun updateImagePath(childId: String, userId: String, newPath: String)
+
+    @Query("UPDATE child_local_data SET name = :newName WHERE childId = :childId AND parentUserId = :userId")
+    suspend fun updateChildName(childId: String, userId: String, newName: String)
 }

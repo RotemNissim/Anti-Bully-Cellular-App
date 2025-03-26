@@ -38,9 +38,9 @@ class AddChildFragment : Fragment() {
         val childImage = view.findViewById<ImageView>(R.id.ivAddChildImage)
         val chooseImageButton = view.findViewById<Button>(R.id.btnChooseChildImage)
         val childIdInput = view.findViewById<EditText>(R.id.etChildId)
+        val childNameInput = view.findViewById<EditText>(R.id.etChildName)
         val saveButton = view.findViewById<Button>(R.id.btnSaveChild)
 
-        // בוחרים תמונה דרך הכפתור (ולא דרך התמונה)
         chooseImageButton.setOnClickListener {
             val intent = Intent(Intent.ACTION_PICK).apply { type = "image/*" }
             startActivityForResult(intent, PICK_IMAGE_REQUEST)
@@ -48,10 +48,11 @@ class AddChildFragment : Fragment() {
 
         saveButton.setOnClickListener {
             val childId = childIdInput.text.toString().trim()
+            val childName = childNameInput.text.toString().trim()
             val parentUserId = auth.currentUser?.uid ?: return@setOnClickListener
 
-            if (childId.isEmpty()) {
-                Toast.makeText(requireContext(), "Child ID is required", Toast.LENGTH_SHORT).show()
+            if (childId.isEmpty() || childName.isEmpty()) {
+                Toast.makeText(requireContext(), "Please fill all fields", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
@@ -59,6 +60,7 @@ class AddChildFragment : Fragment() {
             val child = ChildLocalData(
                 childId = childId,
                 parentUserId = parentUserId,
+                name = childName,
                 localImagePath = imagePath
             )
 
