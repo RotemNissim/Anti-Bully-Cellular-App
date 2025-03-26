@@ -28,6 +28,10 @@ class AlertViewModel(private val repository: AlertRepository) : ViewModel() {
         return repository.getAlertsByReason(reason)
     }
 
+    fun getAlertsForChild(childId: String): Flow<List<Alert>> {
+        return repository.getAlertsForChild(childId)
+    }
+
 }
 
 class AlertViewModelFactory(private val repository: AlertRepository) : ViewModelProvider.Factory {
