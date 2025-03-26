@@ -25,5 +25,8 @@ interface AlertDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAlert(alert: Alert)
+
+    @Query("SELECT * FROM alerts WHERE reason = :reason")
+    fun getAlertsByReason(reason: String):Flow<List<Alert>>
 }
 

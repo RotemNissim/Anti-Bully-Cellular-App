@@ -61,13 +61,41 @@ class FeedFragment : Fragment() {
         binding.alertsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.alertsRecyclerView.adapter = alertAdapter
 
-        lifecycleScope.launch {
-            viewModel.allAlerts.collectLatest { alerts ->
-                alertAdapter.submitList(alerts)
-            }
-        }
+//        lifecycleScope.launch {
+//            viewModel.allAlerts.collectLatest { alerts ->
+//                alertAdapter.submitList(alerts)
+//            }
+//        }
 
         viewModel.fetchAlerts()
+
+        val toggleGroup = binding.reasonToggleGroup
+
+        toggleGroup.addOnButtonCheckedListener { _, checkedId, isChecked ->
+            if (isChecked) {
+                val reason = when (checkedId) {
+                    R.id.btnHarassment -> "Harassment"
+                    R.id.btnExclusion -> "Social Exclusion"
+                    R.id.btnHateSpeech -> "Hate Speech"
+                    R.id.btnCursing -> "Cursing"
+                    else -> null // btnAll
+                }
+
+                lifecycleScope.launch {
+                    if (reason == null) {
+                        viewModel.allAlerts.collectLatest { alerts ->
+                            alertAdapter.submitList(alerts)
+                        }
+                    } else {
+                        viewModel.getFilteredAlerts(reason).collectLatest { alerts ->
+                            alertAdapter.submitList(alerts)
+                        }
+                    }
+                }
+            }
+        }
+        toggleGroup.check(R.id.btnAll)
+
     }
 
     override fun onDestroyView() {
