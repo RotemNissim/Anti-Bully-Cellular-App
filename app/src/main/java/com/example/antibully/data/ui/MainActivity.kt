@@ -57,7 +57,8 @@ class MainActivity : AppCompatActivity() {
             val showBackAndTitle = setOf(
                 R.id.editProfileFragment,
                 R.id.alertDetailsFragment,
-                R.id.addChildFragment
+                R.id.addChildFragment,
+                R.id.editChildFragment
             )
 
             // Fragments where we HIDE the BOTTOM NAV
@@ -67,7 +68,8 @@ class MainActivity : AppCompatActivity() {
                 R.id.splashFragment,
                 R.id.editProfileFragment,
                 R.id.alertDetailsFragment,
-                R.id.addChildFragment
+                R.id.addChildFragment,
+                R.id.editChildFragment
             )
 
             // Bottom nav visibility
@@ -83,6 +85,7 @@ class MainActivity : AppCompatActivity() {
                     R.id.editProfileFragment -> "Edit Profile"
                     R.id.alertDetailsFragment -> "Alert Details"
                     R.id.addChildFragment -> "Add Child"
+                    R.id.editChildFragment -> "Edit Child"
                     else -> ""
                 }
                 supportActionBar?.title = title
