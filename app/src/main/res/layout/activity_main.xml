@@ -37,8 +37,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        android:theme="@style/ThemeOverlay.AppCompat.DayNight.ActionBar"
+        android:layout_marginTop="26dp"
         android:background="?android:attr/windowBackground"
+        android:theme="@style/ThemeOverlay.AppCompat.DayNight.ActionBar"
         app:menu="@menu/bottom_nav_menu" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

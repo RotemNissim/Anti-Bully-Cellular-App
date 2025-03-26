@@ -5,123 +5,123 @@
     android:layout_height="match_parent"
     android:padding="8dp">
 
-    <ScrollView
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:fillViewport="true"
         android:clipChildren="false"
         android:clipToPadding="false">
 
-    <LinearLayout
-        android:id="@+id/profileContentContainer"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:paddingTop="32dp"
-        android:paddingBottom="32dp">
-
-        <!-- Profile Image with Edit FAB overlay -->
-        <FrameLayout
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:id="@+id/profileContentContainer"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center">
+            android:orientation="vertical"
+            android:paddingTop="32dp"
+            android:paddingBottom="@dimen/bottom_nav_safe_padding">
 
-            <com.google.android.material.imageview.ShapeableImageView
-                android:id="@+id/ivProfileImage"
-                android:layout_width="120dp"
-                android:layout_height="120dp"
-                android:contentDescription="Profile picture"
-                android:scaleType="centerCrop"
-                android:src="@drawable/ic_default_profile"
-                app:shapeAppearanceOverlay="@style/CircleImage" />
-
-            <com.google.android.material.floatingactionbutton.FloatingActionButton
-                android:id="@+id/btnEditProfile"
+            <!-- Profile Image with Edit FAB overlay -->
+            <FrameLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="bottom|end"
-                android:layout_marginEnd="-5dp"
-                android:layout_marginBottom="-5dp"
-                android:contentDescription="Edit Profile"
-                app:fabCustomSize="32dp"
-                app:layout_anchor="@id/ivProfileImage"
-                app:srcCompat="@drawable/ic_edit" />
-        </FrameLayout>
+                android:layout_gravity="center">
 
+                <com.google.android.material.imageview.ShapeableImageView
+                    android:id="@+id/ivProfileImage"
+                    android:layout_width="120dp"
+                    android:layout_height="120dp"
+                    android:contentDescription="Profile picture"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/ic_default_profile"
+                    app:shapeAppearanceOverlay="@style/CircleImage" />
 
-        <!-- Username -->
-        <TextView
-            android:id="@+id/tvUsername"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_marginTop="12dp"
-            android:fontFamily="@font/assistant_extra_bold"
-            android:text="Username"
-            android:textSize="20sp"
-            android:textStyle="bold" />
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/btnEditProfile"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom|end"
+                    android:layout_marginEnd="-5dp"
+                    android:layout_marginBottom="-5dp"
+                    android:contentDescription="Edit Profile"
+                    app:fabCustomSize="32dp"
+                    app:layout_anchor="@id/ivProfileImage"
+                    app:srcCompat="@drawable/ic_edit" />
+            </FrameLayout>
 
-        <com.google.android.material.divider.MaterialDivider
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:layout_marginBottom="16dp"
-            app:dividerColor="@color/black" />
-
-
-        <!-- Children Section Title + Add Button -->
-        <LinearLayout
-            android:id="@+id/sectionMyKids"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
-
+            <!-- Username -->
             <TextView
-                android:id="@+id/tvChildrenTitle"
-                android:layout_width="0dp"
+                android:id="@+id/tvUsername"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:fontFamily="@font/assistant_bold"
-                android:text="My Kids"
-                android:textSize="18sp"
+                android:layout_gravity="center"
+                android:layout_marginTop="12dp"
+                android:fontFamily="@font/assistant_extra_bold"
+                android:text="Username"
+                android:textSize="20sp"
                 android:textStyle="bold" />
 
-            <Button
-                android:id="@+id/btnAddChild"
-                style="@style/Widget.Material3.ExtendedFloatingActionButton.Icon.Primary"
+            <!-- Divider -->
+            <com.google.android.material.divider.MaterialDivider
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:layout_marginBottom="16dp"
+                app:dividerColor="@color/black" />
+
+            <!-- Children Section Title + Add Button -->
+            <LinearLayout
+                android:id="@+id/sectionMyKids"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/tvChildrenTitle"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:fontFamily="@font/assistant_bold"
+                    android:text="My Kids"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <Button
+                    android:id="@+id/btnAddChild"
+                    style="@style/Widget.Material3.ExtendedFloatingActionButton.Icon.Primary"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginRight="10dp"
+                    android:layout_marginBottom="10dp"
+                    android:contentDescription="add child desc"
+                    android:fontFamily="@font/assistant_bold"
+                    android:text="Add Child"
+                    app:icon="@drawable/ic_add_24dp" />
+            </LinearLayout>
+
+            <!-- No children message -->
+            <TextView
+                android:id="@+id/tvNoChildren"
                 android:layout_width="wrap_content"
-                android:layout_height="36dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
                 android:layout_marginTop="8dp"
-                android:layout_marginRight="10dp"
-                android:layout_marginBottom="10dp"
-                android:contentDescription="add child desc"
-                android:fontFamily="@font/assistant_bold"
-                android:text="Add Child"
-                app:icon="@drawable/ic_add_24dp" />
+                android:fontFamily="@font/assistant_medium"
+                android:text="No children added yet"
+                android:textSize="14sp"
+                android:visibility="gone" />
+
+            <!-- RecyclerView for displaying kids -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvChildren"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:clipToPadding="false"
+                android:nestedScrollingEnabled="false"
+                android:overScrollMode="never" />
         </LinearLayout>
-
-        <!-- No children message -->
-        <TextView
-            android:id="@+id/tvNoChildren"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginTop="8dp"
-            android:fontFamily="@font/assistant_medium"
-            android:text="No children added yet"
-            android:textSize="14sp"
-            android:visibility="gone" />
-
-        <!-- RecyclerView for displaying kids -->
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rvChildren"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_marginTop="8dp"
-            android:layout_weight="1"
-            android:clipToPadding="false" />
-    </LinearLayout>
-    </ScrollView>
+    </androidx.core.widget.NestedScrollView>
 </FrameLayout>
