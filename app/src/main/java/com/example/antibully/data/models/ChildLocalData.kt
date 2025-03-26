@@ -6,5 +6,6 @@ import androidx.room.Entity
 data class ChildLocalData(
     val childId: String,
     val parentUserId: String,
+    val name: String,
     val localImagePath: String
 )

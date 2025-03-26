@@ -10,7 +10,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:gravity="center_vertical">
+        android:gravity="center_vertical"
+        android:weightSum="1">
 
         <ImageView
             android:id="@+id/ivChildImage"
@@ -20,12 +21,44 @@
             android:background="@android:color/darker_gray"
             android:src="@drawable/ic_profile_placeholder" />
 
-        <TextView
-            android:id="@+id/tvChildId"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="Child ID"
-            android:textSize="16sp"
-            android:layout_marginStart="16dp" />
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:layout_marginStart="16dp">
+
+            <TextView
+                android:id="@+id/tvChildName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Child Name"
+                android:textSize="16sp"
+                android:textStyle="bold"/>
+
+            <TextView
+                android:id="@+id/tvChildId"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Child ID"
+                android:textSize="14sp"/>
+        </LinearLayout>
+
+        <ImageButton
+            android:id="@+id/btnEditChild"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_edit"
+            android:contentDescription="Edit" />
+
+        <ImageButton
+            android:id="@+id/btnDeleteChild"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_delete"
+            android:contentDescription="Delete" />
+
     </LinearLayout>
 </androidx.cardview.widget.CardView>
