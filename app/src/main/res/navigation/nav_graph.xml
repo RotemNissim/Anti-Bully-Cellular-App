@@ -54,6 +54,16 @@
     </fragment>
 
     <fragment
+        android:id="@+id/editChildFragment"
+        android:name="com.example.antibully.data.ui.profile.EditChildFragment"
+        android:label="Edit Child">
+        <argument
+            android:name="childId"
+            app:argType="string"
+            app:nullable="false" />
+    </fragment>
+
+    <fragment
         android:id="@+id/alertDetailsFragment"
         android:name="com.example.antibully.data.ui.alert.AlertDetailsFragment"
         android:label="Alert Details"
@@ -74,6 +84,13 @@
         <action
             android:id="@+id/action_profileFragment_to_addChildFragment"
             app:destination="@id/addChildFragment" />
+        <action
+            android:id="@+id/action_profileFragment_to_editChildFragment"
+            app:destination="@id/editChildFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
     </fragment>
 
     <fragment
@@ -87,4 +104,5 @@
         android:name="com.example.antibully.data.ui.profile.AddChildFragment"
         android:label="Add Child"
         tools:layout="@layout/fragment_add_child" />
+
 </navigation>

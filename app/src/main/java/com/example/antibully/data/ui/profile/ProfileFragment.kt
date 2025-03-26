@@ -103,8 +103,8 @@ class ProfileFragment : Fragment() {
             holder.childImage.setImageURI(Uri.parse(child.localImagePath))
 
             holder.editButton.setOnClickListener {
-                Toast.makeText(requireContext(), "Edit ${child.childId} (לא ממומש עדיין)", Toast.LENGTH_SHORT).show()
-                // TODO: פתיחת מסך עריכה
+                val action = ProfileFragmentDirections.actionProfileFragmentToEditChildFragment(child.childId)
+                findNavController().navigate(action)
             }
 
             holder.deleteButton.setOnClickListener {

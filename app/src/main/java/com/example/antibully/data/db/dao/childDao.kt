@@ -18,9 +18,7 @@ interface ChildDao {
     @Query("DELETE FROM child_local_data WHERE childId = :childId AND parentUserId = :userId")
     suspend fun deleteChild(childId: String, userId: String)
 
-    @Query("UPDATE child_local_data SET localImagePath = :newPath WHERE childId = :childId AND parentUserId = :userId")
-    suspend fun updateImagePath(childId: String, userId: String, newPath: String)
+    @Query("UPDATE child_local_data SET name = :newName, localImagePath = :newPath WHERE childId = :childId AND parentUserId = :userId")
+    suspend fun updateChild(childId: String, userId: String, newName: String, newPath: String)
 
-    @Query("UPDATE child_local_data SET name = :newName WHERE childId = :childId AND parentUserId = :userId")
-    suspend fun updateChildName(childId: String, userId: String, newName: String)
 }
