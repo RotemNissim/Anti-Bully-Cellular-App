@@ -14,10 +14,11 @@ import com.example.antibully.data.models.ChildLocalData
 import com.example.antibully.data.repository.AlertRepository
 import com.example.antibully.viewmodel.AlertViewModel
 import com.example.antibully.viewmodel.AlertViewModelFactory
-import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.charts.PieChart
+import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.data.*
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
+import com.github.mikephil.charting.formatter.ValueFormatter
 import com.github.mikephil.charting.utils.ColorTemplate
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.Dispatchers
@@ -29,13 +30,16 @@ import java.util.*
 class StatisticsFragment : Fragment() {
 
     private lateinit var pieChart: PieChart
-    private lateinit var lineChart: LineChart
+    private lateinit var barChart: BarChart
     private lateinit var spinner: Spinner
     private lateinit var alertViewModel: AlertViewModel
 
     private lateinit var auth: FirebaseAuth
     private lateinit var children: List<ChildLocalData>
     private lateinit var allAlerts: List<Alert>
+
+    // Map to store childId -> color from PieChart
+    private val childColorMap = mutableMapOf<String, Int>()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -46,7 +50,7 @@ class StatisticsFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         pieChart = view.findViewById(R.id.pieChart)
-        lineChart = view.findViewById(R.id.lineChart)
+        barChart = view.findViewById(R.id.barChart)
         spinner = view.findViewById(R.id.spinnerChildren)
         auth = FirebaseAuth.getInstance()
 
@@ -91,16 +95,31 @@ class StatisticsFragment : Fragment() {
             return
         }
 
+        val materialColors = ColorTemplate.MATERIAL_COLORS.toList()
+        var colorIndex = 0
+
         val entries = childAlertCounts.map { (child, count) ->
+            // Assign color to child
+            val color = materialColors[colorIndex % materialColors.size]
+            childColorMap[child.childId] = color
+            colorIndex++
             PieEntry(count.toFloat(), child.name)
         }
 
         val dataSet = PieDataSet(entries, "Alerts per Child").apply {
-            colors = ColorTemplate.MATERIAL_COLORS.toList()
+            colors = childAlertCounts.map { (child, _) -> childColorMap[child.childId] ?: Color.GRAY }
             valueTextSize = 16f
         }
 
-        pieChart.data = PieData(dataSet)
+        val pieData = PieData(dataSet).apply {
+            setValueFormatter(object : ValueFormatter() {
+                override fun getFormattedValue(value: Float): String {
+                    return value.toInt().toString()
+                }
+            })
+        }
+
+        pieChart.data = pieData
         pieChart.description.isEnabled = false
         pieChart.centerText = "Alerts per Child"
         pieChart.setEntryLabelColor(Color.BLACK)
@@ -116,27 +135,24 @@ class StatisticsFragment : Fragment() {
         spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
                 val selectedChild = children[position]
-                loadLineChartForChild(selectedChild.childId)
+                loadBarChartForChild(selectedChild.childId)
             }
 
             override fun onNothingSelected(parent: AdapterView<*>) {}
         }
 
         if (children.isNotEmpty()) {
-            loadLineChartForChild(children[0].childId)
+            loadBarChartForChild(children[0].childId)
         }
     }
 
-    private fun loadLineChartForChild(childId: String) {
+    private fun loadBarChartForChild(childId: String) {
         val alerts = allAlerts.filter { it.reporterId == childId }
-        setupLineChart(alerts)
-    }
 
-    private fun setupLineChart(alerts: List<Alert>) {
         val calendar = Calendar.getInstance()
         val dailyMap = mutableMapOf<String, Int>()
 
-        for (i in 0..29) {
+        for (i in 6 downTo 0) {
             calendar.timeInMillis = System.currentTimeMillis()
             calendar.add(Calendar.DAY_OF_YEAR, -i)
             val key = "${calendar.get(Calendar.MONTH) + 1}/${calendar.get(Calendar.DAY_OF_MONTH)}"
@@ -151,22 +167,50 @@ class StatisticsFragment : Fragment() {
             }
         }
 
-        val sorted = dailyMap.toList().sortedBy { it.first }
-        val entries = sorted.mapIndexed { index, entry -> Entry(index.toFloat(), entry.second.toFloat()) }
-        val labels = sorted.map { it.first }
+        val sorted = dailyMap.toList()
 
-        val dataSet = LineDataSet(entries, "Harmful Alerts per Day").apply {
-            color = Color.RED
-            valueTextSize = 10f
-            circleRadius = 4f
-            setCircleColor(Color.RED)
+        val entries = sorted.mapIndexed { index, entry ->
+            BarEntry(index.toFloat(), entry.second.toFloat())
         }
 
-        lineChart.data = LineData(dataSet)
-        lineChart.description.isEnabled = false
-        lineChart.xAxis.valueFormatter = IndexAxisValueFormatter(labels)
-        lineChart.xAxis.labelRotationAngle = -45f
-        lineChart.xAxis.granularity = 1f
-        lineChart.invalidate()
+        val labels = sorted.map { it.first }
+
+        val dataSet = BarDataSet(entries, "Alerts per Day").apply {
+            color = childColorMap[childId] ?: Color.BLUE
+            valueTextSize = 12f
+            valueFormatter = object : ValueFormatter() {
+                override fun getFormattedValue(value: Float): String {
+                    return value.toInt().toString()
+                }
+            }
+        }
+
+        val barData = BarData(dataSet).apply {
+            barWidth = 0.9f
+        }
+
+        barChart.data = barData
+        barChart.description.isEnabled = false
+        barChart.setFitBars(true)
+        barChart.xAxis.valueFormatter = IndexAxisValueFormatter(labels)
+        barChart.xAxis.labelRotationAngle = -45f
+        barChart.xAxis.granularity = 1f
+        barChart.axisRight.isEnabled = false
+        barChart.legend.isEnabled = false
+        barChart.xAxis.position = com.github.mikephil.charting.components.XAxis.XAxisPosition.BOTTOM
+
+
+        barChart.axisLeft.apply {
+            axisMinimum = 0f
+            granularity = 1f
+            valueFormatter = object : ValueFormatter() {
+                override fun getFormattedValue(value: Float): String {
+                    return value.toInt().toString()
+                }
+            }
+        }
+
+        barChart.invalidate()
     }
+
 }
