@@ -12,27 +12,33 @@
         android:gravity="center_horizontal">
 
         <!-- Profile Image (not clickable anymore) -->
-        <ImageView
-            android:id="@+id/ivEditProfileImage"
-            android:layout_width="120dp"
-            android:layout_height="120dp"
-            android:layout_marginBottom="8dp"
-            android:src="@drawable/ic_profile_placeholder"
-            android:scaleType="centerCrop"
-            android:contentDescription="Profile picture"
-            android:clickable="false"
-            android:focusable="false"
-            android:background="@android:color/darker_gray" />
-        <!-- TODO: Replace 'ic_profile_placeholder' with actual drawable if needed -->
-
-        <!-- Button to change profile picture -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnChangeProfileImage"
+        <FrameLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:fontFamily="@font/assistant_semi_bold"
-            android:text="Change Profile Picture" />
+            android:layout_marginBottom="12dp"
+            android:layout_gravity="center">
+
+            <com.google.android.material.imageview.ShapeableImageView
+                android:id="@+id/ivProfileImage"
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:contentDescription="Profile picture"
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_default_profile"
+                app:shapeAppearanceOverlay="@style/CircleImage" />
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/btnChangeProfileImage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|end"
+                android:layout_marginEnd="-5dp"
+                android:layout_marginBottom="-5dp"
+                android:contentDescription="Change Profile Image"
+                app:fabCustomSize="32dp"
+                app:layout_anchor="@id/ivProfileImage"
+                app:srcCompat="@android:drawable/ic_menu_gallery" />
+        </FrameLayout>
 
         <!-- Full Name Field (Material Design) -->
         <com.google.android.material.textfield.TextInputLayout
@@ -71,11 +77,16 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Save Button -->
-        <com.google.android.material.button.MaterialButton
+        <Button
             android:id="@+id/btnSaveProfile"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:fontFamily="@font/assistant_semi_bold"
+            style="@style/Widget.Material3.ExtendedFloatingActionButton.Icon.Primary"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:layout_marginRight="10dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginBottom="10dp"
+            android:contentDescription="add child desc"
+            android:fontFamily="@font/assistant_bold"
             android:text="Save Changes" />
     </LinearLayout>
 </ScrollView>
