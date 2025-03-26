@@ -3,27 +3,35 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true">
 
+    <!-- ✅ TOP TOOLBAR always at the top -->
     <com.google.android.material.appbar.MaterialToolbar
-        android:id="@+id/top_app_bar"
+        android:id="@+id/top_nav_bar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:paddingTop="30dp"
-        android:background="?attr/colorPrimary"
-        android:titleTextColor="@android:color/white"
-        android:theme="@style/ThemeOverlay.Material3.Dark.ActionBar"
-        app:menu="@menu/top_app_bar" />
+        android:background="?android:attr/windowBackground"
+        android:theme="@style/ThemeOverlay.AppCompat.DayNight.ActionBar"
+        app:titleTextColor="@android:color/black"
+        android:logo="@drawable/ic_app_logo"
+        android:gravity="center_vertical"
+        android:contentInsetStart="0dp"
+        android:contentInsetLeft="0dp"
+        android:contentInsetStartWithNavigation="0dp"
+        />
 
-<androidx.fragment.app.FragmentContainerView
-    android:id="@+id/nav_host_fragment"
-    android:name="androidx.navigation.fragment.NavHostFragment"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    app:defaultNavHost="true"
-    app:navGraph="@navigation/nav_graph"
-    android:layout_marginTop="?attr/actionBarSize" />
+    <!-- ✅ NAVHOST, placed *below* toolbar -->
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/nav_host_fragment"
+        android:name="androidx.navigation.fragment.NavHostFragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="?attr/actionBarSize"
+        app:defaultNavHost="true"
+        app:navGraph="@navigation/nav_graph" />
 
+    <!-- ✅ BOTTOM NAV -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_nav_menu"
         android:layout_width="match_parent"
