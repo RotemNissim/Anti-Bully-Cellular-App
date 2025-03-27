@@ -12,28 +12,39 @@
         android:gravity="center_horizontal">
 
         <!-- Child Image -->
-        <ImageView
-            android:id="@+id/ivAddChildImage"
-            android:layout_width="120dp"
-            android:layout_height="120dp"
-            android:layout_marginBottom="16dp"
-            android:scaleType="centerCrop"
-            android:src="@drawable/ic_profile_placeholder"
-            android:background="@android:color/darker_gray"
-            android:contentDescription="Child picture placeholder" />
-
-        <!-- Choose Image Button -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnChooseChildImage"
-            android:layout_width="match_parent"
+        <FrameLayout
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Choose Image" />
+            android:layout_gravity="center"
+            android:layout_marginBottom="15dp">
+
+            <com.google.android.material.imageview.ShapeableImageView
+                android:id="@+id/ivAddChildImage"
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:contentDescription="Profile picture"
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_default_profile"
+                app:shapeAppearanceOverlay="@style/CircleImage" />
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/btnChooseChildImage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|end"
+                android:layout_marginEnd="-5dp"
+                android:layout_marginBottom="-5dp"
+                android:contentDescription="Change Profile Image"
+                app:fabCustomSize="32dp"
+                app:layout_anchor="@id/ivProfileImage"
+                app:srcCompat="@android:drawable/ic_menu_camera" />
+        </FrameLayout>
 
         <!-- Child ID -->
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Child ID"
+            android:hint="Child's ID"
             android:layout_marginTop="16dp">
 
             <com.google.android.material.textfield.TextInputEditText
@@ -47,7 +58,7 @@
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Child Name"
+            android:hint="Child's Full Name"
             android:layout_marginTop="12dp">
 
             <com.google.android.material.textfield.TextInputEditText
@@ -57,12 +68,18 @@
                 android:inputType="text" />
         </com.google.android.material.textfield.TextInputLayout>
 
-        <com.google.android.material.button.MaterialButton
+        <Button
             android:id="@+id/btnSaveChild"
+            style="@style/Widget.Material3.ExtendedFloatingActionButton.Icon.Primary"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Save Child"
-            android:layout_marginTop="24dp" />
+            android:layout_height="41dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginTop="24dp"
+            android:layout_marginEnd="10dp"
+            android:layout_marginRight="10dp"
+            android:layout_marginBottom="10dp"
+            android:text="Save Child" />
 
     </LinearLayout>
 </ScrollView>

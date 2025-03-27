@@ -3,34 +3,45 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp">
+    android:clipToPadding="false">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
         android:orientation="vertical"
-        android:gravity="center_horizontal">
+        android:paddingStart="16dp"
+        android:paddingTop="16dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="64dp">
 
-        <!-- Profile Image -->
-        <ImageView
-            android:id="@+id/ivProfileImage"
-            android:layout_width="200dp"
-            android:layout_height="200dp"
-            android:layout_marginBottom="8dp"
-            android:scaleType="centerCrop"
-            android:contentDescription="Profile picture"
-            android:background="@android:color/darker_gray"
-            android:src="@drawable/ic_profile_placeholder" />
-
-        <!-- Change Image Button -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnChangeProfileImage"
-            style="@style/Widget.Material3.Button.OutlinedButton"
+        <FrameLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:fontFamily="@font/assistant_semi_bold"
-            android:text="Choose Image" />
+            android:layout_gravity="center"
+            android:layout_marginBottom="15dp">
+
+            <com.google.android.material.imageview.ShapeableImageView
+                android:id="@+id/ivProfileImage"
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:contentDescription="Profile picture"
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_default_profile"
+                app:shapeAppearanceOverlay="@style/CircleImage" />
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/ivEditProfileImage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|end"
+                android:layout_marginEnd="-5dp"
+                android:layout_marginBottom="-5dp"
+                android:contentDescription="Change Profile Image"
+                app:fabCustomSize="32dp"
+                app:layout_anchor="@id/ivProfileImage"
+                app:srcCompat="@android:drawable/ic_menu_camera" />
+        </FrameLayout>
 
         <!-- Full Name -->
         <com.google.android.material.textfield.TextInputLayout
@@ -84,11 +95,18 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Register button -->
-        <com.google.android.material.button.MaterialButton
+        <Button
             android:id="@+id/btnRegister"
+            style="@style/Widget.Material3.ExtendedFloatingActionButton.Icon.Primary"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="41dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginEnd="10dp"
+            android:layout_marginRight="10dp"
+            android:layout_marginBottom="10dp"
             android:fontFamily="@font/assistant_bold"
-            android:text="Sign Up" />
+            android:text="Sign Up"
+            android:theme="?attr/extendedFloatingActionButtonStyle" />
     </LinearLayout>
 </ScrollView>
