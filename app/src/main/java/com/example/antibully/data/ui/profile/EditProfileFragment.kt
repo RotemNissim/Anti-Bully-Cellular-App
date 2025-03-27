@@ -14,6 +14,7 @@ import com.example.antibully.data.db.AppDatabase
 import com.example.antibully.data.db.dao.UserDao
 import com.example.antibully.data.models.User
 import com.example.antibully.data.models.UserApiResponse
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.squareup.picasso.Picasso
@@ -44,11 +45,11 @@ class EditProfileFragment : Fragment() {
         db = FirebaseFirestore.getInstance()
         userDao = AppDatabase.getDatabase(requireContext()).userDao()
 
-        val profileImageView = view.findViewById<ImageView>(R.id.ivEditProfileImage)
+        val profileImageView = view.findViewById<ImageView>(R.id.ivProfileImage)
         val fullNameEditText = view.findViewById<EditText>(R.id.etEditFullName)
         val passwordEditText = view.findViewById<EditText>(R.id.etEditPassword)
         val saveButton = view.findViewById<Button>(R.id.btnSaveProfile)
-        val changeImageButton = view.findViewById<Button>(R.id.btnChangeProfileImage) // NEW
+        val changeImageButton = view.findViewById<View>(R.id.btnChangeProfileImage) // NEW
 
         val uid = auth.currentUser?.uid ?: return
 
@@ -128,7 +129,7 @@ class EditProfileFragment : Fragment() {
                 selectedImageUri!!,
                 Intent.FLAG_GRANT_READ_URI_PERMISSION
             )
-            view?.findViewById<ImageView>(R.id.ivEditProfileImage)?.setImageURI(selectedImageUri)
+            view?.findViewById<ImageView>(R.id.ivProfileImage)?.setImageURI(selectedImageUri)
         }
     }
 }

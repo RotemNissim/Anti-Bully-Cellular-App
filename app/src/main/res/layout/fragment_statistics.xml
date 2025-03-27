@@ -10,13 +10,15 @@
         android:layout_height="wrap_content">
 
         <!-- Pie Chart Section -->
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:fontFamily="@font/assistant_bold"
             android:text="Alerts Per Child"
             android:textSize="18sp"
-            android:textStyle="bold"
-            android:layout_marginBottom="8dp" />
+            android:textStyle="bold" />
 
         <com.github.mikephil.charting.charts.PieChart
             android:id="@+id/pieChart"
@@ -28,12 +30,14 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:fontFamily="@font/assistant_bold"
             android:text="Number of Alerts This Week"
             android:textSize="18sp"
-            android:textStyle="bold"
-            android:layout_marginBottom="8dp" />
+            android:textStyle="bold" />
 
         <!-- Spinner only for line chart -->
+
         <Spinner
             android:id="@+id/spinnerChildren"
             android:layout_width="match_parent"

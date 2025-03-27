@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.antibully.R
 import com.example.antibully.data.db.AppDatabase
 import com.example.antibully.data.models.ChildLocalData
+import com.example.antibully.data.models.User
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.Dispatchers
@@ -48,7 +49,9 @@ class ProfileFragment : Fragment() {
         noChildrenText = view.findViewById(R.id.tvNoChildren)
 
         val userId = auth.currentUser?.uid ?: return
+        val currentUserId = FirebaseAuth.getInstance().currentUser?.uid.orEmpty()
 
+        syncUserFromFirestore(currentUserId)
         loadChildren(userId, usernameTextView, profileImageView)
 
         editProfileButton.setOnClickListener {
@@ -105,7 +108,8 @@ class ProfileFragment : Fragment() {
             holder.childImage.setImageURI(Uri.parse(child.localImagePath))
 
             holder.editButton.setOnClickListener {
-                val action = ProfileFragmentDirections.actionProfileFragmentToEditChildFragment(child.childId)
+                val action =
+                    ProfileFragmentDirections.actionProfileFragmentToEditChildFragment(child.childId)
                 findNavController().navigate(action)
             }
 
@@ -115,7 +119,8 @@ class ProfileFragment : Fragment() {
                     val updated = childDao.getChildrenForUser(child.parentUserId)
                     withContext(Dispatchers.Main) {
                         updateData(updated)
-                        noChildrenText.visibility = if (updated.isEmpty()) View.VISIBLE else View.GONE
+                        noChildrenText.visibility =
+                            if (updated.isEmpty()) View.VISIBLE else View.GONE
                         Toast.makeText(requireContext(), "Child deleted", Toast.LENGTH_SHORT).show()
                     }
                 }
@@ -139,6 +144,33 @@ class ProfileFragment : Fragment() {
                 noChildrenText.visibility = if (children.isEmpty()) View.VISIBLE else View.GONE
             }
         }
+    }
+    private fun syncUserFromFirestore(userId: String) {
+        val db = com.google.firebase.firestore.FirebaseFirestore.getInstance()
+        val userDao = AppDatabase.getDatabase(requireContext()).userDao()
+
+        db.collection("users").document(userId)
+            .get()
+            .addOnSuccessListener { document ->
+                if (document.exists()) {
+                    val name = document.getString("fullName") ?: ""
+                    val imagePath = document.getString("localProfileImagePath") ?: ""
+
+                    val user = User(
+                        id = userId,
+                        name = name,
+                        email = auth.currentUser?.email ?: "",
+                        localProfileImagePath = imagePath
+                    )
+
+                    lifecycleScope.launch(Dispatchers.IO) {
+                        userDao.insertUser(user)
+                    }
+                }
+            }
+            .addOnFailureListener {
+                Toast.makeText(requireContext(), "Failed to sync user profile", Toast.LENGTH_SHORT).show()
+            }
     }
 
 }
