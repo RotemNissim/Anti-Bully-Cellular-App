@@ -1,6 +1,7 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:padding="16dp">
 
     <LinearLayout
@@ -10,27 +11,38 @@
         android:gravity="center_horizontal">
 
         <!-- תמונת הילד -->
-        <ImageView
-            android:id="@+id/ivEditChildImage"
-            android:layout_width="120dp"
-            android:layout_height="120dp"
-            android:scaleType="centerCrop"
-            android:background="@android:color/darker_gray"
-            android:src="@drawable/ic_profile_placeholder"
-            android:layout_marginBottom="16dp" />
-
-        <!-- כפתור לבחור תמונה -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnChooseEditImage"
-            android:layout_width="match_parent"
+        <FrameLayout
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Choose Image" />
+            android:layout_marginBottom="12dp"
+            android:layout_gravity="center">
 
-        <!-- תעודת זהות (אי אפשר לערוך) -->
+            <com.google.android.material.imageview.ShapeableImageView
+                android:id="@+id/ivEditChildImage"
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:contentDescription="Profile picture"
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_default_profile"
+                app:shapeAppearanceOverlay="@style/CircleImage" />
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/btnChooseEditImage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|end"
+                android:layout_marginEnd="-5dp"
+                android:layout_marginBottom="-5dp"
+                android:contentDescription="Change Profile Image"
+                app:fabCustomSize="32dp"
+                app:layout_anchor="@id/ivProfileImage"
+                app:srcCompat="@android:drawable/ic_menu_gallery" />
+        </FrameLayout>
+
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Child ID"
+            android:hint="Child's ID"
             android:layout_marginTop="16dp">
 
             <com.google.android.material.textfield.TextInputEditText
@@ -44,7 +56,7 @@
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Name"
+            android:hint="Child's Name"
             android:layout_marginTop="16dp">
 
             <com.google.android.material.textfield.TextInputEditText
@@ -53,12 +65,18 @@
                 android:layout_height="wrap_content" />
         </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- כפתור שמירה -->
-        <com.google.android.material.button.MaterialButton
+
+        <Button
             android:id="@+id/btnSaveEditChild"
+            style="@style/Widget.Material3.ExtendedFloatingActionButton.Icon.Primary"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Save Changes"
-            android:layout_marginTop="24dp" />
+            android:layout_height="41dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginTop="24dp"
+            android:layout_marginEnd="10dp"
+            android:layout_marginRight="10dp"
+            android:layout_marginBottom="10dp"
+            android:text="Save Changes" />
     </LinearLayout>
 </ScrollView>
