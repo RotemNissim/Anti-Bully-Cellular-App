@@ -48,7 +48,7 @@ class EditProfileFragment : Fragment() {
         val fullNameEditText = view.findViewById<EditText>(R.id.etEditFullName)
         val passwordEditText = view.findViewById<EditText>(R.id.etEditPassword)
         val saveButton = view.findViewById<Button>(R.id.btnSaveProfile)
-        val changeImageButton = view.findViewById<Button>(R.id.btnChangeProfileImage) // NEW
+        val chooseImageButton = view.findViewById<View>(R.id.ivEditProfileImage)
 
         val uid = auth.currentUser?.uid ?: return
 
@@ -74,8 +74,7 @@ class EditProfileFragment : Fragment() {
                 }
             }
 
-        // Moved here: click listener for change image button (not the ImageView!)
-        changeImageButton.setOnClickListener {
+        chooseImageButton.setOnClickListener {
             val intent = Intent(Intent.ACTION_PICK).apply { type = "image/*" }
             startActivityForResult(intent, PICK_IMAGE_REQUEST)
         }
