@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.antibully.R
 import com.example.antibully.data.db.AppDatabase
 import com.example.antibully.data.models.ChildLocalData
+import com.example.antibully.data.models.User
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.Dispatchers
@@ -48,7 +49,9 @@ class ProfileFragment : Fragment() {
         noChildrenText = view.findViewById(R.id.tvNoChildren)
 
         val userId = auth.currentUser?.uid ?: return
+        val currentUserId = FirebaseAuth.getInstance().currentUser?.uid.orEmpty()
 
+        syncUserFromFirestore(currentUserId)
         loadChildren(userId, usernameTextView, profileImageView)
 
         editProfileButton.setOnClickListener {
@@ -105,11 +108,13 @@ class ProfileFragment : Fragment() {
             holder.childImage.setImageURI(Uri.parse(child.localImagePath))
 
             holder.editButton.setOnClickListener {
-                val action = ProfileFragmentDirections.actionProfileFragmentToEditChildFragment(child.childId)
+                val action =
+                    ProfileFragmentDirections.actionProfileFragmentToEditChildFragment(child.childId)
                 findNavController().navigate(action)
             }
 
             holder.deleteButton.setOnClickListener {
+
                 AlertDialog.Builder(requireContext())
                     .setTitle("Delete Child")
                     .setMessage("Are you sure you want to delete this child from your list?")
@@ -147,4 +152,32 @@ class ProfileFragment : Fragment() {
             }
         }
     }
+    private fun syncUserFromFirestore(userId: String) {
+        val db = com.google.firebase.firestore.FirebaseFirestore.getInstance()
+        val userDao = AppDatabase.getDatabase(requireContext()).userDao()
+
+        db.collection("users").document(userId)
+            .get()
+            .addOnSuccessListener { document ->
+                if (document.exists()) {
+                    val name = document.getString("fullName") ?: ""
+                    val imagePath = document.getString("localProfileImagePath") ?: ""
+
+                    val user = User(
+                        id = userId,
+                        name = name,
+                        email = auth.currentUser?.email ?: "",
+                        localProfileImagePath = imagePath
+                    )
+
+                    lifecycleScope.launch(Dispatchers.IO) {
+                        userDao.insertUser(user)
+                    }
+                }
+            }
+            .addOnFailureListener {
+                Toast.makeText(requireContext(), "Failed to sync user profile", Toast.LENGTH_SHORT).show()
+            }
+    }
+
 }

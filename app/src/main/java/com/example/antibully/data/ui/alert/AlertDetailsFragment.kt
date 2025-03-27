@@ -3,9 +3,11 @@ package com.example.antibully.data.ui.alert
 import android.net.Uri
 import android.os.Bundle
 import android.view.*
+import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
@@ -79,7 +81,13 @@ class AlertDetailsFragment : Fragment() {
 
         postViewModel = ViewModelProvider(this, postFactory)[PostViewModel::class.java]
         postViewModel.syncPostsFromFirestore(alertId)
-        postAdapter = PostAdapter()
+        val currentUserId = FirebaseAuth.getInstance().currentUser?.uid.orEmpty()
+
+        postAdapter = PostAdapter(
+            currentUserId = currentUserId,
+            onEditClick = { post -> showEditDialog(post) },
+            onDeleteClick = { post -> postViewModel.delete(post) }
+        )
         binding.commentsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.commentsRecyclerView.adapter = postAdapter
 
@@ -101,7 +109,12 @@ class AlertDetailsFragment : Fragment() {
         postViewModel.getPostsForAlert(alertId).observe(viewLifecycleOwner) { posts ->
             fetchAllUsers { userMap ->
 
-                postAdapter = PostAdapter(userMap)
+                postAdapter = PostAdapter(
+                    userMap = userMap,
+                    currentUserId = currentUserId,
+                    onEditClick = { post -> showEditDialog(post) },
+                    onDeleteClick = { post -> postViewModel.delete(post) }
+                )
                 binding.commentsRecyclerView.adapter = postAdapter
                 postAdapter.submitList(posts) // ← this is your post list
             }
@@ -137,4 +150,21 @@ class AlertDetailsFragment : Fragment() {
         super.onDestroyView()
         _binding = null
     }
+    private fun showEditDialog(post: Post) {
+        val editText = EditText(requireContext()).apply {
+            setText(post.text)
+        }
+
+        AlertDialog.Builder(requireContext())
+            .setTitle("Edit Comment")
+            .setView(editText)
+            .setPositiveButton("Save") { _, _ ->
+                val newText = editText.text.toString()
+                val updatedPost = post.copy(text = newText)
+                postViewModel.update(updatedPost)
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
 }
