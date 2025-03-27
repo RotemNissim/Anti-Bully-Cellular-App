@@ -36,7 +36,7 @@ class AddChildFragment : Fragment() {
         auth = FirebaseAuth.getInstance()
 
         val childImage = view.findViewById<ImageView>(R.id.ivAddChildImage)
-        val chooseImageButton = view.findViewById<Button>(R.id.btnChooseChildImage)
+        val chooseImageButton = view.findViewById<View>(R.id.btnChooseChildImage)
         val childIdInput = view.findViewById<EditText>(R.id.etChildId)
         val childNameInput = view.findViewById<EditText>(R.id.etChildName)
         val saveButton = view.findViewById<Button>(R.id.btnSaveChild)
