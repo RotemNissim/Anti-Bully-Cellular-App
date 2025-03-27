@@ -50,7 +50,6 @@ class EditProfileFragment : Fragment() {
         val passwordEditText = view.findViewById<EditText>(R.id.etEditPassword)
         val saveButton = view.findViewById<Button>(R.id.btnSaveProfile)
         val changeImageButton = view.findViewById<View>(R.id.btnChangeProfileImage) // NEW
-
         val uid = auth.currentUser?.uid ?: return
 
         lifecycleScope.launch(Dispatchers.IO) {
@@ -75,8 +74,7 @@ class EditProfileFragment : Fragment() {
                 }
             }
 
-        // Moved here: click listener for change image button (not the ImageView!)
-        changeImageButton.setOnClickListener {
+        chooseImageButton.setOnClickListener {
             val intent = Intent(Intent.ACTION_PICK).apply { type = "image/*" }
             startActivityForResult(intent, PICK_IMAGE_REQUEST)
         }
