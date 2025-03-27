@@ -27,6 +27,16 @@
         android:background="@drawable/comment_bubble_background"
         android:padding="12dp">
 
+        <ImageView
+            android:id="@+id/moreOptionsButton"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_gravity="end"
+            android:src="@drawable/ic_more_vert"
+            android:contentDescription="@string/more_options"
+            android:visibility="gone"
+            android:padding="4dp" />
+
         <TextView
             android:id="@+id/commentAuthor"
             android:layout_width="wrap_content"
