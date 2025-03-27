@@ -33,6 +33,8 @@ class ProfileFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        recyclerView = view.findViewById(R.id.rvChildren)
+        recyclerView.isNestedScrollingEnabled = false
 
         auth = FirebaseAuth.getInstance()
         userDao = AppDatabase.getDatabase(requireContext()).userDao()
@@ -42,7 +44,7 @@ class ProfileFragment : Fragment() {
         val usernameTextView = view.findViewById<TextView>(R.id.tvUsername)
         val editProfileButton = view.findViewById<FloatingActionButton>(R.id.btnEditProfile)
         val addChildButton = view.findViewById<Button>(R.id.btnAddChild)
-        recyclerView = view.findViewById(R.id.rvChildren)
+//        recyclerView = view.findViewById(R.id.rvChildren)
         noChildrenText = view.findViewById(R.id.tvNoChildren)
 
         val userId = auth.currentUser?.uid ?: return
