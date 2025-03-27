@@ -4,6 +4,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.view.*
 import android.widget.*
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
@@ -44,7 +45,6 @@ class ProfileFragment : Fragment() {
         val usernameTextView = view.findViewById<TextView>(R.id.tvUsername)
         val editProfileButton = view.findViewById<FloatingActionButton>(R.id.btnEditProfile)
         val addChildButton = view.findViewById<Button>(R.id.btnAddChild)
-//        recyclerView = view.findViewById(R.id.rvChildren)
         noChildrenText = view.findViewById(R.id.tvNoChildren)
 
         val userId = auth.currentUser?.uid ?: return
@@ -110,15 +110,22 @@ class ProfileFragment : Fragment() {
             }
 
             holder.deleteButton.setOnClickListener {
-                lifecycleScope.launch(Dispatchers.IO) {
-                    childDao.deleteChild(child.childId, child.parentUserId)
-                    val updated = childDao.getChildrenForUser(child.parentUserId)
-                    withContext(Dispatchers.Main) {
-                        updateData(updated)
-                        noChildrenText.visibility = if (updated.isEmpty()) View.VISIBLE else View.GONE
-                        Toast.makeText(requireContext(), "Child deleted", Toast.LENGTH_SHORT).show()
+                AlertDialog.Builder(requireContext())
+                    .setTitle("Delete Child")
+                    .setMessage("Are you sure you want to delete this child from your list?")
+                    .setPositiveButton("Delete") { _, _ ->
+                        lifecycleScope.launch(Dispatchers.IO) {
+                            childDao.deleteChild(child.childId, child.parentUserId)
+                            val updated = childDao.getChildrenForUser(child.parentUserId)
+                            withContext(Dispatchers.Main) {
+                                updateData(updated)
+                                noChildrenText.visibility = if (updated.isEmpty()) View.VISIBLE else View.GONE
+                                Toast.makeText(requireContext(), "Child deleted", Toast.LENGTH_SHORT).show()
+                            }
+                        }
                     }
-                }
+                    .setNegativeButton("Cancel", null)
+                    .show()
             }
         }
 
@@ -140,5 +147,4 @@ class ProfileFragment : Fragment() {
             }
         }
     }
-
 }
