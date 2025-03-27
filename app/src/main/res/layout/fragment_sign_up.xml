@@ -3,7 +3,6 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp"
     android:clipToPadding="false">
 
     <LinearLayout
@@ -11,13 +10,16 @@
         android:layout_height="wrap_content"
         android:gravity="center_horizontal"
         android:orientation="vertical"
+        android:paddingStart="16dp"
+        android:paddingTop="16dp"
+        android:paddingEnd="16dp"
         android:paddingBottom="64dp">
 
         <FrameLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:layout_marginBottom="12dp">
+            android:layout_marginBottom="15dp">
 
             <com.google.android.material.imageview.ShapeableImageView
                 android:id="@+id/ivProfileImage"
@@ -81,7 +83,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-
             android:hint="Password"
             app:endIconMode="password_toggle">
 
@@ -96,14 +97,16 @@
         <!-- Register button -->
         <Button
             android:id="@+id/btnRegister"
-            style="@style/Widget.Material3.ExtendedFloatingActionButton.Primary"
+            style="@style/Widget.Material3.ExtendedFloatingActionButton.Icon.Primary"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="0dp"
-            android:layout_marginEnd="0dp"
+            android:layout_height="41dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginEnd="10dp"
+            android:layout_marginRight="10dp"
             android:layout_marginBottom="10dp"
-            android:layout_weight="1"
             android:fontFamily="@font/assistant_bold"
-            android:text="Sign Up" />
+            android:text="Sign Up"
+            android:theme="?attr/extendedFloatingActionButtonStyle" />
     </LinearLayout>
 </ScrollView>
