@@ -1,17 +1,15 @@
 package com.example.antibully.data.ui.profile
 
-import android.app.Activity
-import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.*
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.example.antibully.R
+import com.example.antibully.data.api.CloudinaryUploader
 import com.example.antibully.data.db.AppDatabase
 import com.example.antibully.data.models.ChildLocalData
 import com.google.firebase.auth.FirebaseAuth
@@ -24,7 +22,16 @@ class AddChildFragment : Fragment() {
 
     private lateinit var auth: FirebaseAuth
     private var selectedImageUri: Uri? = null
-    private val PICK_IMAGE_REQUEST = 1002
+    private var uploadedImageUrl: String? = null
+
+    private lateinit var childImageView: ImageView
+
+    private val pickImageLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+        uri?.let {
+            selectedImageUri = it
+            childImageView.setImageURI(it)
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -32,19 +39,16 @@ class AddChildFragment : Fragment() {
     ): View = inflater.inflate(R.layout.fragment_add_child, container, false)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
         auth = FirebaseAuth.getInstance()
 
-        val childImage = view.findViewById<ImageView>(R.id.ivAddChildImage)
+        childImageView = view.findViewById(R.id.ivAddChildImage)
         val chooseImageButton = view.findViewById<View>(R.id.btnChooseChildImage)
         val childIdInput = view.findViewById<EditText>(R.id.etChildId)
         val childNameInput = view.findViewById<EditText>(R.id.etChildName)
         val saveButton = view.findViewById<Button>(R.id.btnSaveChild)
 
         chooseImageButton.setOnClickListener {
-            val intent = Intent(Intent.ACTION_PICK).apply { type = "image/*" }
-            startActivityForResult(intent, PICK_IMAGE_REQUEST)
+            pickImageLauncher.launch("image/*")
         }
 
         saveButton.setOnClickListener {
@@ -57,45 +61,41 @@ class AddChildFragment : Fragment() {
                 return@setOnClickListener
             }
 
-            val imagePath = selectedImageUri?.toString() ?: ""
-            val child = ChildLocalData(
-                childId = childId,
-                parentUserId = parentUserId,
-                name = childName,
-                localImagePath = imagePath
-            )
-
-            lifecycleScope.launch(Dispatchers.IO) {
-                val dao = AppDatabase.getDatabase(requireContext()).childDao()
-                dao.insertChild(child)
-
-                // ✅ Save to Firestore
-                val firestore = FirebaseFirestore.getInstance()
-                val childMap = mapOf("name" to childName)
-
-                firestore.collection("users")
-                    .document(parentUserId)
-                    .collection("children")
-                    .document(childId)
-                    .set(childMap)
-
-                withContext(Dispatchers.Main) {
-                    Toast.makeText(requireContext(), "Child added successfully", Toast.LENGTH_SHORT).show()
-                    findNavController().navigateUp()
-                }
+            if (selectedImageUri != null && uploadedImageUrl == null) {
+                CloudinaryUploader.uploadImage(
+                    context = requireContext(),
+                    imageUri = selectedImageUri!!,
+                    onSuccess = { url ->
+                        uploadedImageUrl = url
+                        saveChild(childId, childName, parentUserId)
+                    },
+                    onFailure = { e ->
+                        Toast.makeText(requireContext(), "Image upload failed: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
+                )
+            } else {
+                saveChild(childId, childName, parentUserId)
             }
         }
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == PICK_IMAGE_REQUEST && resultCode == Activity.RESULT_OK && data != null && data.data != null) {
-            selectedImageUri = data.data
-            requireContext().contentResolver.takePersistableUriPermission(
-                selectedImageUri!!,
-                Intent.FLAG_GRANT_READ_URI_PERMISSION
-            )
-            view?.findViewById<ImageView>(R.id.ivAddChildImage)?.setImageURI(selectedImageUri)
+    private fun saveChild(childId: String, childName: String, parentUserId: String) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            val dao = AppDatabase.getDatabase(requireContext()).childDao()
+            val child = ChildLocalData(childId, parentUserId, childName, uploadedImageUrl ?: "")
+            dao.insertChild(child)
+
+            FirebaseFirestore.getInstance()
+                .collection("users")
+                .document(parentUserId)
+                .collection("children")
+                .document(childId)
+                .set(mapOf("name" to childName))
+
+            withContext(Dispatchers.Main) {
+                Toast.makeText(requireContext(), "Child added successfully", Toast.LENGTH_SHORT).show()
+                findNavController().navigateUp()
+            }
         }
     }
 }
