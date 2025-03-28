@@ -62,8 +62,6 @@ class AlertDetailsFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        // ✅ Safe to access context here
         val postDao = AppDatabase.getDatabase(requireContext()).postDao()
         val postRepository = PostRepository(postDao, FirebaseFirestore.getInstance())
         postFactory = PostViewModelFactory(postRepository)
@@ -78,7 +76,6 @@ class AlertDetailsFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-
         postViewModel = ViewModelProvider(this, postFactory)[PostViewModel::class.java]
         postViewModel.syncPostsFromFirestore(alertId)
         val currentUserId = FirebaseAuth.getInstance().currentUser?.uid.orEmpty()
@@ -97,18 +94,33 @@ class AlertDetailsFragment : Fragment() {
             alert?.let {
                 binding.alertText.text = it.text
                 binding.alertReason.text = it.reason
-                binding.alertReporterId.text = it.reporterId
                 binding.alertTimestamp.text = Date(it.timestamp).toString()
+
+                val reporterId = it.reporterId
+                val parentUserId = FirebaseAuth.getInstance().currentUser?.uid.orEmpty()
+
+                FirebaseFirestore.getInstance()
+                    .collection("users")
+                    .document(parentUserId)
+                    .collection("children")
+                    .document(reporterId)
+                    .get()
+                    .addOnSuccessListener { doc ->
+                        val childName = doc.getString("name") ?: reporterId
+                        binding.alertReporterId.text = "Reported by: $childName"
+                    }
+                    .addOnFailureListener {
+                        binding.alertReporterId.text = "Reported by: $reporterId"
+                    }
+
                 it.imageUrl?.let { url ->
                     Picasso.get().load(url).into(binding.alertImage)
                 }
             }
         }
 
-        // Observe posts
         postViewModel.getPostsForAlert(alertId).observe(viewLifecycleOwner) { posts ->
             fetchAllUsers { userMap ->
-
                 postAdapter = PostAdapter(
                     userMap = userMap,
                     currentUserId = currentUserId,
@@ -116,16 +128,17 @@ class AlertDetailsFragment : Fragment() {
                     onDeleteClick = { post -> postViewModel.delete(post) }
                 )
                 binding.commentsRecyclerView.adapter = postAdapter
-                postAdapter.submitList(posts) // ← this is your post list
+                postAdapter.submitList(posts)
             }
         }
 
-        // Submit comment
         binding.sendCommentButton.setOnClickListener {
             val text = binding.commentInput.text.toString().trim()
 
+
             // ✅ Now it checks if there's EITHER text or image
             if (text.isNotEmpty() || selectedImageUrl != null) {
+
                 val post = Post(
                     firebaseId = FirebaseFirestore.getInstance().collection("posts").document().id,
                     alertId = alertId,
@@ -144,7 +157,6 @@ class AlertDetailsFragment : Fragment() {
             }
         }
 
-
         binding.commentImagePicker.setOnClickListener {
             pickImage.launch("image/*")
         }
@@ -152,10 +164,6 @@ class AlertDetailsFragment : Fragment() {
 
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
-    }
     private fun showEditDialog(post: Post) {
         val editText = EditText(requireContext()).apply {
             setText(post.text)
@@ -173,4 +181,8 @@ class AlertDetailsFragment : Fragment() {
             .show()
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
 }
