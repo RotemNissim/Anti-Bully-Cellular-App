@@ -43,7 +43,7 @@ class SignUpFragment : Fragment() {
         val passwordInput = view.findViewById<EditText>(R.id.etSignUpPassword)
         val signUpButton = view.findViewById<Button>(R.id.btnRegister)
         val profileImageView = view.findViewById<ImageView>(R.id.ivProfileImage)
-        val chooseImageButton = view.findViewById<View>(R.id.ivEditProfileImage)
+        val chooseImageButton = view.findViewById<View>(R.id.btnChangeProfileImage)
 
         // Open gallery when "Choose Image" button is clicked
         chooseImageButton.setOnClickListener {

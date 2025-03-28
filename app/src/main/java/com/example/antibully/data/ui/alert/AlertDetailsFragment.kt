@@ -4,24 +4,17 @@ import android.net.Uri
 import android.os.Bundle
 import android.view.*
 import android.widget.EditText
-import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.antibully.R
 import com.example.antibully.data.db.AppDatabase
-import com.example.antibully.data.firestore.FirestoreManager
 import com.example.antibully.data.firestore.FirestoreManager.fetchAllUsers
 import com.example.antibully.data.models.Post
 import com.example.antibully.data.repository.PostRepository
-import com.example.antibully.data.repository.AlertRepository
-import com.example.antibully.databinding.FragmentAlertsBinding
 import com.example.antibully.databinding.FragmentAlertDetailsBinding
 import com.example.antibully.data.ui.adapters.PostAdapter
 import com.example.antibully.viewmodel.PostViewModel
@@ -30,6 +23,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.squareup.picasso.Picasso
 import java.util.Date
+import com.example.antibully.data.api.CloudinaryUploader
 
 class AlertDetailsFragment : Fragment() {
 
@@ -47,18 +41,24 @@ class AlertDetailsFragment : Fragment() {
 
     private val pickImage = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
         uri?.let {
-            FirestoreManager.uploadImageToStorage(
+            CloudinaryUploader.uploadImage(
+                context = requireContext(),
                 imageUri = it,
                 onSuccess = { url ->
-                    selectedImageUrl = url
-                    Toast.makeText(requireContext(), "Image uploaded", Toast.LENGTH_SHORT).show()
+                    requireActivity().runOnUiThread {
+                        selectedImageUrl = url
+                        Toast.makeText(requireContext(), "Image uploaded! You can now send your comment", Toast.LENGTH_SHORT).show()
+                    }
                 },
-                onFailure = {
-                    Toast.makeText(requireContext(), "Upload failed", Toast.LENGTH_SHORT).show()
+                onFailure = { e ->
+                    requireActivity().runOnUiThread {
+                        Toast.makeText(requireContext(), "Upload failed: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
                 }
             )
         }
     }
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -122,28 +122,34 @@ class AlertDetailsFragment : Fragment() {
 
         // Submit comment
         binding.sendCommentButton.setOnClickListener {
-            val generatedFirebaseId = FirebaseFirestore.getInstance().collection("posts").document().id
             val text = binding.commentInput.text.toString().trim()
-            if (text.isNotEmpty()) {
+
+            // ✅ Now it checks if there's EITHER text or image
+            if (text.isNotEmpty() || selectedImageUrl != null) {
                 val post = Post(
-                    firebaseId = generatedFirebaseId,
+                    firebaseId = FirebaseFirestore.getInstance().collection("posts").document().id,
                     alertId = alertId,
-                    userId = FirebaseAuth.getInstance().currentUser?.uid ?: "unknownUser", // 🛠️ Replace with actual user logic later
+                    userId = FirebaseAuth.getInstance().currentUser?.uid ?: "unknownUser",
                     text = text,
                     imageUrl = selectedImageUrl,
                     timestamp = System.currentTimeMillis()
-
                 )
+
                 postViewModel.insert(post)
+
                 binding.commentInput.setText("")
                 selectedImageUrl = null
+            } else {
+                Toast.makeText(requireContext(), "Please add text or an image", Toast.LENGTH_SHORT).show()
             }
         }
 
-        // Pick image
+
         binding.commentImagePicker.setOnClickListener {
             pickImage.launch("image/*")
         }
+
+
     }
 
     override fun onDestroyView() {
