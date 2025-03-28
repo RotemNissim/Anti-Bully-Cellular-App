@@ -4,17 +4,16 @@
     android:id="@+id/rootLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white"
-    android:fitsSystemWindows="true">
+    android:background="@color/white">
 
-    <!-- Scrollable Alert + Comments -->
     <androidx.core.widget.NestedScrollView
         android:id="@+id/scrollView"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:fillViewport="true"
+        android:clipToPadding="false"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/commentDivider"
+        app:layout_constraintBottom_toTopOf="@id/commentSection"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
@@ -24,7 +23,6 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- ALERT CARD -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/alertCard"
                 android:layout_width="match_parent"
@@ -52,7 +50,6 @@
                         android:textSize="16sp"
                         android:textStyle="bold" />
 
-
                     <TextView
                         android:id="@+id/alertReason"
                         android:layout_width="match_parent"
@@ -62,7 +59,6 @@
                         android:text="Reason: Hate Speech"
                         android:textColor="#444"
                         android:textSize="14sp" />
-
 
                     <TextView
                         android:id="@+id/alertReporterId"
@@ -95,7 +91,6 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- COMMENTS SECTION -->
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/commentsRecyclerView"
                 android:layout_width="match_parent"
@@ -107,30 +102,18 @@
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
-    <!-- Divider -->
-    <com.google.android.material.divider.MaterialDivider
-        android:id="@+id/commentDivider"
-        android:layout_width="0dp"
-        android:layout_height="1dp"
-        android:layout_marginHorizontal="16dp"
-        app:dividerColor="@color/black"
-        app:layout_constraintBottom_toTopOf="@+id/commentSection"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
-
-    <!-- COMMENT INPUT SECTION -->
     <LinearLayout
         android:id="@+id/commentSection"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:background="@color/white"
         android:elevation="8dp"
-        android:gravity="center_vertical"
         android:orientation="horizontal"
         android:padding="8dp"
+        android:gravity="center_vertical"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
         <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/profileImage"
@@ -183,5 +166,4 @@
             android:padding="6dp"
             android:src="@drawable/ic_send_1" />
     </LinearLayout>
-
 </androidx.constraintlayout.widget.ConstraintLayout>
