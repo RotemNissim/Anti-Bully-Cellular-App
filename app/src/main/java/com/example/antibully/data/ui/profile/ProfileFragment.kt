@@ -71,9 +71,12 @@ class ProfileFragment : Fragment() {
             withContext(Dispatchers.Main) {
                 localUser?.let {
                     usernameView.text = it.name
-                    if (it.localProfileImagePath.isNotEmpty()) {
+                    if (!it.profileImageUrl.isNullOrEmpty()) {
+                        Picasso.get().load(it.profileImageUrl).into(imageView)
+                    } else if (it.localProfileImagePath.isNotEmpty()) {
                         imageView.setImageURI(Uri.parse(it.localProfileImagePath))
                     }
+
                 }
 
                 recyclerView.layoutManager = LinearLayoutManager(requireContext())
@@ -167,12 +170,14 @@ class ProfileFragment : Fragment() {
                 if (document.exists()) {
                     val name = document.getString("fullName") ?: ""
                     val imagePath = document.getString("localProfileImagePath") ?: ""
+                    val profileUrl = document.getString("profileImageUrl") // 💥 move this line here
 
                     val user = User(
                         id = userId,
                         name = name,
                         email = auth.currentUser?.email ?: "",
-                        localProfileImagePath = imagePath
+                        localProfileImagePath = imagePath,
+                        profileImageUrl = profileUrl
                     )
 
                     lifecycleScope.launch(Dispatchers.IO) {

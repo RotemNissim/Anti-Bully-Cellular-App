@@ -28,13 +28,14 @@ object FirestoreManager {
                     val id = doc.id // Firebase UID
                     val name = doc.getString("fullName") ?: ""
                     val email = doc.getString("email") ?: ""
-                    val profileImage = "" // or doc.getString("profileImageUrl") if you add it later
+                    val profileImage = doc.getString("profileImageUrl") ?: ""
 
                     userMap[id] = User(
                         id = id,
                         name = name,
                         email = email,
-                        localProfileImagePath = profileImage
+                        localProfileImagePath = profileImage,
+                        profileImageUrl = profileImage
                     )
                 }
                 onResult(userMap)

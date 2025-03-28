@@ -41,6 +41,15 @@
                 app:fabCustomSize="32dp"
                 app:layout_anchor="@id/ivProfileImage"
                 app:srcCompat="@android:drawable/ic_menu_camera" />
+
+            <ProgressBar
+                android:id="@+id/spinnerProfileUpload"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_gravity="center"
+                android:visibility="gone"
+                android:indeterminate="true" />
+
         </FrameLayout>
 
         <!-- Full Name -->
