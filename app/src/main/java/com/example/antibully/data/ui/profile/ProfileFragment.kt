@@ -35,7 +35,6 @@ class ProfileFragment : Fragment() {
     ): View = inflater.inflate(R.layout.fragment_profile, container, false)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
         recyclerView = view.findViewById(R.id.rvChildren)
         recyclerView.isNestedScrollingEnabled = false
 
@@ -109,7 +108,12 @@ class ProfileFragment : Fragment() {
             val child = children[position]
             holder.childIdText.text = "ID: ${child.childId}"
             holder.childNameText.text = child.name
-            holder.childImage.setImageURI(Uri.parse(child.localImagePath))
+
+            if (!child.imageUrl.isNullOrEmpty()) {
+                Picasso.get().load(child.imageUrl).into(holder.childImage)
+            } else {
+                holder.childImage.setImageResource(R.drawable.ic_default_profile)
+            }
 
             holder.editButton.setOnClickListener {
                 val action =
@@ -118,7 +122,6 @@ class ProfileFragment : Fragment() {
             }
 
             holder.deleteButton.setOnClickListener {
-
                 AlertDialog.Builder(requireContext())
                     .setTitle("Delete Child")
                     .setMessage("Are you sure you want to delete this child from your list?")
@@ -156,6 +159,7 @@ class ProfileFragment : Fragment() {
             }
         }
     }
+
     private fun syncUserFromFirestore(userId: String) {
         val db = com.google.firebase.firestore.FirebaseFirestore.getInstance()
         val userDao = AppDatabase.getDatabase(requireContext()).userDao()
@@ -185,5 +189,4 @@ class ProfileFragment : Fragment() {
                 Toast.makeText(requireContext(), "Failed to sync user profile", Toast.LENGTH_SHORT).show()
             }
     }
-
 }
