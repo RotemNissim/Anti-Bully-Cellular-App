@@ -74,7 +74,7 @@ class EditProfileFragment : Fragment() {
                 }
             }
 
-        chooseImageButton.setOnClickListener {
+        changeImageButton.setOnClickListener {
             val intent = Intent(Intent.ACTION_PICK).apply { type = "image/*" }
             startActivityForResult(intent, PICK_IMAGE_REQUEST)
         }
