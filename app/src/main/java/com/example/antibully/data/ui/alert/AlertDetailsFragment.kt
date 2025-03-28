@@ -3,7 +3,9 @@ package com.example.antibully.data.ui.alert
 import android.net.Uri
 import android.os.Bundle
 import android.view.*
+import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
@@ -11,6 +13,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.antibully.R
 import com.example.antibully.data.db.AppDatabase
 import com.example.antibully.data.firestore.FirestoreManager.fetchAllUsers
 import com.example.antibully.data.models.Post
@@ -46,7 +49,17 @@ class AlertDetailsFragment : Fragment() {
                 imageUri = it,
                 onSuccess = { url ->
                     requireActivity().runOnUiThread {
-                        selectedImageUrl = url
+                        showImagePreviewDialog(url)
+
+
+                        // ✅ Show the thumbnail preview
+                        binding.commentImagePreview.visibility = View.VISIBLE
+                        Picasso.get()
+                            .load(url)
+                            .resize(40, 40)
+                            .centerCrop()
+                            .into(binding.commentImagePreview)
+
                         Toast.makeText(requireContext(), "Image uploaded! You can now send your comment", Toast.LENGTH_SHORT).show()
                     }
                 },
@@ -135,8 +148,6 @@ class AlertDetailsFragment : Fragment() {
         binding.sendCommentButton.setOnClickListener {
             val text = binding.commentInput.text.toString().trim()
 
-
-            // ✅ Now it checks if there's EITHER text or image
             if (text.isNotEmpty() || selectedImageUrl != null) {
 
                 val post = Post(
@@ -151,7 +162,10 @@ class AlertDetailsFragment : Fragment() {
                 postViewModel.insert(post)
 
                 binding.commentInput.setText("")
+                binding.commentImagePreview.setImageDrawable(null)
+                binding.commentImagePreview.visibility = View.GONE
                 selectedImageUrl = null
+
             } else {
                 Toast.makeText(requireContext(), "Please add text or an image", Toast.LENGTH_SHORT).show()
             }
@@ -160,7 +174,6 @@ class AlertDetailsFragment : Fragment() {
         binding.commentImagePicker.setOnClickListener {
             pickImage.launch("image/*")
         }
-
 
     }
 
@@ -185,4 +198,40 @@ class AlertDetailsFragment : Fragment() {
         super.onDestroyView()
         _binding = null
     }
+
+    private fun showImagePreviewDialog(url: String) {
+        val dialogView = layoutInflater.inflate(R.layout.dialog_image_preview, null)
+        val previewImage = dialogView.findViewById<ImageView>(R.id.previewImage)
+        val deleteButton = dialogView.findViewById<Button>(R.id.deleteImageButton)
+        val confirmButton = dialogView.findViewById<Button>(R.id.confirmImageButton)
+
+        Picasso.get().load(url).into(previewImage)
+
+        val dialog = AlertDialog.Builder(requireContext())
+            .setView(dialogView)
+            .setCancelable(false)
+            .create()
+
+        deleteButton.setOnClickListener {
+            selectedImageUrl = null
+            dialog.dismiss()
+        }
+
+        confirmButton.setOnClickListener {
+            selectedImageUrl = url
+
+            // Show tiny preview
+            binding.commentImagePreview.visibility = View.VISIBLE
+            Picasso.get()
+                .load(url)
+                .resize(40, 40)
+                .centerCrop()
+                .into(binding.commentImagePreview)
+
+            dialog.dismiss()
+        }
+
+        dialog.show()
+    }
+
 }
