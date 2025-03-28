@@ -13,7 +13,9 @@ import androidx.navigation.fragment.navArgs
 import com.example.antibully.R
 import com.example.antibully.data.db.AppDatabase
 import com.example.antibully.data.models.ChildLocalData
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -37,7 +39,7 @@ class EditChildFragment : Fragment() {
         auth = FirebaseAuth.getInstance()
 
         val imageView = view.findViewById<ImageView>(R.id.ivEditChildImage)
-        val chooseImageBtn = view.findViewById<Button>(R.id.btnChooseEditImage)
+        val chooseImageBtn = view.findViewById<FloatingActionButton>(R.id.btnChooseEditImage)
         val idField = view.findViewById<EditText>(R.id.etEditChildId)
         val nameField = view.findViewById<EditText>(R.id.etEditChildName)
         val saveButton = view.findViewById<Button>(R.id.btnSaveEditChild)
@@ -80,6 +82,16 @@ class EditChildFragment : Fragment() {
             lifecycleScope.launch(Dispatchers.IO) {
                 val dao = AppDatabase.getDatabase(requireContext()).childDao()
                 dao.updateChild(childId, parentUserId, newName, imagePath)
+
+                // 🔥 Update name in Firestore
+                val updateMap = mapOf("name" to newName)
+                FirebaseFirestore.getInstance()
+                    .collection("users")
+                    .document(parentUserId)
+                    .collection("children")
+                    .document(childId)
+                    .update(updateMap)
+
                 withContext(Dispatchers.Main) {
                     Toast.makeText(requireContext(), "Child updated", Toast.LENGTH_SHORT).show()
                     findNavController().navigateUp()

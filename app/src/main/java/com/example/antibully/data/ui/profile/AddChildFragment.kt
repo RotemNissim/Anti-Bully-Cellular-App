@@ -15,6 +15,7 @@ import com.example.antibully.R
 import com.example.antibully.data.db.AppDatabase
 import com.example.antibully.data.models.ChildLocalData
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -67,6 +68,16 @@ class AddChildFragment : Fragment() {
             lifecycleScope.launch(Dispatchers.IO) {
                 val dao = AppDatabase.getDatabase(requireContext()).childDao()
                 dao.insertChild(child)
+
+                // ✅ Save to Firestore
+                val firestore = FirebaseFirestore.getInstance()
+                val childMap = mapOf("name" to childName)
+
+                firestore.collection("users")
+                    .document(parentUserId)
+                    .collection("children")
+                    .document(childId)
+                    .set(childMap)
 
                 withContext(Dispatchers.Main) {
                     Toast.makeText(requireContext(), "Child added successfully", Toast.LENGTH_SHORT).show()
