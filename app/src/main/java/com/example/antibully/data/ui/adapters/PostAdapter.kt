@@ -77,6 +77,18 @@ class PostAdapter(
             } else {
                 imageView.setImageResource(R.drawable.ic_default_profile)
             }
+
+            val commentImageView = itemView.findViewById<ImageView>(R.id.commentImage)
+
+            if (!post.imageUrl.isNullOrEmpty()) {
+                commentImageView.visibility = View.VISIBLE
+                Picasso.get()
+                    .load(post.imageUrl)
+                    .into(commentImageView)
+            } else {
+                commentImageView.visibility = View.GONE
+            }
+
         }
     }
 

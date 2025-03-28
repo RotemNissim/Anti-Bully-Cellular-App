@@ -44,6 +44,7 @@ class SignUpFragment : Fragment() {
         val signUpButton = view.findViewById<Button>(R.id.btnRegister)
         val profileImageView = view.findViewById<ImageView>(R.id.ivProfileImage)
         val chooseImageButton = view.findViewById<View>(R.id.btnChangeProfileImage)
+
         // Open gallery when "Choose Image" button is clicked
         chooseImageButton.setOnClickListener {
             val intent = Intent(Intent.ACTION_PICK).apply { type = "image/*" }
