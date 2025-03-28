@@ -16,9 +16,11 @@ import com.example.antibully.databinding.FragmentAlertsBinding
 import com.example.antibully.data.ui.adapters.AlertsAdapter
 import com.example.antibully.viewmodel.AlertViewModel
 import com.example.antibully.viewmodel.AlertViewModelFactory
-import kotlinx.coroutines.flow.collectLatest
 import com.example.antibully.data.ui.feed.FeedFragmentDirections
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.collectLatest
 
 class AlertsFragment : Fragment() {
 
@@ -42,22 +44,35 @@ class AlertsFragment : Fragment() {
         val factory = AlertViewModelFactory(repository)
         viewModel = ViewModelProvider(this, factory)[AlertViewModel::class.java]
 
-        adapter = AlertsAdapter { alert ->
-            // Navigate to AlertDetailsFragment (you'll set this up in nav_graph)
-            val action = FeedFragmentDirections.actionFeedFragmentToAlertDetailsFragment(alert.postId)
-            findNavController().navigate(action)
-        }
+        val currentUserId = FirebaseAuth.getInstance().currentUser?.uid.orEmpty()
 
-        binding.alertsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
-        binding.alertsRecyclerView.adapter = adapter
+        // Load child names from Firestore
+        FirebaseFirestore.getInstance()
+            .collection("users")
+            .document(currentUserId)
+            .collection("children")
+            .get()
+            .addOnSuccessListener { result ->
+                val childNameMap = result.documents.associate {
+                    it.id to (it.getString("name") ?: it.id)
+                }
 
-        lifecycleScope.launch {
-            viewModel.allAlerts.collectLatest { alerts ->
-                adapter.submitList(alerts)
+                adapter = AlertsAdapter(childNameMap) { alert ->
+                    val action = FeedFragmentDirections.actionFeedFragmentToAlertDetailsFragment(alert.postId)
+                    findNavController().navigate(action)
+                }
+
+                binding.alertsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
+                binding.alertsRecyclerView.adapter = adapter
+
+                lifecycleScope.launch {
+                    viewModel.allAlerts.collectLatest { alerts ->
+                        adapter.submitList(alerts)
+                    }
+                }
+
+                viewModel.fetchAlerts()
             }
-        }
-
-        viewModel.fetchAlerts()
     }
 
     override fun onDestroyView() {

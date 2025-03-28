@@ -4,24 +4,18 @@ import android.net.Uri
 import android.os.Bundle
 import android.view.*
 import android.widget.EditText
-import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.antibully.R
 import com.example.antibully.data.db.AppDatabase
 import com.example.antibully.data.firestore.FirestoreManager
 import com.example.antibully.data.firestore.FirestoreManager.fetchAllUsers
 import com.example.antibully.data.models.Post
 import com.example.antibully.data.repository.PostRepository
-import com.example.antibully.data.repository.AlertRepository
-import com.example.antibully.databinding.FragmentAlertsBinding
 import com.example.antibully.databinding.FragmentAlertDetailsBinding
 import com.example.antibully.data.ui.adapters.PostAdapter
 import com.example.antibully.viewmodel.PostViewModel
@@ -62,8 +56,6 @@ class AlertDetailsFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        // ✅ Safe to access context here
         val postDao = AppDatabase.getDatabase(requireContext()).postDao()
         val postRepository = PostRepository(postDao, FirebaseFirestore.getInstance())
         postFactory = PostViewModelFactory(postRepository)
@@ -78,7 +70,6 @@ class AlertDetailsFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-
         postViewModel = ViewModelProvider(this, postFactory)[PostViewModel::class.java]
         postViewModel.syncPostsFromFirestore(alertId)
         val currentUserId = FirebaseAuth.getInstance().currentUser?.uid.orEmpty()
@@ -97,18 +88,33 @@ class AlertDetailsFragment : Fragment() {
             alert?.let {
                 binding.alertText.text = it.text
                 binding.alertReason.text = it.reason
-                binding.alertReporterId.text = it.reporterId
                 binding.alertTimestamp.text = Date(it.timestamp).toString()
+
+                val reporterId = it.reporterId
+                val parentUserId = FirebaseAuth.getInstance().currentUser?.uid.orEmpty()
+
+                FirebaseFirestore.getInstance()
+                    .collection("users")
+                    .document(parentUserId)
+                    .collection("children")
+                    .document(reporterId)
+                    .get()
+                    .addOnSuccessListener { doc ->
+                        val childName = doc.getString("name") ?: reporterId
+                        binding.alertReporterId.text = "Reported by: $childName"
+                    }
+                    .addOnFailureListener {
+                        binding.alertReporterId.text = "Reported by: $reporterId"
+                    }
+
                 it.imageUrl?.let { url ->
                     Picasso.get().load(url).into(binding.alertImage)
                 }
             }
         }
 
-        // Observe posts
         postViewModel.getPostsForAlert(alertId).observe(viewLifecycleOwner) { posts ->
             fetchAllUsers { userMap ->
-
                 postAdapter = PostAdapter(
                     userMap = userMap,
                     currentUserId = currentUserId,
@@ -116,23 +122,21 @@ class AlertDetailsFragment : Fragment() {
                     onDeleteClick = { post -> postViewModel.delete(post) }
                 )
                 binding.commentsRecyclerView.adapter = postAdapter
-                postAdapter.submitList(posts) // ← this is your post list
+                postAdapter.submitList(posts)
             }
         }
 
-        // Submit comment
         binding.sendCommentButton.setOnClickListener {
-            val generatedFirebaseId = FirebaseFirestore.getInstance().collection("posts").document().id
             val text = binding.commentInput.text.toString().trim()
             if (text.isNotEmpty()) {
+                val generatedFirebaseId = FirebaseFirestore.getInstance().collection("posts").document().id
                 val post = Post(
                     firebaseId = generatedFirebaseId,
                     alertId = alertId,
-                    userId = FirebaseAuth.getInstance().currentUser?.uid ?: "unknownUser", // 🛠️ Replace with actual user logic later
+                    userId = FirebaseAuth.getInstance().currentUser?.uid ?: "unknownUser",
                     text = text,
                     imageUrl = selectedImageUrl,
                     timestamp = System.currentTimeMillis()
-
                 )
                 postViewModel.insert(post)
                 binding.commentInput.setText("")
@@ -140,16 +144,11 @@ class AlertDetailsFragment : Fragment() {
             }
         }
 
-        // Pick image
         binding.commentImagePicker.setOnClickListener {
             pickImage.launch("image/*")
         }
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
-    }
     private fun showEditDialog(post: Post) {
         val editText = EditText(requireContext()).apply {
             setText(post.text)
@@ -167,4 +166,8 @@ class AlertDetailsFragment : Fragment() {
             .show()
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
 }
