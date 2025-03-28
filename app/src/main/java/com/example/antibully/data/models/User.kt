@@ -8,7 +8,8 @@ data class User(
     @PrimaryKey val id: String,
     val name: String,
     val email: String,
-    val localProfileImagePath: String
+    val localProfileImagePath: String,
+    val profileImageUrl: String?
 ) {
     companion object {
         fun fromApi(api: UserApiResponse, localImagePath: String): User {
@@ -16,7 +17,8 @@ data class User(
                 id = api.id,
                 name = api.name,
                 email = api.email,
-                localProfileImagePath = localImagePath
+                localProfileImagePath = localImagePath,
+                profileImageUrl = api.profilePictureUrl
             )
         }
     }
