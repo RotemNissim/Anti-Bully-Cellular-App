@@ -16,9 +16,11 @@ import com.example.antibully.data.models.ChildLocalData
 import com.example.antibully.data.models.User
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import com.squareup.picasso.Picasso
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 
 class ProfileFragment : Fragment() {
@@ -28,6 +30,8 @@ class ProfileFragment : Fragment() {
     private lateinit var childDao: com.example.antibully.data.db.dao.ChildDao
     private lateinit var recyclerView: RecyclerView
     private lateinit var noChildrenText: TextView
+    private lateinit var profileImageView: ImageView
+    private lateinit var usernameTextView: TextView
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -42,17 +46,18 @@ class ProfileFragment : Fragment() {
         userDao = AppDatabase.getDatabase(requireContext()).userDao()
         childDao = AppDatabase.getDatabase(requireContext()).childDao()
 
-        val profileImageView = view.findViewById<ImageView>(R.id.ivProfileImage)
-        val usernameTextView = view.findViewById<TextView>(R.id.tvUsername)
+        profileImageView = view.findViewById(R.id.ivProfileImage)
+        usernameTextView = view.findViewById(R.id.tvUsername)
         val editProfileButton = view.findViewById<FloatingActionButton>(R.id.btnEditProfile)
         val addChildButton = view.findViewById<Button>(R.id.btnAddChild)
         noChildrenText = view.findViewById(R.id.tvNoChildren)
 
         val userId = auth.currentUser?.uid ?: return
-        val currentUserId = FirebaseAuth.getInstance().currentUser?.uid.orEmpty()
 
-        syncUserFromFirestore(currentUserId)
-        loadChildren(userId, usernameTextView, profileImageView)
+        lifecycleScope.launch {
+            syncUserFromFirestore(userId)
+            loadUserDataAndChildren(userId)
+        }
 
         editProfileButton.setOnClickListener {
             findNavController().navigate(R.id.action_profileFragment_to_editProfileFragment)
@@ -63,25 +68,46 @@ class ProfileFragment : Fragment() {
         }
     }
 
-    private fun loadChildren(userId: String, usernameView: TextView, imageView: ImageView) {
-        lifecycleScope.launch(Dispatchers.IO) {
+    private suspend fun syncUserFromFirestore(userId: String) {
+        val db = FirebaseFirestore.getInstance()
+
+        val document = db.collection("users").document(userId).get().await()
+        if (document.exists()) {
+            val name = document.getString("fullName") ?: ""
+            val imagePath = document.getString("localProfileImagePath") ?: ""
+            val profileUrl = document.getString("profileImageUrl")
+
+            val user = User(
+                id = userId,
+                name = name,
+                email = auth.currentUser?.email ?: "",
+                localProfileImagePath = imagePath,
+                profileImageUrl = profileUrl
+            )
+
+            withContext(Dispatchers.IO) {
+                userDao.insertUser(user)
+            }
+        }
+    }
+
+    private suspend fun loadUserDataAndChildren(userId: String) {
+        withContext(Dispatchers.IO) {
             val localUser = userDao.getUserById(userId)
             val children = childDao.getChildrenForUser(userId)
 
             withContext(Dispatchers.Main) {
                 localUser?.let {
-                    usernameView.text = it.name
+                    usernameTextView.text = it.name
                     if (!it.profileImageUrl.isNullOrEmpty()) {
-                        Picasso.get().load(it.profileImageUrl).into(imageView)
+                        Picasso.get().load(it.profileImageUrl).into(profileImageView)
                     } else if (it.localProfileImagePath.isNotEmpty()) {
-                        imageView.setImageURI(Uri.parse(it.localProfileImagePath))
+                        profileImageView.setImageURI(Uri.parse(it.localProfileImagePath))
                     }
-
                 }
 
                 recyclerView.layoutManager = LinearLayoutManager(requireContext())
                 recyclerView.adapter = ChildrenAdapter(children)
-
                 noChildrenText.visibility = if (children.isEmpty()) View.VISIBLE else View.GONE
             }
         }
@@ -147,46 +173,5 @@ class ProfileFragment : Fragment() {
             children = newChildren
             notifyDataSetChanged()
         }
-    }
-
-    private fun refreshChildrenList() {
-        val userId = auth.currentUser?.uid ?: return
-        lifecycleScope.launch(Dispatchers.IO) {
-            val children = childDao.getChildrenForUser(userId)
-            withContext(Dispatchers.Main) {
-                recyclerView.adapter = ChildrenAdapter(children)
-                noChildrenText.visibility = if (children.isEmpty()) View.VISIBLE else View.GONE
-            }
-        }
-    }
-
-    private fun syncUserFromFirestore(userId: String) {
-        val db = com.google.firebase.firestore.FirebaseFirestore.getInstance()
-        val userDao = AppDatabase.getDatabase(requireContext()).userDao()
-
-        db.collection("users").document(userId)
-            .get()
-            .addOnSuccessListener { document ->
-                if (document.exists()) {
-                    val name = document.getString("fullName") ?: ""
-                    val imagePath = document.getString("localProfileImagePath") ?: ""
-                    val profileUrl = document.getString("profileImageUrl") // 💥 move this line here
-
-                    val user = User(
-                        id = userId,
-                        name = name,
-                        email = auth.currentUser?.email ?: "",
-                        localProfileImagePath = imagePath,
-                        profileImageUrl = profileUrl
-                    )
-
-                    lifecycleScope.launch(Dispatchers.IO) {
-                        userDao.insertUser(user)
-                    }
-                }
-            }
-            .addOnFailureListener {
-                Toast.makeText(requireContext(), "Failed to sync user profile", Toast.LENGTH_SHORT).show()
-            }
     }
 }
