@@ -93,6 +93,24 @@ class AlertDetailsFragment : Fragment() {
         postViewModel.syncPostsFromFirestore(alertId)
         val currentUserId = FirebaseAuth.getInstance().currentUser?.uid.orEmpty()
 
+        FirebaseFirestore.getInstance()
+            .collection("users")
+            .document(currentUserId)
+            .get()
+            .addOnSuccessListener { document ->
+                val imageUrl = document.getString("profileImageUrl")
+                if (!imageUrl.isNullOrEmpty()) {
+                    Picasso.get()
+                        .load(imageUrl)
+                        .placeholder(R.drawable.ic_default_profile)
+                        .error(R.drawable.ic_default_profile)
+                        .into(binding.profileImage)
+                }
+            }
+            .addOnFailureListener {
+                Toast.makeText(requireContext(), "Failed to load profile image", Toast.LENGTH_SHORT).show()
+            }
+
         postAdapter = PostAdapter(
             currentUserId = currentUserId,
             onEditClick = { post -> showEditDialog(post) },
