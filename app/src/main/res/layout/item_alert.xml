@@ -31,31 +31,47 @@
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/childProfileImage"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:layout_marginEnd="8dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_default_profile"
+            app:shapeAppearanceOverlay="@style/CircleImage"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="@id/alertReason" />
+
+
         <!-- Child ID (bold) -->
+
+        <!-- Reason (lighter text) -->
         <TextView
             android:id="@+id/alertTitle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:text="Child's ID 318657947"
-            android:textStyle="bold"
             android:textColor="@android:color/black"
             android:textSize="14sp"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
+            android:textStyle="bold"
             app:layout_constraintEnd_toStartOf="@id/alertTime"
-            app:layout_constraintHorizontal_bias="0" />
+            app:layout_constraintHorizontal_bias="1.0"
+            app:layout_constraintStart_toEndOf="@id/childProfileImage"
+            app:layout_constraintTop_toTopOf="parent" />
 
-        <!-- Reason (lighter text) -->
         <TextView
             android:id="@+id/alertReason"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginStart="28dp"
             android:text="Hate Speech"
-            android:textSize="14sp"
             android:textColor="@android:color/black"
+            android:textSize="14sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="@id/childProfileImage"
             app:layout_constraintTop_toBottomOf="@id/alertTitle"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent" />
+            app:layout_constraintVertical_bias="0.0" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
     </FrameLayout>

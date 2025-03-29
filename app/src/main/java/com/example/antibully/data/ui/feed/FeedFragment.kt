@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -13,6 +12,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.antibully.R
 import com.example.antibully.data.api.RetrofitClient
 import com.example.antibully.data.db.AppDatabase
+import com.example.antibully.data.models.ChildLocalData
 import com.example.antibully.data.repository.AlertRepository
 import com.example.antibully.data.ui.adapters.AlertsAdapter
 import com.example.antibully.databinding.FragmentFeedBinding
@@ -20,7 +20,6 @@ import com.example.antibully.viewmodel.AlertViewModel
 import com.example.antibully.viewmodel.AlertViewModelFactory
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.squareup.picasso.Picasso
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
@@ -35,7 +34,6 @@ class FeedFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         val alertDao = AppDatabase.getDatabase(requireContext()).alertDao()
         val alertRepository = AlertRepository(alertDao, RetrofitClient.apiService)
         alertFactory = AlertViewModelFactory(alertRepository)
@@ -55,6 +53,7 @@ class FeedFragment : Fragment() {
         viewModel = ViewModelProvider(this, alertFactory)[AlertViewModel::class.java]
         val toggleGroup = binding.reasonToggleGroup
         val currentUserId = FirebaseAuth.getInstance().currentUser?.uid.orEmpty()
+        val localChildDao = AppDatabase.getDatabase(requireContext()).childDao()
 
         FirebaseFirestore.getInstance()
             .collection("users")
@@ -62,62 +61,66 @@ class FeedFragment : Fragment() {
             .collection("children")
             .get()
             .addOnSuccessListener { result ->
-                val childNameMap = result.documents.associate {
-                    it.id to (it.getString("name") ?: it.id)
-                }
+                val firebaseChildren = result.documents.map { doc ->
+                    val id = doc.id
+                    val name = doc.getString("name") ?: id
+                    id to name
+                }.toMap()
 
-                alertAdapter = AlertsAdapter(childNameMap) { alert ->
-                    val action =
-                        FeedFragmentDirections.actionFeedFragmentToAlertDetailsFragment(alert.postId)
-                    findNavController().navigate(action)
-                }
+                lifecycleScope.launch {
+                    val localChildren = localChildDao.getChildrenForUser(currentUserId)
+                    val roomMap = localChildren.associateBy { it.childId }
 
-                binding.alertsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
-                binding.alertsRecyclerView.adapter = alertAdapter
+                    val mergedMap = firebaseChildren.mapValues { (childId, name) ->
+                        val local = roomMap[childId]
+                        ChildLocalData(
+                            childId = childId,
+                            parentUserId = currentUserId,
+                            name = name,
+                            imageUrl = local?.imageUrl
+                        )
+                    }
 
-                toggleGroup.addOnButtonCheckedListener { _, checkedId, isChecked ->
-                    if (isChecked) {
-                        val reason = when (checkedId) {
-                            R.id.btnHarassment -> "Harassment"
-                            R.id.btnExclusion -> "Social Exclusion"
-                            R.id.btnHateSpeech -> "Hate Speech"
-                            R.id.btnCursing -> "Cursing"
-                            else -> null // btnAll
-                        }
+                    alertAdapter = AlertsAdapter(mergedMap) { alert ->
+                        val action = FeedFragmentDirections.actionFeedFragmentToAlertDetailsFragment(alert.postId)
+                        findNavController().navigate(action)
+                    }
 
-                        lifecycleScope.launch {
-                            if (reason == null) {
-                                viewModel.allAlerts.collectLatest { alerts ->
-                                    alertAdapter.submitList(alerts)
-                                }
-                            } else {
-                                viewModel.getFilteredAlerts(reason).collectLatest { alerts ->
-                                    alertAdapter.submitList(alerts)
+                    binding.alertsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
+                    binding.alertsRecyclerView.adapter = alertAdapter
+
+                    toggleGroup.addOnButtonCheckedListener { _, checkedId, isChecked ->
+                        if (isChecked) {
+                            val reason = when (checkedId) {
+                                R.id.btnHarassment -> "Harassment"
+                                R.id.btnExclusion -> "Social Exclusion"
+                                R.id.btnHateSpeech -> "Hate Speech"
+                                R.id.btnCursing -> "Cursing"
+                                else -> null
+                            }
+
+                            lifecycleScope.launch {
+                                if (reason == null) {
+                                    viewModel.allAlerts.collectLatest { alerts ->
+                                        alertAdapter.submitList(alerts)
+                                    }
+                                } else {
+                                    viewModel.getFilteredAlerts(reason).collectLatest { alerts ->
+                                        alertAdapter.submitList(alerts)
+                                    }
                                 }
                             }
                         }
                     }
-                }
 
-                toggleGroup.check(R.id.btnAll)
-                viewModel.fetchAlerts()
+                    toggleGroup.check(R.id.btnAll)
+                    viewModel.fetchAlerts()
+                }
             }
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
-    }
-
-    fun ImageView.loadImage(imageUrl: String?) {
-        if (!imageUrl.isNullOrEmpty()) {
-            Picasso.get()
-                .load(imageUrl)
-                .placeholder(R.drawable.placeholder_image)
-                .error(R.drawable.error_image)
-                .into(this)
-        } else {
-            setImageResource(R.drawable.default_image)
-        }
     }
 }
