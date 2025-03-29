@@ -13,7 +13,6 @@ import com.example.antibully.R
 import com.example.antibully.data.db.AppDatabase
 import com.example.antibully.data.models.User
 import com.example.antibully.data.models.UserApiResponse
-import com.example.antibully.utils.Constants
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.Dispatchers
@@ -95,9 +94,7 @@ class SignUpFragment : Fragment() {
                             }
 
                             Toast.makeText(requireContext(), "Welcome, $fullName!", Toast.LENGTH_SHORT).show()
-                            Constants.NAV_AFTER_LOGIN_ACTIONS["signup"]?.let {
-                                findNavController().navigate(it)
-                            }
+                            findNavController().navigate(R.id.feedFragment)
                         }
                         .addOnFailureListener {
                             Toast.makeText(requireContext(), "Failed to save user data", Toast.LENGTH_SHORT).show()
