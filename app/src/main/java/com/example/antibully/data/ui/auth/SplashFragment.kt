@@ -11,6 +11,7 @@ import com.example.antibully.R
 import com.example.antibully.data.db.AppDatabase
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -32,6 +33,8 @@ class SplashFragment : Fragment() {
             val currentUser = auth.currentUser
             val userDao = AppDatabase.getDatabase(requireContext()).userDao()
             val userInRoom = currentUser?.uid?.let { userDao.getUserById(it) }
+
+            delay(1000) // brief pause for splash feel
 
             withContext(Dispatchers.Main) {
                 if (currentUser != null && userInRoom != null) {

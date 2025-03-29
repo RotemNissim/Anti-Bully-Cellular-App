@@ -15,7 +15,6 @@ import com.example.antibully.R
 import com.example.antibully.data.db.AppDatabase
 import com.example.antibully.data.models.User
 import com.example.antibully.data.models.UserApiResponse
-import com.example.antibully.utils.Constants
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -80,12 +79,7 @@ class LoginFragment : Fragment() {
         }
 
         googleSignInButton.setOnClickListener {
-            val actionId = Constants.NAV_AFTER_LOGIN_ACTIONS["login"]
-            if (actionId != null) {
-                signInWithGoogle()
-            } else {
-                Toast.makeText(requireContext(), "Navigation error", Toast.LENGTH_SHORT).show()
-            }
+            signInWithGoogle()
         }
     }
 
@@ -118,7 +112,6 @@ class LoginFragment : Fragment() {
                             userDocRef.set(newUser)
                         }
 
-                        // Save to Room to persist login
                         val apiUser = UserApiResponse(uid, name, email, profileImageUrl)
                         val userEntity = User.fromApi(apiUser, localImagePath = "")
                         val userDao = AppDatabase.getDatabase(requireContext()).userDao()
@@ -127,9 +120,7 @@ class LoginFragment : Fragment() {
                         }
 
                         Toast.makeText(requireContext(), "Google Sign-In Successful!", Toast.LENGTH_SHORT).show()
-                        Constants.NAV_AFTER_LOGIN_ACTIONS["login"]?.let {
-                            findNavController().navigate(it)
-                        }
+                        findNavController().navigate(R.id.feedFragment)
                     }.addOnFailureListener { e ->
                         Toast.makeText(requireContext(), "Failed to check/create Firestore user: ${e.message}", Toast.LENGTH_SHORT).show()
                     }
@@ -145,9 +136,7 @@ class LoginFragment : Fragment() {
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     Toast.makeText(requireContext(), "Login successful!", Toast.LENGTH_SHORT).show()
-                    Constants.NAV_AFTER_LOGIN_ACTIONS["login"]?.let {
-                        findNavController().navigate(it)
-                    }
+                    findNavController().navigate(R.id.feedFragment)
                 } else {
                     Toast.makeText(requireContext(), "Login failed: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
                 }
