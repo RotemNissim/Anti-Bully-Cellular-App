@@ -14,4 +14,7 @@
     <string name="pick_image">Pick Image</string>
     <string name="send">Send</string>
     <string name="profile_image">Profile Image</string>
+    <string name="more_options">More Options</string>
+    <string name="comment_image">Comment Image</string>
+    <string name="image_preview">Image Preview</string>
 </resources>

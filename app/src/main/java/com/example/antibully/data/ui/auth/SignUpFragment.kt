@@ -17,12 +17,17 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import com.example.antibully.data.api.CloudinaryUploader
+import com.squareup.picasso.Picasso
 
 class SignUpFragment : Fragment() {
 
     private lateinit var auth: FirebaseAuth
     private lateinit var userDao: com.example.antibully.data.db.dao.UserDao
     private var selectedImageUri: Uri? = null
+    private var uploadedImageUrl: String? = null
+    private lateinit var profileImageView: ImageView
+    private lateinit var spinner: ProgressBar
 
     private val PICK_IMAGE_REQUEST = 1
 
@@ -41,10 +46,10 @@ class SignUpFragment : Fragment() {
         val emailInput = view.findViewById<EditText>(R.id.etSignUpEmail)
         val passwordInput = view.findViewById<EditText>(R.id.etSignUpPassword)
         val signUpButton = view.findViewById<Button>(R.id.btnRegister)
-        val profileImageView = view.findViewById<ImageView>(R.id.ivProfileImage)
-        val chooseImageButton = view.findViewById<View>(R.id.ivEditProfileImage)
+        profileImageView = view.findViewById(R.id.ivProfileImage)
+        val chooseImageButton = view.findViewById<View>(R.id.btnChangeProfileImage)
+        spinner = view.findViewById(R.id.spinnerProfileUpload)
 
-        // Open gallery when "Choose Image" button is clicked
         chooseImageButton.setOnClickListener {
             val intent = Intent(Intent.ACTION_PICK).apply { type = "image/*" }
             startActivityForResult(intent, PICK_IMAGE_REQUEST)
@@ -58,15 +63,15 @@ class SignUpFragment : Fragment() {
             if (fullName.isEmpty() || email.isEmpty() || password.length < 6) {
                 Toast.makeText(requireContext(), "Please fill all fields correctly", Toast.LENGTH_SHORT).show()
             } else {
-                registerUserLocallyAndRemotely(fullName, email, password)
+                spinner.visibility = View.VISIBLE
+                registerUser(fullName, email, password, uploadedImageUrl)
             }
         }
     }
 
-    private fun registerUserLocallyAndRemotely(fullName: String, email: String, password: String) {
+    private fun registerUser(fullName: String, email: String, password: String, profileImageUrl: String?) {
         auth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
                 if (task.isSuccessful) {
                     val uid = auth.currentUser?.uid ?: return@addOnCompleteListener
 
@@ -74,13 +79,15 @@ class SignUpFragment : Fragment() {
                         "fullName" to fullName,
                         "email" to email
                     )
+                    profileImageUrl?.let {
+                        userMap["profileImageUrl"] = it
+                        userMap["localProfileImagePath"] = it
+                    }
 
                     FirebaseFirestore.getInstance().collection("users").document(uid).set(userMap)
                         .addOnSuccessListener {
                             val apiUser = UserApiResponse(id = uid, name = fullName, email = email)
-                            val imagePath = selectedImageUri?.toString() ?: ""
-                            val userEntity = User.fromApi(apiUser, imagePath)
-
+                            val userEntity = User.fromApi(apiUser, profileImageUrl ?: "")
 
                             lifecycleScope.launch(Dispatchers.IO) {
                                 userDao.insertUser(userEntity)
@@ -96,14 +103,35 @@ class SignUpFragment : Fragment() {
                     Toast.makeText(requireContext(), "Registration failed: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
                 }
             }
-        }
     }
+
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == Activity.RESULT_OK && data != null && data.data != null) {
             selectedImageUri = data.data
-            view?.findViewById<ImageView>(R.id.ivProfileImage)?.setImageURI(selectedImageUri)
+            profileImageView.setImageURI(selectedImageUri)
+
+            spinner.visibility = View.VISIBLE
+
+            CloudinaryUploader.uploadImage(
+                context = requireContext(),
+                imageUri = selectedImageUri!!,
+                onSuccess = { url ->
+                    requireActivity().runOnUiThread {
+                        uploadedImageUrl = url
+                        spinner.visibility = View.GONE
+                        Picasso.get().load(url).into(profileImageView)
+                        Toast.makeText(requireContext(), "Image uploaded!", Toast.LENGTH_SHORT).show()
+                    }
+                },
+                onFailure = { error ->
+                    requireActivity().runOnUiThread {
+                        spinner.visibility = View.GONE
+                        Toast.makeText(requireContext(), "Upload failed: ${error.message}", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            )
         }
     }
 }

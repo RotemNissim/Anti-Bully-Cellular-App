@@ -18,6 +18,8 @@ import com.example.antibully.data.ui.adapters.AlertsAdapter
 import com.example.antibully.databinding.FragmentFeedBinding
 import com.example.antibully.viewmodel.AlertViewModel
 import com.example.antibully.viewmodel.AlertViewModelFactory
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import com.squareup.picasso.Picasso
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -51,51 +53,55 @@ class FeedFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         viewModel = ViewModelProvider(this, alertFactory)[AlertViewModel::class.java]
-
-        alertAdapter = AlertsAdapter { alert ->
-            val action =
-                FeedFragmentDirections.actionFeedFragmentToAlertDetailsFragment(alert.postId)
-            findNavController().navigate(action)
-        }
-
-        binding.alertsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
-        binding.alertsRecyclerView.adapter = alertAdapter
-
-//        lifecycleScope.launch {
-//            viewModel.allAlerts.collectLatest { alerts ->
-//                alertAdapter.submitList(alerts)
-//            }
-//        }
-
-        viewModel.fetchAlerts()
-
         val toggleGroup = binding.reasonToggleGroup
+        val currentUserId = FirebaseAuth.getInstance().currentUser?.uid.orEmpty()
 
-        toggleGroup.addOnButtonCheckedListener { _, checkedId, isChecked ->
-            if (isChecked) {
-                val reason = when (checkedId) {
-                    R.id.btnHarassment -> "Harassment"
-                    R.id.btnExclusion -> "Social Exclusion"
-                    R.id.btnHateSpeech -> "Hate Speech"
-                    R.id.btnCursing -> "Cursing"
-                    else -> null // btnAll
+        FirebaseFirestore.getInstance()
+            .collection("users")
+            .document(currentUserId)
+            .collection("children")
+            .get()
+            .addOnSuccessListener { result ->
+                val childNameMap = result.documents.associate {
+                    it.id to (it.getString("name") ?: it.id)
                 }
 
-                lifecycleScope.launch {
-                    if (reason == null) {
-                        viewModel.allAlerts.collectLatest { alerts ->
-                            alertAdapter.submitList(alerts)
+                alertAdapter = AlertsAdapter(childNameMap) { alert ->
+                    val action =
+                        FeedFragmentDirections.actionFeedFragmentToAlertDetailsFragment(alert.postId)
+                    findNavController().navigate(action)
+                }
+
+                binding.alertsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
+                binding.alertsRecyclerView.adapter = alertAdapter
+
+                toggleGroup.addOnButtonCheckedListener { _, checkedId, isChecked ->
+                    if (isChecked) {
+                        val reason = when (checkedId) {
+                            R.id.btnHarassment -> "Harassment"
+                            R.id.btnExclusion -> "Social Exclusion"
+                            R.id.btnHateSpeech -> "Hate Speech"
+                            R.id.btnCursing -> "Cursing"
+                            else -> null // btnAll
                         }
-                    } else {
-                        viewModel.getFilteredAlerts(reason).collectLatest { alerts ->
-                            alertAdapter.submitList(alerts)
+
+                        lifecycleScope.launch {
+                            if (reason == null) {
+                                viewModel.allAlerts.collectLatest { alerts ->
+                                    alertAdapter.submitList(alerts)
+                                }
+                            } else {
+                                viewModel.getFilteredAlerts(reason).collectLatest { alerts ->
+                                    alertAdapter.submitList(alerts)
+                                }
+                            }
                         }
                     }
                 }
-            }
-        }
-        toggleGroup.check(R.id.btnAll)
 
+                toggleGroup.check(R.id.btnAll)
+                viewModel.fetchAlerts()
+            }
     }
 
     override fun onDestroyView() {
@@ -115,4 +121,3 @@ class FeedFragment : Fragment() {
         }
     }
 }
-
