@@ -12,24 +12,27 @@ import com.example.antibully.R
 import com.example.antibully.data.models.Alert
 
 class AlertsAdapter(
+    private val childNameMap: Map<String, String>,
     private val onAlertClick: (Alert) -> Unit
 ) : ListAdapter<Alert, AlertsAdapter.AlertViewHolder>(AlertDiffCallback()) {
 
     class AlertViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        fun bind(alert: Alert, onClick: (Alert) -> Unit) {
+        fun bind(alert: Alert, childNameMap: Map<String, String>, onClick: (Alert) -> Unit) {
             val title = itemView.findViewById<TextView>(R.id.alertTitle)
             val reason = itemView.findViewById<TextView>(R.id.alertReason)
             val time = itemView.findViewById<TextView>(R.id.alertTime)
+
             val displayTime = if (alert.timestamp < 1000000000000L) {
                 alert.timestamp * 1000 // Convert seconds to millis if needed
             } else {
                 alert.timestamp // Already in millis
             }
 
-            title.text = "Child's ID ${alert.reporterId}"
+            val childName = childNameMap[alert.reporterId] ?: alert.reporterId
+            title.text = "Child: $childName"
             reason.text = alert.reason
             time.text = DateUtils.getRelativeTimeSpanString(
-                displayTime, // 🔥 convert seconds to millis
+                displayTime,
                 System.currentTimeMillis(),
                 DateUtils.MINUTE_IN_MILLIS
             )
@@ -45,7 +48,7 @@ class AlertsAdapter(
     }
 
     override fun onBindViewHolder(holder: AlertViewHolder, position: Int) {
-        holder.bind(getItem(position), onAlertClick)
+        holder.bind(getItem(position), childNameMap, onAlertClick)
     }
 }
 

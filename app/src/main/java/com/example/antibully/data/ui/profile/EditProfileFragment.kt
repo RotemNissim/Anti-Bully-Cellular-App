@@ -14,6 +14,7 @@ import com.example.antibully.data.db.AppDatabase
 import com.example.antibully.data.db.dao.UserDao
 import com.example.antibully.data.models.User
 import com.example.antibully.data.models.UserApiResponse
+import com.example.antibully.data.api.CloudinaryUploader
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.squareup.picasso.Picasso
@@ -26,9 +27,12 @@ class EditProfileFragment : Fragment() {
     private lateinit var auth: FirebaseAuth
     private lateinit var db: FirebaseFirestore
     private lateinit var userDao: UserDao
+    private lateinit var profileImageView: ImageView
+    private lateinit var spinner: ProgressBar
 
     private var selectedImageUri: Uri? = null
     private var existingImagePath: String = ""
+    private var selectedCloudinaryUrl: String? = null
 
     private val PICK_IMAGE_REQUEST = 1001
 
@@ -44,13 +48,15 @@ class EditProfileFragment : Fragment() {
         db = FirebaseFirestore.getInstance()
         userDao = AppDatabase.getDatabase(requireContext()).userDao()
 
-        val profileImageView = view.findViewById<ImageView>(R.id.ivEditProfileImage)
+        profileImageView = view.findViewById(R.id.ivProfileImage)
+        spinner = view.findViewById(R.id.spinnerProfileUpload)
         val fullNameEditText = view.findViewById<EditText>(R.id.etEditFullName)
         val passwordEditText = view.findViewById<EditText>(R.id.etEditPassword)
         val saveButton = view.findViewById<Button>(R.id.btnSaveProfile)
-        val chooseImageButton = view.findViewById<View>(R.id.ivEditProfileImage)
-
+        val changeImageButton = view.findViewById<View>(R.id.btnChangeProfileImage) // NEW
         val uid = auth.currentUser?.uid ?: return
+
+        spinner.visibility = View.GONE
 
         lifecycleScope.launch(Dispatchers.IO) {
             val localUser = userDao.getUserById(uid)
@@ -74,7 +80,7 @@ class EditProfileFragment : Fragment() {
                 }
             }
 
-        chooseImageButton.setOnClickListener {
+        changeImageButton.setOnClickListener {
             val intent = Intent(Intent.ACTION_PICK).apply { type = "image/*" }
             startActivityForResult(intent, PICK_IMAGE_REQUEST)
         }
@@ -89,13 +95,18 @@ class EditProfileFragment : Fragment() {
             }
 
             val updates = hashMapOf<String, Any>("fullName" to newName)
+            selectedCloudinaryUrl?.let {
+                updates["profileImageUrl"] = it
+                updates["localProfileImagePath"] = it
+            }
+
             db.collection("users").document(uid).update(updates)
                 .addOnSuccessListener {
                     if (newPassword.length >= 6) {
                         auth.currentUser?.updatePassword(newPassword)
                     }
 
-                    val finalImagePath = selectedImageUri?.toString() ?: existingImagePath
+                    val finalImagePath = selectedCloudinaryUrl ?: existingImagePath
 
                     val apiResponse = UserApiResponse(
                         id = uid,
@@ -122,12 +133,27 @@ class EditProfileFragment : Fragment() {
         super.onActivityResult(requestCode, resultCode, data)
 
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == Activity.RESULT_OK && data != null && data.data != null) {
-            selectedImageUri = data.data
-            requireContext().contentResolver.takePersistableUriPermission(
-                selectedImageUri!!,
-                Intent.FLAG_GRANT_READ_URI_PERMISSION
+            val uri = data.data
+            spinner.visibility = View.VISIBLE
+
+            CloudinaryUploader.uploadImage(
+                context = requireContext(),
+                imageUri = uri!!,
+                onSuccess = { url ->
+                    requireActivity().runOnUiThread {
+                        selectedCloudinaryUrl = url
+                        spinner.visibility = View.GONE
+                        Picasso.get().load(url).into(profileImageView)
+                        Toast.makeText(requireContext(), "Image uploaded!", Toast.LENGTH_SHORT).show()
+                    }
+                },
+                onFailure = { e ->
+                    requireActivity().runOnUiThread {
+                        spinner.visibility = View.GONE
+                        Toast.makeText(requireContext(), "Upload failed: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
+                }
             )
-            view?.findViewById<ImageView>(R.id.ivEditProfileImage)?.setImageURI(selectedImageUri)
         }
     }
 }

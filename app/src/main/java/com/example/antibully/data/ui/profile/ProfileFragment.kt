@@ -13,16 +13,12 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.antibully.R
 import com.example.antibully.data.db.AppDatabase
 import com.example.antibully.data.models.ChildLocalData
+import com.example.antibully.data.models.User
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.auth.FirebaseAuth
-<<<<<<< Updated upstream
-=======
-import com.google.firebase.firestore.FirebaseFirestore
 import com.squareup.picasso.Picasso
->>>>>>> Stashed changes
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 
 class ProfileFragment : Fragment() {
@@ -32,8 +28,6 @@ class ProfileFragment : Fragment() {
     private lateinit var childDao: com.example.antibully.data.db.dao.ChildDao
     private lateinit var recyclerView: RecyclerView
     private lateinit var noChildrenText: TextView
-    private lateinit var profileImageView: ImageView
-    private lateinit var usernameTextView: TextView
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -41,7 +35,6 @@ class ProfileFragment : Fragment() {
     ): View = inflater.inflate(R.layout.fragment_profile, container, false)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
         recyclerView = view.findViewById(R.id.rvChildren)
         recyclerView.isNestedScrollingEnabled = false
 
@@ -49,22 +42,17 @@ class ProfileFragment : Fragment() {
         userDao = AppDatabase.getDatabase(requireContext()).userDao()
         childDao = AppDatabase.getDatabase(requireContext()).childDao()
 
-        profileImageView = view.findViewById(R.id.ivProfileImage)
-        usernameTextView = view.findViewById(R.id.tvUsername)
+        val profileImageView = view.findViewById<ImageView>(R.id.ivProfileImage)
+        val usernameTextView = view.findViewById<TextView>(R.id.tvUsername)
         val editProfileButton = view.findViewById<FloatingActionButton>(R.id.btnEditProfile)
         val addChildButton = view.findViewById<Button>(R.id.btnAddChild)
         noChildrenText = view.findViewById(R.id.tvNoChildren)
 
         val userId = auth.currentUser?.uid ?: return
+        val currentUserId = FirebaseAuth.getInstance().currentUser?.uid.orEmpty()
 
-<<<<<<< Updated upstream
+        syncUserFromFirestore(currentUserId)
         loadChildren(userId, usernameTextView, profileImageView)
-=======
-        lifecycleScope.launch {
-            syncUserFromFirestore(userId)
-            loadUserDataAndChildren(userId)
-        }
->>>>>>> Stashed changes
 
         editProfileButton.setOnClickListener {
             findNavController().navigate(R.id.action_profileFragment_to_editProfileFragment)
@@ -75,52 +63,25 @@ class ProfileFragment : Fragment() {
         }
     }
 
-    private suspend fun syncUserFromFirestore(userId: String) {
-        val db = FirebaseFirestore.getInstance()
-
-        val document = db.collection("users").document(userId).get().await()
-        if (document.exists()) {
-            val name = document.getString("fullName") ?: ""
-            val imagePath = document.getString("localProfileImagePath") ?: ""
-            val profileUrl = document.getString("profileImageUrl")
-
-            val user = User(
-                id = userId,
-                name = name,
-                email = auth.currentUser?.email ?: "",
-                localProfileImagePath = imagePath,
-                profileImageUrl = profileUrl
-            )
-
-            withContext(Dispatchers.IO) {
-                userDao.insertUser(user)
-            }
-        }
-    }
-
-    private suspend fun loadUserDataAndChildren(userId: String) {
-        withContext(Dispatchers.IO) {
+    private fun loadChildren(userId: String, usernameView: TextView, imageView: ImageView) {
+        lifecycleScope.launch(Dispatchers.IO) {
             val localUser = userDao.getUserById(userId)
             val children = childDao.getChildrenForUser(userId)
 
             withContext(Dispatchers.Main) {
                 localUser?.let {
-<<<<<<< Updated upstream
                     usernameView.text = it.name
-                    if (it.localProfileImagePath.isNotEmpty()) {
-                        imageView.setImageURI(Uri.parse(it.localProfileImagePath))
-=======
-                    usernameTextView.text = it.name
                     if (!it.profileImageUrl.isNullOrEmpty()) {
-                        Picasso.get().load(it.profileImageUrl).into(profileImageView)
+                        Picasso.get().load(it.profileImageUrl).into(imageView)
                     } else if (it.localProfileImagePath.isNotEmpty()) {
-                        profileImageView.setImageURI(Uri.parse(it.localProfileImagePath))
->>>>>>> Stashed changes
+                        imageView.setImageURI(Uri.parse(it.localProfileImagePath))
                     }
+
                 }
 
                 recyclerView.layoutManager = LinearLayoutManager(requireContext())
                 recyclerView.adapter = ChildrenAdapter(children)
+
                 noChildrenText.visibility = if (children.isEmpty()) View.VISIBLE else View.GONE
             }
         }
@@ -147,10 +108,16 @@ class ProfileFragment : Fragment() {
             val child = children[position]
             holder.childIdText.text = "ID: ${child.childId}"
             holder.childNameText.text = child.name
-            holder.childImage.setImageURI(Uri.parse(child.localImagePath))
+
+            if (!child.imageUrl.isNullOrEmpty()) {
+                Picasso.get().load(child.imageUrl).into(holder.childImage)
+            } else {
+                holder.childImage.setImageResource(R.drawable.ic_default_profile)
+            }
 
             holder.editButton.setOnClickListener {
-                val action = ProfileFragmentDirections.actionProfileFragmentToEditChildFragment(child.childId)
+                val action =
+                    ProfileFragmentDirections.actionProfileFragmentToEditChildFragment(child.childId)
                 findNavController().navigate(action)
             }
 
@@ -181,7 +148,6 @@ class ProfileFragment : Fragment() {
             notifyDataSetChanged()
         }
     }
-<<<<<<< Updated upstream
 
     private fun refreshChildrenList() {
         val userId = auth.currentUser?.uid ?: return
@@ -193,7 +159,34 @@ class ProfileFragment : Fragment() {
             }
         }
     }
+
+    private fun syncUserFromFirestore(userId: String) {
+        val db = com.google.firebase.firestore.FirebaseFirestore.getInstance()
+        val userDao = AppDatabase.getDatabase(requireContext()).userDao()
+
+        db.collection("users").document(userId)
+            .get()
+            .addOnSuccessListener { document ->
+                if (document.exists()) {
+                    val name = document.getString("fullName") ?: ""
+                    val imagePath = document.getString("localProfileImagePath") ?: ""
+                    val profileUrl = document.getString("profileImageUrl") // 💥 move this line here
+
+                    val user = User(
+                        id = userId,
+                        name = name,
+                        email = auth.currentUser?.email ?: "",
+                        localProfileImagePath = imagePath,
+                        profileImageUrl = profileUrl
+                    )
+
+                    lifecycleScope.launch(Dispatchers.IO) {
+                        userDao.insertUser(user)
+                    }
+                }
+            }
+            .addOnFailureListener {
+                Toast.makeText(requireContext(), "Failed to sync user profile", Toast.LENGTH_SHORT).show()
+            }
+    }
 }
-=======
-}
->>>>>>> Stashed changes
