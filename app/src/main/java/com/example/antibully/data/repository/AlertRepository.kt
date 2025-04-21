@@ -2,6 +2,7 @@ package com.example.antibully.data.repository
 
 import com.example.antibully.data.api.MessageApiService
 import com.example.antibully.data.api.ApiHelper
+import com.example.antibully.data.api.RetrofitClient.alertApiService
 import com.example.antibully.data.models.Alert
 import com.example.antibully.data.db.dao.AlertDao
 import kotlinx.coroutines.flow.Flow
@@ -11,11 +12,10 @@ class AlertRepository(private val alertDao: AlertDao, private val apiService: Me
     val allAlerts: Flow<List<Alert>> = alertDao.getAllAlerts()
 
     suspend fun fetchAlertsFromApi() {
-        val response = ApiHelper.safeApiCall { apiService.getAllFlaggedMessages() }
+        val response = ApiHelper.safeApiCall { alertApiService.getAllAlerts() }
 
         response.onSuccess { apiMessages ->
             val alerts = apiMessages
-                .filter { it.flagged } // Only flagged messages
                 .map { Alert.fromApi(it) }
 
             alertDao.insertAll(alerts) // Save to local Room DB
