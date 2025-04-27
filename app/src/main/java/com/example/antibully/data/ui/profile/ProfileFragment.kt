@@ -51,6 +51,10 @@ class ProfileFragment : Fragment() {
         val editProfileButton = view.findViewById<FloatingActionButton>(R.id.btnEditProfile)
         val addChildButton = view.findViewById<Button>(R.id.btnAddChild)
         noChildrenText = view.findViewById(R.id.tvNoChildren)
+        val twoFactorButton = view.findViewById<Button>(R.id.btnTwoFactor)
+        twoFactorButton.setOnClickListener {
+            findNavController().navigate(R.id.action_profileFragment_to_securitySettingsFragment)
+        }
 
         val userId = auth.currentUser?.uid ?: return
 

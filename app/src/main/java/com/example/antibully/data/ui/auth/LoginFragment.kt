@@ -82,6 +82,21 @@ class LoginFragment : Fragment() {
             signInWithGoogle()
         }
     }
+    private fun registerUserToServer(token: String, email: String) {
+        lifecycleScope.launch {
+            try {
+                val body = mapOf("email" to email)
+                val response = com.example.antibully.data.api.AuthRetrofitClient.authService.registerFirebaseUser(
+                    "Bearer $token", body
+                )
+                if (!response.isSuccessful) {
+                    Toast.makeText(requireContext(), "Failed to register user to server", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                Toast.makeText(requireContext(), "Error registering user to server: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
 
     private fun signInWithGoogle() {
         val signInIntent = googleSignInClient.signInIntent
@@ -120,6 +135,11 @@ class LoginFragment : Fragment() {
                         }
 
                         Toast.makeText(requireContext(), "Google Sign-In Successful!", Toast.LENGTH_SHORT).show()
+                        firebaseUser.getIdToken(false).addOnSuccessListener { result ->
+                            val token = result.token ?: return@addOnSuccessListener
+                            registerUserToServer(token, email)
+                        }
+
                         findNavController().navigate(R.id.feedFragment)
                     }.addOnFailureListener { e ->
                         Toast.makeText(requireContext(), "Failed to check/create Firestore user: ${e.message}", Toast.LENGTH_SHORT).show()
@@ -135,6 +155,13 @@ class LoginFragment : Fragment() {
         auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
+                    val firebaseUser = auth.currentUser
+                    firebaseUser?.getIdToken(false)?.addOnSuccessListener { result ->
+                        val token = result.token ?: return@addOnSuccessListener
+                        val emailFromUser = firebaseUser.email ?: ""
+                        registerUserToServer(token, emailFromUser)
+                    }
+
                     Toast.makeText(requireContext(), "Login successful!", Toast.LENGTH_SHORT).show()
                     findNavController().navigate(R.id.feedFragment)
                 } else {
