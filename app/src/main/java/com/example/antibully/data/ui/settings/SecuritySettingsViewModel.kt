@@ -33,11 +33,11 @@ class SecuritySettingsViewModel : ViewModel() {
                     _twoFactorEnabled.postValue(response.twoFactorEnabled)
                 } else {
                     _twoFactorEnabled.postValue(false)
-                    _error.postValue("לא נמצא משתמש מחובר")
+                    _error.postValue("No connected user found")
                 }
             } catch (e: Exception) {
                 _twoFactorEnabled.postValue(false)
-                _error.postValue("שגיאה בבדיקת סטטוס: ${e.message}")
+                _error.postValue("Error checking status: ${e.message}")
             }
         }
     }
@@ -64,20 +64,20 @@ class SecuritySettingsViewModel : ViewModel() {
 
                         if (updateResponse.isSuccessful) {
                             _twoFactorEnabled.postValue(false)
-                            _success.postValue("אימות דו-שלבי בוטל בהצלחה") // ✅ הוספתי את זה
+                            _success.postValue("Two-Factor Authentication disabled successfully")
                         } else {
-                            _error.postValue("שגיאה בעדכון מצב אימות דו-שלבי")
+                            _error.postValue("Error updating Two-Factor Authentication status")
                             checkTwoFactorStatus()
                         }
                     } else {
-                        _error.postValue("קוד לא תקין")
+                        _error.postValue("Invalid authentication code")
                         checkTwoFactorStatus()
                     }
                 } else {
-                    _error.postValue("לא נמצא משתמש מחובר")
+                    _error.postValue("No connected user found")
                 }
             } catch (e: Exception) {
-                _error.postValue("שגיאה בביטול אימות דו-שלבי: ${e.message}")
+                _error.postValue("Error disabling Two-Factor Authentication: ${e.message}")
                 checkTwoFactorStatus()
             }
         }

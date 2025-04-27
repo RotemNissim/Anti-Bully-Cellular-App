@@ -9,12 +9,15 @@
         android:id="@+id/titleText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="אבטחה ופרטיות"
+        android:text="Security &amp; Privacy"
         android:textSize="24sp"
         android:textStyle="bold"
         android:layout_marginTop="16dp"
+        android:gravity="start"
+        android:textAlignment="viewStart"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintStart_toStartOf="parent" />
+
 
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
@@ -46,7 +49,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="אימות דו-שלבי"
+                    android:text="Two-Factor Authentication"
                     android:textSize="16sp"
                     android:textColor="@color/text_primary" />
 
@@ -67,8 +70,8 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="אימות דו-שלבי מוסיף שכבת אבטחה נוספת לחשבונך. בכל התחברות תידרש להזין קוד מאפליקציית האימות."
-                    android:textAlignment="viewEnd"
+                    android:text="Two-Factor Authentication adds an extra layer of security to your account. You will be required to enter a code from your authenticator app at every login."
+                    android:textAlignment="viewStart"
                     android:textColor="@color/text_secondary"
                     android:layout_marginBottom="16dp" />
 
@@ -76,7 +79,7 @@
                     android:id="@+id/configureButton"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="הגדר אימות דו-שלבי"
+                    android:text="Configure Two-Factor Authentication"
                     app:icon="@drawable/ic_shield"
                     app:iconGravity="textStart" />
             </LinearLayout>

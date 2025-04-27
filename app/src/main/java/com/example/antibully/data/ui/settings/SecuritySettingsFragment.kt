@@ -96,12 +96,12 @@ class SecuritySettingsFragment : Fragment() {
 
     private fun showEnableDialog() {
         AlertDialog.Builder(requireContext())
-            .setTitle("הפעלת אימות דו-שלבי")
-            .setMessage("האם ברצונך להפעיל אימות דו-שלבי ולהוסיף שכבת הגנה נוספת לחשבון שלך?")
-            .setPositiveButton("המשך") { _, _ ->
+            .setTitle("Enable Two-Factor Authentication")
+            .setMessage("Do you want to enable two-factor authentication and add an extra layer of security to your account?")
+            .setPositiveButton("Continue") { _, _ ->
                 findNavController().navigate(R.id.action_securitySettingsFragment_to_twoFactorSetupFragment)
             }
-            .setNegativeButton("ביטול") { _, _ ->
+            .setNegativeButton("Cancel") { _, _ ->
                 binding.twoFactorSwitch.setOnCheckedChangeListener(null)
                 binding.twoFactorSwitch.isChecked = false
                 setupListeners()
@@ -110,26 +110,27 @@ class SecuritySettingsFragment : Fragment() {
             .show()
     }
 
+
     private fun showDisableDialog() {
         val input = EditText(requireContext())
-        input.hint = "הזן קוד אימות"
+        input.hint = "Enter authentication code"
 
         AlertDialog.Builder(requireContext())
-            .setTitle("ביטול אימות דו-שלבי")
-            .setMessage("כדי לבטל את האימות, נא להקליד קוד מהאפליקציה שלך.")
+            .setTitle("Disable Two-Factor Authentication")
+            .setMessage("To disable authentication, please enter the code from your authenticator app.")
             .setView(input)
-            .setPositiveButton("אישור") { _, _ ->
+            .setPositiveButton("Confirm") { _, _ ->
                 val code = input.text.toString().trim()
                 if (code.isNotEmpty()) {
                     viewModel.requestDisableTwoFactor(code)
                 } else {
-                    Snackbar.make(binding.root, "יש להזין קוד אימות", Snackbar.LENGTH_SHORT).show()
+                    Snackbar.make(binding.root, "Please enter the authentication code", Snackbar.LENGTH_SHORT).show()
                     binding.twoFactorSwitch.setOnCheckedChangeListener(null)
                     binding.twoFactorSwitch.isChecked = true
                     setupListeners()
                 }
             }
-            .setNegativeButton("ביטול") { _, _ ->
+            .setNegativeButton("Cancel") { _, _ ->
                 binding.twoFactorSwitch.setOnCheckedChangeListener(null)
                 binding.twoFactorSwitch.isChecked = true
                 setupListeners()

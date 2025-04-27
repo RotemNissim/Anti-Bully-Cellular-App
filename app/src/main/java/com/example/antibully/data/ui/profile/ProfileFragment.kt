@@ -14,6 +14,7 @@ import com.example.antibully.R
 import com.example.antibully.data.db.AppDatabase
 import com.example.antibully.data.models.ChildLocalData
 import com.example.antibully.data.models.User
+import com.example.antibully.data.ui.common.VerifyTwoFactorDialogFragment
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -32,6 +33,7 @@ class ProfileFragment : Fragment() {
     private lateinit var noChildrenText: TextView
     private lateinit var profileImageView: ImageView
     private lateinit var usernameTextView: TextView
+    private var isTwoFactorEnabled: Boolean = false
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -61,6 +63,9 @@ class ProfileFragment : Fragment() {
         lifecycleScope.launch {
             syncUserFromFirestore(userId)
             loadUserDataAndChildren(userId)
+        }
+        lifecycleScope.launch {
+            checkTwoFactorStatus()
         }
 
         editProfileButton.setOnClickListener {
@@ -92,6 +97,19 @@ class ProfileFragment : Fragment() {
             withContext(Dispatchers.IO) {
                 userDao.insertUser(user)
             }
+        }
+    }
+    private suspend fun checkTwoFactorStatus() {
+        try {
+            val token = FirebaseAuth.getInstance().currentUser?.getIdToken(false)?.await()?.token
+            if (token != null) {
+                val response = com.example.antibully.data.api.AuthRetrofitClient.authService.checkTwoFactorStatus("Bearer $token")
+                isTwoFactorEnabled = response.twoFactorEnabled
+            } else {
+                isTwoFactorEnabled = false
+            }
+        } catch (e: Exception) {
+            isTwoFactorEnabled = false
         }
     }
 
@@ -151,25 +169,63 @@ class ProfileFragment : Fragment() {
                 findNavController().navigate(action)
             }
 
+//            holder.deleteButton.setOnClickListener {
+//                AlertDialog.Builder(requireContext())
+//                    .setTitle("Delete Child")
+//                    .setMessage("Are you sure you want to delete this child from your list?")
+//                    .setPositiveButton("Delete") { _, _ ->
+//                        lifecycleScope.launch(Dispatchers.IO) {
+//                            childDao.deleteChild(child.childId, child.parentUserId)
+//                            val updated = childDao.getChildrenForUser(child.parentUserId)
+//                            withContext(Dispatchers.Main) {
+//                                updateData(updated)
+//                                noChildrenText.visibility = if (updated.isEmpty()) View.VISIBLE else View.GONE
+//                                Toast.makeText(requireContext(), "Child deleted", Toast.LENGTH_SHORT).show()
+//                            }
+//                        }
+//                    }
+//                    .setNegativeButton("Cancel", null)
+//                    .show()
+//            }
             holder.deleteButton.setOnClickListener {
                 AlertDialog.Builder(requireContext())
                     .setTitle("Delete Child")
                     .setMessage("Are you sure you want to delete this child from your list?")
                     .setPositiveButton("Delete") { _, _ ->
-                        lifecycleScope.launch(Dispatchers.IO) {
-                            childDao.deleteChild(child.childId, child.parentUserId)
-                            val updated = childDao.getChildrenForUser(child.parentUserId)
-                            withContext(Dispatchers.Main) {
-                                updateData(updated)
-                                noChildrenText.visibility = if (updated.isEmpty()) View.VISIBLE else View.GONE
-                                Toast.makeText(requireContext(), "Child deleted", Toast.LENGTH_SHORT).show()
+
+                        if (isTwoFactorEnabled)
+                        {
+                            // לפתוח VerifyTwoFactorDialogFragment
+                            val dialog = VerifyTwoFactorDialogFragment { verified ->
+                                if (verified) {
+                                    deleteChild(child)
+                                } else {
+                                    Toast.makeText(requireContext(), "Authentication failed", Toast.LENGTH_SHORT).show()
+                                }
                             }
+                            dialog.show(parentFragmentManager, "VerifyTwoFactor")
+                        } else {
+                            // אם אין אימות דו שלבי פעיל – למחוק ישירות
+                            deleteChild(child)
                         }
+
                     }
                     .setNegativeButton("Cancel", null)
                     .show()
             }
         }
+        private fun deleteChild(child: ChildLocalData) {
+            lifecycleScope.launch(Dispatchers.IO) {
+                childDao.deleteChild(child.childId, child.parentUserId)
+                val updated = childDao.getChildrenForUser(child.parentUserId)
+                withContext(Dispatchers.Main) {
+                    updateData(updated)
+                    noChildrenText.visibility = if (updated.isEmpty()) View.VISIBLE else View.GONE
+                    Toast.makeText(requireContext(), "Child deleted", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+
 
         override fun getItemCount() = children.size
 
