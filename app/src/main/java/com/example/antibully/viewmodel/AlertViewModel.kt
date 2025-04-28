@@ -8,33 +8,29 @@ import com.example.antibully.data.repository.AlertRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 
-class AlertViewModel(private val repository: AlertRepository) : ViewModel() {
+class AlertViewModel(
+    private val repository: AlertRepository
+) : ViewModel() {
 
-    val allAlerts = repository.allAlerts
+    val allAlerts: Flow<List<Alert>> = repository.allAlerts
 
-    fun fetchAlerts() = viewModelScope.launch {
-        repository.fetchAlertsFromApi()
+    /**
+     * Fetch alerts from server; pass null for childId to get all.
+     */
+    fun fetchAlerts(token: String, childId: String? = null) = viewModelScope.launch {
+        repository.fetchAlertsFromApi(token, childId)
     }
 
-    fun insert(alert: Alert) = viewModelScope.launch {
-        repository.insert(alert)
-    }
+    fun getAlertsByReason(reason: String): Flow<List<Alert>> =
+        repository.getAlertsByReason(reason)
 
-    fun delete(alert: Alert) = viewModelScope.launch {
-        repository.delete(alert)
-    }
-
-    fun getFilteredAlerts(reason: String): Flow<List<Alert>> {
-        return repository.getAlertsByReason(reason)
-    }
-
-    fun getAlertsForChild(childId: String): Flow<List<Alert>> {
-        return repository.getAlertsForChild(childId)
-    }
-
+    fun getAlertsForChild(childId: String): Flow<List<Alert>> =
+        repository.getAlertsForChild(childId)
 }
 
-class AlertViewModelFactory(private val repository: AlertRepository) : ViewModelProvider.Factory {
+class AlertViewModelFactory(
+    private val repository: AlertRepository
+) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(AlertViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")

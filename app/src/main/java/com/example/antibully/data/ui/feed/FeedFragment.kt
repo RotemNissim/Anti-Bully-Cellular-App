@@ -10,14 +10,13 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.antibully.R
-import com.example.antibully.data.api.RetrofitClient
 import com.example.antibully.data.db.AppDatabase
-import com.example.antibully.data.models.ChildLocalData
 import com.example.antibully.data.repository.AlertRepository
 import com.example.antibully.data.ui.adapters.AlertsAdapter
 import com.example.antibully.databinding.FragmentFeedBinding
 import com.example.antibully.viewmodel.AlertViewModel
 import com.example.antibully.viewmodel.AlertViewModelFactory
+import com.google.android.material.button.MaterialButtonToggleGroup
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.collectLatest
@@ -27,20 +26,22 @@ class FeedFragment : Fragment() {
 
     private var _binding: FragmentFeedBinding? = null
     private val binding get() = _binding!!
-
     private lateinit var viewModel: AlertViewModel
-    private lateinit var alertAdapter: AlertsAdapter
-    private lateinit var alertFactory: AlertViewModelFactory
+
+    // Hold just your children’s IDs
+    private var childIds: List<String> = emptyList()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val alertDao = AppDatabase.getDatabase(requireContext()).alertDao()
-        val alertRepository = AlertRepository(alertDao, RetrofitClient.apiService)
-        alertFactory = AlertViewModelFactory(alertRepository)
+        val repository = AlertRepository(alertDao)
+        val factory = AlertViewModelFactory(repository)
+        viewModel = ViewModelProvider(this, factory)[AlertViewModel::class.java]
     }
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentFeedBinding.inflate(inflater, container, false)
@@ -50,73 +51,86 @@ class FeedFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        viewModel = ViewModelProvider(this, alertFactory)[AlertViewModel::class.java]
-        val toggleGroup = binding.reasonToggleGroup
-        val currentUserId = FirebaseAuth.getInstance().currentUser?.uid.orEmpty()
-        val localChildDao = AppDatabase.getDatabase(requireContext()).childDao()
+        // 1) Recycler setup
+        val adapter = AlertsAdapter(emptyMap()) { alert ->
+            val action = FeedFragmentDirections
+                .actionFeedFragmentToAlertDetailsFragment(alert.postId)
+            findNavController().navigate(action)
+        }
+        binding.alertsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
+        binding.alertsRecyclerView.adapter = adapter
 
+        // 2) Load your Firebase ID-token
+        val token = FirebaseAuth.getInstance()
+            .currentUser
+            ?.getIdToken(false)
+            ?.result
+            ?.token ?: ""
+
+        // 3) Fetch *only* your children’s IDs from Firestore
+        val uid = FirebaseAuth.getInstance().currentUser?.uid.orEmpty()
         FirebaseFirestore.getInstance()
             .collection("users")
-            .document(currentUserId)
+            .document(uid)
             .collection("children")
             .get()
-            .addOnSuccessListener { result ->
-                val firebaseChildren = result.documents.map { doc ->
-                    val id = doc.id
-                    val name = doc.getString("name") ?: id
-                    id to name
-                }.toMap()
+            .addOnSuccessListener { snap ->
+                childIds = snap.documents.map { it.id }
 
+                // a) Observe allAlerts and filter by those childIds
                 lifecycleScope.launch {
-                    val localChildren = localChildDao.getChildrenForUser(currentUserId)
-                    val roomMap = localChildren.associateBy { it.childId }
-
-                    val mergedMap = firebaseChildren.mapValues { (childId, name) ->
-                        val local = roomMap[childId]
-                        ChildLocalData(
-                            childId = childId,
-                            parentUserId = currentUserId,
-                            name = name,
-                            imageUrl = local?.imageUrl
-                        )
-                    }
-
-                    alertAdapter = AlertsAdapter(mergedMap) { alert ->
-                        val action = FeedFragmentDirections.actionFeedFragmentToAlertDetailsFragment(alert.postId)
-                        findNavController().navigate(action)
-                    }
-
-                    binding.alertsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
-                    binding.alertsRecyclerView.adapter = alertAdapter
-
-                    toggleGroup.addOnButtonCheckedListener { _, checkedId, isChecked ->
-                        if (isChecked) {
-                            val reason = when (checkedId) {
-                                R.id.btnHarassment -> "Harassment"
-                                R.id.btnExclusion -> "Social Exclusion"
-                                R.id.btnHateSpeech -> "Hate Speech"
-                                R.id.btnCursing -> "Cursing"
-                                else -> null
-                            }
-
-                            lifecycleScope.launch {
-                                if (reason == null) {
-                                    viewModel.allAlerts.collectLatest { alerts ->
-                                        alertAdapter.submitList(alerts)
-                                    }
-                                } else {
-                                    viewModel.getFilteredAlerts(reason).collectLatest { alerts ->
-                                        alertAdapter.submitList(alerts)
-                                    }
-                                }
-                            }
+                    viewModel.allAlerts.collectLatest { alerts ->
+                        val filtered = alerts.filter { alert ->
+                            alert.reporterId in childIds
                         }
+                        adapter.submitList(filtered)
                     }
+                }
 
-                    toggleGroup.check(R.id.btnAll)
-                    viewModel.fetchAlerts()
+                // b) Kick off API fetch for each child
+                childIds.forEach { id ->
+                    viewModel.fetchAlerts(token, id)
                 }
             }
+            .addOnFailureListener {
+                // TODO: show an error
+            }
+
+        // 4) Toggle‐group still filters on *already filtered* local list
+        binding.reasonToggleGroup.addOnButtonCheckedListener { _: MaterialButtonToggleGroup, checkedId, isChecked ->
+            if (!isChecked) return@addOnButtonCheckedListener
+
+            lifecycleScope.launch {
+                when (checkedId) {
+                    R.id.btnAll -> {
+                        // re‐show everything for your children
+                        viewModel.allAlerts.collectLatest { alerts ->
+                            adapter.submitList(alerts.filter { it.reporterId in childIds })
+                        }
+                    }
+                    R.id.btnHarassment -> {
+                        viewModel.getAlertsByReason("Harassment").collectLatest { list ->
+                            adapter.submitList(list.filter { it.reporterId in childIds })
+                        }
+                    }
+                    R.id.btnExclusion -> {
+                        viewModel.getAlertsByReason("Social Exclusion").collectLatest { list ->
+                            adapter.submitList(list.filter { it.reporterId in childIds })
+                        }
+                    }
+                    R.id.btnHateSpeech -> {
+                        viewModel.getAlertsByReason("Hate Speech").collectLatest { list ->
+                            adapter.submitList(list.filter { it.reporterId in childIds })
+                        }
+                    }
+                    R.id.btnCursing -> {
+                        viewModel.getAlertsByReason("Cursing").collectLatest { list ->
+                            adapter.submitList(list.filter { it.reporterId in childIds })
+                        }
+                    }
+                }
+            }
+        }
     }
 
     override fun onDestroyView() {

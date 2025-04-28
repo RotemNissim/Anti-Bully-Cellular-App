@@ -9,6 +9,7 @@ interface AlertApiService {
     /** GET  /alerts          → List all alerts (optionally filter by parentId) */
     @GET("alerts")
     suspend fun getAllAlerts(
-        @Query("parentId") parentId: String? = null
+        @Header("Authorization") token: String,
+        @Query("childId") childId: String? = null
     ): Response<List<AlertApiRequest>>
 }
