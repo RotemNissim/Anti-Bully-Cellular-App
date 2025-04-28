@@ -16,20 +16,17 @@ import com.example.antibully.data.ui.adapters.AlertsAdapter
 import com.example.antibully.databinding.FragmentFeedBinding
 import com.example.antibully.viewmodel.AlertViewModel
 import com.example.antibully.viewmodel.AlertViewModelFactory
-import com.google.android.material.button.MaterialButtonToggleGroup
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 class FeedFragment : Fragment() {
 
     private var _binding: FragmentFeedBinding? = null
     private val binding get() = _binding!!
     private lateinit var viewModel: AlertViewModel
-
-    // Hold just your children’s IDs
-    private var childIds: List<String> = emptyList()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,7 +48,7 @@ class FeedFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // 1) Recycler setup
+        // 1) Setup RecyclerView + Adapter
         val adapter = AlertsAdapter(emptyMap()) { alert ->
             val action = FeedFragmentDirections
                 .actionFeedFragmentToAlertDetailsFragment(alert.postId)
@@ -60,75 +57,31 @@ class FeedFragment : Fragment() {
         binding.alertsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.alertsRecyclerView.adapter = adapter
 
-        // 2) Load your Firebase ID-token
-        val token = FirebaseAuth.getInstance()
-            .currentUser
-            ?.getIdToken(false)
-            ?.result
-            ?.token ?: ""
+        // 2) Coroutine scope for loading children, token, and alerts
+        lifecycleScope.launch {
+            // a) Fetch your child IDs from Firestore
+            val uid = FirebaseAuth.getInstance().currentUser?.uid.orEmpty()
+            val snap = FirebaseFirestore.getInstance()
+                .collection("users")
+                .document(uid)
+                .collection("children")
+                .get()
+                .await()
+            val childIds = snap.documents.map { it.id }
 
-        // 3) Fetch *only* your children’s IDs from Firestore
-        val uid = FirebaseAuth.getInstance().currentUser?.uid.orEmpty()
-        FirebaseFirestore.getInstance()
-            .collection("users")
-            .document(uid)
-            .collection("children")
-            .get()
-            .addOnSuccessListener { snap ->
-                childIds = snap.documents.map { it.id }
+            // b) Fetch a fresh Firebase ID token
+            val firebaseUser = FirebaseAuth.getInstance().currentUser ?: return@launch
+            val tokenResult = firebaseUser.getIdToken(true).await()
+            val token = tokenResult.token ?: return@launch
 
-                // a) Observe allAlerts and filter by those childIds
-                lifecycleScope.launch {
-                    viewModel.allAlerts.collectLatest { alerts ->
-                        val filtered = alerts.filter { alert ->
-                            alert.reporterId in childIds
-                        }
-                        adapter.submitList(filtered)
-                    }
-                }
-
-                // b) Kick off API fetch for each child
-                childIds.forEach { id ->
-                    viewModel.fetchAlerts(token, id)
-                }
-            }
-            .addOnFailureListener {
-                // TODO: show an error
+            // c) Kick off API fetch for each child
+            childIds.forEach { childId ->
+                viewModel.fetchAlerts(token, childId)
             }
 
-        // 4) Toggle‐group still filters on *already filtered* local list
-        binding.reasonToggleGroup.addOnButtonCheckedListener { _: MaterialButtonToggleGroup, checkedId, isChecked ->
-            if (!isChecked) return@addOnButtonCheckedListener
-
-            lifecycleScope.launch {
-                when (checkedId) {
-                    R.id.btnAll -> {
-                        // re‐show everything for your children
-                        viewModel.allAlerts.collectLatest { alerts ->
-                            adapter.submitList(alerts.filter { it.reporterId in childIds })
-                        }
-                    }
-                    R.id.btnHarassment -> {
-                        viewModel.getAlertsByReason("Harassment").collectLatest { list ->
-                            adapter.submitList(list.filter { it.reporterId in childIds })
-                        }
-                    }
-                    R.id.btnExclusion -> {
-                        viewModel.getAlertsByReason("Social Exclusion").collectLatest { list ->
-                            adapter.submitList(list.filter { it.reporterId in childIds })
-                        }
-                    }
-                    R.id.btnHateSpeech -> {
-                        viewModel.getAlertsByReason("Hate Speech").collectLatest { list ->
-                            adapter.submitList(list.filter { it.reporterId in childIds })
-                        }
-                    }
-                    R.id.btnCursing -> {
-                        viewModel.getAlertsByReason("Cursing").collectLatest { list ->
-                            adapter.submitList(list.filter { it.reporterId in childIds })
-                        }
-                    }
-                }
+            // d) Observe local DB, filter by your childIds, and submit to adapter
+            viewModel.allAlerts.collectLatest { alerts ->
+                adapter.submitList(alerts.filter { it.reporterId in childIds })
             }
         }
     }

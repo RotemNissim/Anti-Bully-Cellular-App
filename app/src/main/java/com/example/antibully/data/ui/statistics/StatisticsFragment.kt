@@ -18,16 +18,14 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 
 class StatisticsFragment : Fragment() {
 
-    private lateinit var alertViewModel: AlertViewModel
-    private var childIds: List<String> = emptyList()
+    private lateinit var viewModel: AlertViewModel
     private lateinit var children: List<ChildLocalData>
-    private lateinit var allAlerts: List<Alert>
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -38,51 +36,44 @@ class StatisticsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Setup ViewModel
+        // 1) ViewModel setup
         val alertDao = AppDatabase.getDatabase(requireContext()).alertDao()
         val repository = AlertRepository(alertDao)
-        alertViewModel = ViewModelProvider(
+        viewModel = ViewModelProvider(
             this,
             AlertViewModelFactory(repository)
         )[AlertViewModel::class.java]
 
-        // Load your ID-token
-        val token = FirebaseAuth.getInstance()
-            .currentUser
-            ?.getIdToken(false)
-            ?.result
-            ?.token ?: ""
+        // 2) Load children and fetch alerts in coroutine
+        lifecycleScope.launch {
+            // a) Fetch list of your children
+            val uid = FirebaseAuth.getInstance().currentUser?.uid.orEmpty()
+            val snap = FirebaseFirestore.getInstance()
+                .collection("users")
+                .document(uid)
+                .collection("children")
+                .get()
+                .await()
+            children = snap.documents.mapNotNull { doc ->
+                doc.toObject(ChildLocalData::class.java)?.copy(childId = doc.id)
+            }
+            val childIds = children.map { it.childId }
 
-        // 1) Fetch your children & their alerts
-        val uid = FirebaseAuth.getInstance().currentUser?.uid.orEmpty()
-        FirebaseFirestore.getInstance()
-            .collection("users")
-            .document(uid)
-            .collection("children")
-            .get()
-            .addOnSuccessListener { snap ->
-                children = snap.documents.mapNotNull { doc ->
-                    doc.toObject(ChildLocalData::class.java)?.copy(childId = doc.id)
-                }
-                childIds = children.map { it.childId }
+            // b) Fetch token
+            val firebaseUser = FirebaseAuth.getInstance().currentUser ?: return@launch
+            val tokenResult = firebaseUser.getIdToken(true).await()
+            val token = tokenResult.token ?: return@launch
 
-                // Kick off fetch for each child
-                childIds.forEach { id ->
-                    alertViewModel.fetchAlerts(token, id)
-                }
+            // c) Kick off API fetch for each child
+            childIds.forEach { viewModel.fetchAlerts(token, it) }
 
-                // 2) Observe local DB—filter by your childIds to drive charts
-                lifecycleScope.launch(Dispatchers.IO) {
-                    alertViewModel.allAlerts.collectLatest { alerts ->
-                        val filtered = alerts.filter { it.reporterId in childIds }
-                        withContext(Dispatchers.Main) {
-                            // TODO: feed `children` and `filtered` to your PieChart/BarChart
-                        }
-                    }
+            // d) Collect from local DB, filter by your childIds, then update UI
+            viewModel.allAlerts.collectLatest { alerts ->
+                val filtered = alerts.filter { it.reporterId in childIds }
+                withContext(Dispatchers.Main) {
+                    // TODO: feed `children` and `filtered` into your charts
                 }
             }
-            .addOnFailureListener {
-                // TODO: show error
-            }
+        }
     }
 }
