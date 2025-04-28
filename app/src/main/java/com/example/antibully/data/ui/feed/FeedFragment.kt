@@ -18,9 +18,12 @@ import com.example.antibully.viewmodel.AlertViewModel
 import com.example.antibully.viewmodel.AlertViewModelFactory
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
+import java.util.concurrent.TimeUnit
 
 class FeedFragment : Fragment() {
 
@@ -28,12 +31,20 @@ class FeedFragment : Fragment() {
     private val binding get() = _binding!!
     private lateinit var viewModel: AlertViewModel
 
+    // Only your children’s IDs:
+    private var childIds: List<String> = emptyList()
+
+    // Adapter––we reuse the same one
+    private lateinit var adapter: AlertsAdapter
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val alertDao = AppDatabase.getDatabase(requireContext()).alertDao()
-        val repository = AlertRepository(alertDao)
-        val factory = AlertViewModelFactory(repository)
-        viewModel = ViewModelProvider(this, factory)[AlertViewModel::class.java]
+        val dao = AppDatabase.getDatabase(requireContext()).alertDao()
+        val repo = AlertRepository(dao)
+        viewModel = ViewModelProvider(
+            this,
+            AlertViewModelFactory(repo)
+        )[AlertViewModel::class.java]
     }
 
     override fun onCreateView(
@@ -48,8 +59,8 @@ class FeedFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // 1) Setup RecyclerView + Adapter
-        val adapter = AlertsAdapter(emptyMap()) { alert ->
+        // 1) Set up RecyclerView
+        adapter = AlertsAdapter(emptyMap()) { alert ->
             val action = FeedFragmentDirections
                 .actionFeedFragmentToAlertDetailsFragment(alert.postId)
             findNavController().navigate(action)
@@ -57,33 +68,45 @@ class FeedFragment : Fragment() {
         binding.alertsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.alertsRecyclerView.adapter = adapter
 
-        // 2) Coroutine scope for loading children, token, and alerts
-        lifecycleScope.launch {
-            // a) Fetch your child IDs from Firestore
-            val uid = FirebaseAuth.getInstance().currentUser?.uid.orEmpty()
-            val snap = FirebaseFirestore.getInstance()
-                .collection("users")
-                .document(uid)
-                .collection("children")
-                .get()
-                .await()
-            val childIds = snap.documents.map { it.id }
-
-            // b) Fetch a fresh Firebase ID token
-            val firebaseUser = FirebaseAuth.getInstance().currentUser ?: return@launch
-            val tokenResult = firebaseUser.getIdToken(true).await()
-            val token = tokenResult.token ?: return@launch
-
-            // c) Kick off API fetch for each child
-            childIds.forEach { childId ->
-                viewModel.fetchAlerts(token, childId)
+        // 2) Grab your Firebase token
+        FirebaseAuth.getInstance().currentUser
+            ?.getIdToken(false)
+            ?.addOnSuccessListener { result ->
+                val token = result.token ?: return@addOnSuccessListener
+                startLiveFeed(token)
             }
+    }
 
-            // d) Observe local DB, filter by your childIds, and submit to adapter
-            viewModel.allAlerts.collectLatest { alerts ->
-                adapter.submitList(alerts.filter { it.reporterId in childIds })
+    private fun startLiveFeed(token: String) {
+        // 3) Fetch your children list once:
+        val uid = FirebaseAuth.getInstance().currentUser?.uid.orEmpty()
+        FirebaseFirestore.getInstance()
+            .collection("users")
+            .document(uid)
+            .collection("children")
+            .get()
+            .addOnSuccessListener { snap ->
+                childIds = snap.documents.map { it.id }
+
+                // a) Observe Room & filter to just your kids
+                viewLifecycleOwner.lifecycleScope.launch {
+                    viewModel.allAlerts
+                        .collectLatest { alerts ->
+                            val filtered = alerts.filter { it.reporterId in childIds }
+                            adapter.submitList(filtered)
+                        }
+                }
+
+                // b) Kick off your polling loop
+                viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
+                    while (isActive) {
+                        // fetch fresh from server
+                        childIds.forEach { viewModel.fetchAlerts(token, it) }
+                        // wait 15s
+                        delay(TimeUnit.SECONDS.toMillis(15))
+                    }
+                }
             }
-        }
     }
 
     override fun onDestroyView() {
