@@ -79,6 +79,13 @@
         android:label="Profile"
         tools:layout="@layout/fragment_profile">
         <action
+            android:id="@+id/action_profileFragment_to_twoFactorLoginFragment"
+            app:destination="@id/twoFactorLoginFragment" />
+        <action
+            android:id="@+id/action_profileFragment_to_securitySettingsFragment"
+            app:destination="@id/securitySettingsFragment" />
+
+        <action
             android:id="@+id/action_profileFragment_to_editProfileFragment"
             app:destination="@id/editProfileFragment" />
         <action
@@ -104,5 +111,26 @@
         android:name="com.example.antibully.data.ui.profile.AddChildFragment"
         android:label="Add Child"
         tools:layout="@layout/fragment_add_child" />
+    <fragment
+        android:id="@+id/twoFactorLoginFragment"
+        android:name="com.example.antibully.data.ui.auth.TwoFactorLoginFragment"
+        android:label="אימות דו שלבי"
+        tools:layout="@layout/fragment_two_factor_login" />
+    <fragment
+        android:id="@+id/securitySettingsFragment"
+        android:name="com.example.antibully.data.ui.settings.SecuritySettingsFragment"
+        android:label="Security Settings"
+        tools:layout="@layout/fragment_security_settings">
+
+        <action
+            android:id="@+id/action_securitySettingsFragment_to_twoFactorSetupFragment"
+            app:destination="@id/twoFactorSetupFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/twoFactorSetupFragment"
+        android:name="com.example.antibully.data.ui.settings.TwoFactorSetupFragment"
+        android:label="הגדרת אימות דו-שלבי"
+        tools:layout="@layout/fragment_two_factor_setup" />
 
 </navigation>
