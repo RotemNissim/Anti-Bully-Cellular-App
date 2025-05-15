@@ -3,7 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp">
+    android:padding="16dp"
+    android:background="@color/dark_background">
 
     <TextView
         android:id="@+id/titleText"
@@ -12,12 +13,12 @@
         android:text="Security &amp; Privacy"
         android:textSize="24sp"
         android:textStyle="bold"
+        android:textColor="@color/white"
         android:layout_marginTop="16dp"
         android:gravity="start"
         android:textAlignment="viewStart"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
-
 
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
@@ -25,6 +26,7 @@
         android:layout_marginTop="16dp"
         app:cardCornerRadius="12dp"
         app:cardElevation="4dp"
+        app:cardBackgroundColor="@color/surface_dark"
         app:layout_constraintTop_toBottomOf="@id/titleText">
 
         <LinearLayout
@@ -43,7 +45,8 @@
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:src="@drawable/ic_lock"
-                    android:layout_marginEnd="12dp" />
+                    android:layout_marginEnd="12dp"
+                    app:tint="@color/accent_blue" />
 
                 <TextView
                     android:layout_width="0dp"
@@ -51,12 +54,13 @@
                     android:layout_weight="1"
                     android:text="Two-Factor Authentication"
                     android:textSize="16sp"
-                    android:textColor="@color/text_primary" />
+                    android:textColor="@color/white" />
 
                 <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/twoFactorSwitch"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="wrap_content"
+                    style="@style/Switch.Custom" />
             </LinearLayout>
 
             <LinearLayout
@@ -80,7 +84,10 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Configure Two-Factor Authentication"
+                    android:backgroundTint="@color/accent_blue"
+                    android:textColor="@color/white"
                     app:icon="@drawable/ic_shield"
+                    app:iconTint="@color/white"
                     app:iconGravity="textStart" />
             </LinearLayout>
         </LinearLayout>

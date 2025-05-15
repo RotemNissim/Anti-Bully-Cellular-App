@@ -98,7 +98,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
                 android:layout_marginBottom="16dp"
-                app:dividerColor="@color/divider_dark" />
+                app:dividerColor="@color/card_background" />
 
             <!-- Children Section Title + Add Button -->
             <LinearLayout

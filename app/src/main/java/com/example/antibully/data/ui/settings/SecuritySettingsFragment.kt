@@ -12,7 +12,9 @@ import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.example.antibully.R
 import com.example.antibully.databinding.FragmentSecuritySettingsBinding
+import com.google.android.material.button.MaterialButton
 import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.textfield.TextInputEditText
 
 class SecuritySettingsFragment : Fragment() {
 
@@ -94,50 +96,79 @@ class SecuritySettingsFragment : Fragment() {
         }
     }
 
-    private fun showEnableDialog() {
-        AlertDialog.Builder(requireContext())
-            .setTitle("Enable Two-Factor Authentication")
-            .setMessage("Do you want to enable two-factor authentication and add an extra layer of security to your account?")
-            .setPositiveButton("Continue") { _, _ ->
-                findNavController().navigate(R.id.action_securitySettingsFragment_to_twoFactorSetupFragment)
-            }
-            .setNegativeButton("Cancel") { _, _ ->
-                binding.twoFactorSwitch.setOnCheckedChangeListener(null)
-                binding.twoFactorSwitch.isChecked = false
-                setupListeners()
-            }
-            .setCancelable(false)
-            .show()
+//    private fun showEnableDialog() {
+//        AlertDialog.Builder(requireContext())
+//            .setTitle("Enable Two-Factor Authentication")
+//            .setMessage("Do you want to enable two-factor authentication and add an extra layer of security to your account?")
+//            .setPositiveButton("Continue") { _, _ ->
+//                findNavController().navigate(R.id.action_securitySettingsFragment_to_twoFactorSetupFragment)
+//            }
+//            .setNegativeButton("Cancel") { _, _ ->
+//                binding.twoFactorSwitch.setOnCheckedChangeListener(null)
+//                binding.twoFactorSwitch.isChecked = false
+//                setupListeners()
+//            }
+//            .setCancelable(false)
+//            .show()
+//    }
+private fun showEnableDialog() {
+    val dialogView = LayoutInflater.from(requireContext())
+        .inflate(R.layout.dialog_enable_2fa, null)
+
+    val dialog = AlertDialog.Builder(requireContext(), R.style.CustomDialogTheme)
+        .setView(dialogView)
+        .setCancelable(false)
+        .create()
+
+    // Set up button click listeners
+    dialogView.findViewById<MaterialButton>(R.id.continueButton).setOnClickListener {
+        dialog.dismiss()
+        findNavController().navigate(R.id.action_securitySettingsFragment_to_twoFactorSetupFragment)
     }
+
+    dialogView.findViewById<MaterialButton>(R.id.cancelButton).setOnClickListener {
+        dialog.dismiss()
+        binding.twoFactorSwitch.setOnCheckedChangeListener(null)
+        binding.twoFactorSwitch.isChecked = false
+        setupListeners()
+    }
+
+    dialog.show()
+}
 
 
     private fun showDisableDialog() {
-        val input = EditText(requireContext())
-        input.hint = "Enter authentication code"
+    val dialogView = layoutInflater.inflate(R.layout.dialog_disable_2fa, null)
+    val dialog = AlertDialog.Builder(requireContext(), R.style.CustomDialogTheme)
+        .setView(dialogView)
+        .setCancelable(false)
+        .create()
 
-        AlertDialog.Builder(requireContext())
-            .setTitle("Disable Two-Factor Authentication")
-            .setMessage("To disable authentication, please enter the code from your authenticator app.")
-            .setView(input)
-            .setPositiveButton("Confirm") { _, _ ->
-                val code = input.text.toString().trim()
-                if (code.isNotEmpty()) {
-                    viewModel.requestDisableTwoFactor(code)
-                } else {
-                    Snackbar.make(binding.root, "Please enter the authentication code", Snackbar.LENGTH_SHORT).show()
-                    binding.twoFactorSwitch.setOnCheckedChangeListener(null)
-                    binding.twoFactorSwitch.isChecked = true
-                    setupListeners()
-                }
-            }
-            .setNegativeButton("Cancel") { _, _ ->
-                binding.twoFactorSwitch.setOnCheckedChangeListener(null)
-                binding.twoFactorSwitch.isChecked = true
-                setupListeners()
-            }
-            .setCancelable(false)
-            .show()
+    val codeInput = dialogView.findViewById<TextInputEditText>(R.id.codeInput)
+    val confirmButton = dialogView.findViewById<MaterialButton>(R.id.confirmButton)
+    val cancelButton = dialogView.findViewById<MaterialButton>(R.id.cancelButton)
+
+    confirmButton.setOnClickListener {
+        val code = codeInput.text.toString().trim()
+        if (code.isNotEmpty()) {
+            viewModel.requestDisableTwoFactor(code)
+            dialog.dismiss()
+        } else {
+            codeInput.error = "Please enter the authentication code"
+        }
     }
+
+    cancelButton.setOnClickListener {
+        binding.twoFactorSwitch.setOnCheckedChangeListener(null)
+        binding.twoFactorSwitch.isChecked = true
+        setupListeners()
+        dialog.dismiss()
+    }
+
+    dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+    dialog.show()
+}
+
 
     override fun onDestroyView() {
         super.onDestroyView()
