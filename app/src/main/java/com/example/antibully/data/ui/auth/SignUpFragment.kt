@@ -76,19 +76,27 @@ class SignUpFragment : Fragment() {
         }
 
     }
-    private fun registerUserToServer(token: String, email: String) {
-        lifecycleScope.launch {
-            try {
-                val body = mapOf("email" to email)
-                val response = AuthRetrofitClient.authService.registerFirebaseUser("Bearer $token", body)
-                if (!response.isSuccessful) {
-                    Toast.makeText(requireContext(), "Failed to sync user to server", Toast.LENGTH_SHORT).show()
-                }
-            } catch (e: Exception) {
-                Toast.makeText(requireContext(), "Error syncing user to server: ${e.message}", Toast.LENGTH_SHORT).show()
+private fun registerUserToServer(token: String, email: String, fullName: String, profileImageUrl: String?) {
+    lifecycleScope.launch {
+        try {
+            val body = mutableMapOf(
+                "email" to email,
+                "username" to fullName
+            )
+
+            profileImageUrl?.let {
+                body["profileImageUrl"] = it
             }
+
+            val response = AuthRetrofitClient.authService.registerFirebaseUser("Bearer $token", body)
+            if (!response.isSuccessful) {
+                Toast.makeText(requireContext(), "Failed to sync user to server", Toast.LENGTH_SHORT).show()
+            }
+        } catch (e: Exception) {
+            Toast.makeText(requireContext(), "Error syncing user to server: ${e.message}", Toast.LENGTH_SHORT).show()
         }
     }
+}
 
     private fun registerUser(fullName: String, email: String, password: String, profileImageUrl: String?) {
         auth.createUserWithEmailAndPassword(email, password)
@@ -116,7 +124,7 @@ class SignUpFragment : Fragment() {
 
                             auth.currentUser?.getIdToken(false)?.addOnSuccessListener { result ->
                                 val token = result.token ?: return@addOnSuccessListener
-                                registerUserToServer(token, email)
+                                registerUserToServer(token, email, fullName, profileImageUrl)
                             }
 
                             Toast.makeText(requireContext(), "Welcome, $fullName!", Toast.LENGTH_SHORT).show()

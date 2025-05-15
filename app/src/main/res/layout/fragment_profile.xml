@@ -21,6 +21,32 @@
             android:paddingTop="32dp"
             android:paddingBottom="@dimen/bottom_nav_safe_padding">
 
+            <!-- Header with Settings Button -->
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerHorizontal="true"
+                    android:text="Profile"
+                    android:textColor="@color/white"
+                    android:textSize="20sp"
+                    android:fontFamily="@font/assistant_bold"/>
+
+                <ImageButton
+                    android:id="@+id/btnSettings"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_alignParentEnd="true"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_settings"
+                    android:contentDescription="Settings"
+                    android:tint="@color/white"/>
+            </RelativeLayout>
+
             <!-- Profile Image with Edit FAB overlay -->
             <FrameLayout
                 android:layout_width="wrap_content"
