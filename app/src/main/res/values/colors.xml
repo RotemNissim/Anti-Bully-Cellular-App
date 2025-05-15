@@ -10,6 +10,26 @@
     <color name="colorPrimary">#B5A8D5</color>
     <color name="colorPrimaryBtn">#E8DBFDFF</color>
     <color name="text_primary">#000000</color> <!-- שחור -->
-    <color name="text_secondary">#666666</color> <!-- אפור כהה -->
-
+    <color name="dark_background">#1C1B1F</color>
+    <color name="text_secondary">#938F99</color>
+    <color name="input_background">#27262B</color>
+    <color name="input_stroke">#938F99</color>
+    <color name="primary_button">#95B4F2</color>
+    <color name="button_stroke">#938F99</color>
+    <color name="accent">#D0BCFF</color>
+    <color name="logo_color">#000000</color> <!-- שחור במצב בהיר -->
+    <color name="background_color">#FFFFFF</color>
+    <color name="text_color">#000000</color>
+    <color name="input_text">#000000</color>
+    <color name="button_text">#FFFFFF</color>
+    <color name="text_hint">#8E8E93</color>
+    <color name="icon_tint">#8E8E93</color>
+    <color name="primary">#95B4F2</color>
+    <color name="text_dark">#000000</color>
+    <color name="card_background">#2C2C2E</color>
+    <color name="accent_green">#34C759</color>
+    <color name="surface_dark">#2C2C2E</color>
+    <color name="card_stroke">#3C3C3E</color>
+    <color name="accent_blue">#95B4F2</color>
+    <color name="divider_dark">#2C2C2E</color>
 </resources>

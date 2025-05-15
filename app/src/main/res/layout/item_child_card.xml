@@ -1,13 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
 <com.google.android.material.card.MaterialCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="8dp"
-    app:cardElevation="2dp"
+    android:layout_marginHorizontal="16dp"
+    android:layout_marginVertical="8dp"
+    app:cardElevation="4dp"
     app:cardCornerRadius="16dp"
-    app:cardBackgroundColor="@android:color/white"
-    app:strokeColor="#EEEEEE"
+    app:cardBackgroundColor="#2C2C2E"
+    app:strokeColor="#3C3C3E"
     app:strokeWidth="1dp">
 
     <LinearLayout
@@ -15,17 +17,19 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:padding="12dp"
+        android:padding="16dp"
         android:weightSum="1">
 
         <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/ivChildImage"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
             android:contentDescription="Profile picture"
             android:scaleType="centerCrop"
             android:src="@drawable/ic_default_profile"
-            app:shapeAppearanceOverlay="@style/CircleImage"/>
+            app:shapeAppearanceOverlay="@style/CircleImage"
+            app:strokeColor="#95B4F2"
+            app:strokeWidth="2dp"/>
 
         <LinearLayout
             android:layout_width="0dp"
@@ -40,7 +44,7 @@
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/assistant_bold"
                 android:text="Child Name"
-                android:textColor="@android:color/black"
+                android:textColor="#FFFFFF"
                 android:textSize="16sp"
                 android:textStyle="bold" />
 
@@ -50,8 +54,9 @@
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/assistant_medium"
                 android:text="Child ID"
-                android:textColor="#666666"
-                android:textSize="14sp" />
+                android:textColor="#95B4F2"
+                android:textSize="14sp"
+                android:layout_marginTop="4dp" />
         </LinearLayout>
 
         <ImageButton
@@ -60,6 +65,8 @@
             android:layout_height="40dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@drawable/ic_edit"
+            android:tint="#95B4F2"
+            android:padding="8dp"
             android:contentDescription="Edit child" />
 
         <ImageButton
@@ -68,6 +75,8 @@
             android:layout_height="40dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@drawable/ic_delete"
+            android:tint="#FF453A"
+            android:padding="8dp"
             android:contentDescription="Delete child" />
 
     </LinearLayout>

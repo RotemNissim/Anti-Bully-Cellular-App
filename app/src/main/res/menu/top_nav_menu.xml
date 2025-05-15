@@ -5,7 +5,7 @@
     <!-- Back Arrow: we’ll toggle it via supportActionBar logic -->
     <item
         android:id="@+id/app_logo"
-        android:icon="@drawable/ic_app_logo"
+        android:icon="@drawable/untitled"
         android:title="App Logo"
         app:showAsAction="ifRoom" />
 </menu>

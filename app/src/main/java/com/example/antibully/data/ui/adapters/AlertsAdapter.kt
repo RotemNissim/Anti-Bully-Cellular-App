@@ -44,14 +44,14 @@ class AlertsAdapter(
                 DateUtils.MINUTE_IN_MILLIS
             )
 
-            // ✅ Set profile image (if available)
-            childData?.imageUrl?.let { imageUrl ->
+            // ✅ Set profile image safely
+            if (!childData?.imageUrl.isNullOrEmpty()) {
                 Picasso.get()
-                    .load(imageUrl)
+                    .load(childData.imageUrl)
                     .placeholder(R.drawable.ic_default_profile)
                     .error(R.drawable.ic_default_profile)
                     .into(childProfileImage)
-            } ?: run {
+            } else {
                 childProfileImage.setImageResource(R.drawable.ic_default_profile)
             }
 
@@ -59,6 +59,45 @@ class AlertsAdapter(
         }
 
     }
+//        fun bind(alert: Alert, childDataMap: Map<String, ChildLocalData>, onClick: (Alert) -> Unit) {
+//            val title = itemView.findViewById<TextView>(R.id.alertTitle)
+//            val reason = itemView.findViewById<TextView>(R.id.alertReason)
+//            val time = itemView.findViewById<TextView>(R.id.alertTime)
+//            val childProfileImage = itemView.findViewById<ShapeableImageView>(R.id.childProfileImage)
+//
+//            val displayTime = if (alert.timestamp < 1000000000000L) {
+//                alert.timestamp * 1000
+//            } else {
+//                alert.timestamp
+//            }
+//
+//            val childData = childDataMap[alert.reporterId]
+//            val childName = childData?.name ?: alert.reporterId
+//
+//            // ✅ Set core text values
+//            title.text = "Child: $childName"
+//            reason.text = alert.reason
+//            time.text = DateUtils.getRelativeTimeSpanString(
+//                displayTime,
+//                System.currentTimeMillis(),
+//                DateUtils.MINUTE_IN_MILLIS
+//            )
+//
+//            // ✅ Set profile image (if available)
+//            childData?.imageUrl?.let { imageUrl ->
+//                Picasso.get()
+//                    .load(imageUrl)
+//                    .placeholder(R.drawable.ic_default_profile)
+//                    .error(R.drawable.ic_default_profile)
+//                    .into(childProfileImage)
+//            } ?: run {
+//                childProfileImage.setImageResource(R.drawable.ic_default_profile)
+//            }
+//
+//            itemView.setOnClickListener { onClick(alert) }
+//        }
+//
+//    }
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AlertViewHolder {
         val view = LayoutInflater.from(parent.context)
             .inflate(R.layout.item_alert, parent, false)

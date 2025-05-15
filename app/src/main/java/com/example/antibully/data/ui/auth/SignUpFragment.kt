@@ -49,7 +49,7 @@ class SignUpFragment : Fragment() {
         val passwordInput = view.findViewById<EditText>(R.id.etSignUpPassword)
         val signUpButton = view.findViewById<Button>(R.id.btnRegister)
         profileImageView = view.findViewById(R.id.ivProfileImage)
-        val chooseImageButton = view.findViewById<View>(R.id.btnChangeProfileImage)
+        val chooseImageButton = view.findViewById<View>(R.id.fabChangePhoto)
         spinner = view.findViewById(R.id.spinnerProfileUpload)
 
         chooseImageButton.setOnClickListener {
@@ -69,6 +69,12 @@ class SignUpFragment : Fragment() {
                 registerUser(fullName, email, password, uploadedImageUrl)
             }
         }
+        val loginLink = view.findViewById<TextView>(R.id.tvLoginLink)
+
+        loginLink.setOnClickListener {
+            findNavController().navigate(R.id.loginFragment)
+        }
+
     }
     private fun registerUserToServer(token: String, email: String) {
         lifecycleScope.launch {
