@@ -65,7 +65,7 @@
             android:layout_height="40dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@drawable/ic_edit"
-            android:tint="#95B4F2"
+            app:tint="#95B4F2"
             android:padding="8dp"
             android:contentDescription="Edit child" />
 
@@ -75,7 +75,7 @@
             android:layout_height="40dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@drawable/ic_delete"
-            android:tint="#FF453A"
+            app:tint="#FF453A"
             android:padding="8dp"
             android:contentDescription="Delete child" />
 

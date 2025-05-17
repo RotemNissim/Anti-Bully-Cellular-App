@@ -169,53 +169,76 @@ class ProfileFragment : Fragment() {
                     ProfileFragmentDirections.actionProfileFragmentToEditChildFragment(child.childId)
                 findNavController().navigate(action)
             }
-
+//
 //            holder.deleteButton.setOnClickListener {
 //                AlertDialog.Builder(requireContext())
 //                    .setTitle("Delete Child")
 //                    .setMessage("Are you sure you want to delete this child from your list?")
 //                    .setPositiveButton("Delete") { _, _ ->
-//                        lifecycleScope.launch(Dispatchers.IO) {
-//                            childDao.deleteChild(child.childId, child.parentUserId)
-//                            val updated = childDao.getChildrenForUser(child.parentUserId)
-//                            withContext(Dispatchers.Main) {
-//                                updateData(updated)
-//                                noChildrenText.visibility = if (updated.isEmpty()) View.VISIBLE else View.GONE
-//                                Toast.makeText(requireContext(), "Child deleted", Toast.LENGTH_SHORT).show()
+//
+//                        if (isTwoFactorEnabled)
+//                        {
+//                            // לפתוח VerifyTwoFactorDialogFragment
+//                            val dialog = VerifyTwoFactorDialogFragment { verified ->
+//                                if (verified) {
+//                                    deleteChild(child)
+//                                } else {
+//                                    Toast.makeText(requireContext(), "Authentication failed", Toast.LENGTH_SHORT).show()
+//                                }
 //                            }
+//                            dialog.show(parentFragmentManager, "VerifyTwoFactor")
+//                        } else {
+//                            deleteChild(child)
 //                        }
+//
 //                    }
 //                    .setNegativeButton("Cancel", null)
 //                    .show()
 //            }
+//        }
             holder.deleteButton.setOnClickListener {
-                AlertDialog.Builder(requireContext())
-                    .setTitle("Delete Child")
-                    .setMessage("Are you sure you want to delete this child from your list?")
-                    .setPositiveButton("Delete") { _, _ ->
+                val dialogView = LayoutInflater.from(requireContext())
+                    .inflate(R.layout.dialog_delete_child, null)
 
-                        if (isTwoFactorEnabled)
-                        {
-                            // לפתוח VerifyTwoFactorDialogFragment
-                            val dialog = VerifyTwoFactorDialogFragment { verified ->
-                                if (verified) {
-                                    deleteChild(child)
-                                } else {
-                                    Toast.makeText(requireContext(), "Authentication failed", Toast.LENGTH_SHORT).show()
-                                }
+                val dialog = AlertDialog.Builder(requireContext())
+                    .setView(dialogView)
+                    .create()
+
+                // כפתורי הדיאלוג
+                val cancelButton = dialogView.findViewById<Button>(R.id.cancelButton)
+                val deleteButton = dialogView.findViewById<Button>(R.id.deleteButton)
+
+                cancelButton.setOnClickListener {
+                    dialog.dismiss()
+                }
+
+                deleteButton.setOnClickListener {
+                    dialog.dismiss()
+
+                    if (isTwoFactorEnabled) {
+                        // פתיחת דיאלוג אימות דו שלבי
+                        val verifyDialog = VerifyTwoFactorDialogFragment { verified ->
+                            if (verified) {
+                                deleteChild(child)
+                            } else {
+                                Toast.makeText(
+                                    requireContext(),
+                                    "Authentication failed",
+                                    Toast.LENGTH_SHORT
+                                ).show()
                             }
-                            dialog.show(parentFragmentManager, "VerifyTwoFactor")
-                        } else {
-                            // אם אין אימות דו שלבי פעיל – למחוק ישירות
-                            deleteChild(child)
                         }
-
+                        verifyDialog.show(parentFragmentManager, "VerifyTwoFactor")
+                    } else {
+                        // אם אין אימות – מחיקה ישירה
+                        deleteChild(child)
                     }
-                    .setNegativeButton("Cancel", null)
-                    .show()
+                }
+
+                dialog.show()
             }
         }
-        private fun deleteChild(child: ChildLocalData) {
+            private fun deleteChild(child: ChildLocalData) {
             lifecycleScope.launch(Dispatchers.IO) {
                 childDao.deleteChild(child.childId, child.parentUserId)
                 val updated = childDao.getChildrenForUser(child.parentUserId)
