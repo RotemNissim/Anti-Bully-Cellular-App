@@ -44,7 +44,7 @@
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:src="@drawable/ic_settings"
                     android:contentDescription="Settings"
-                    android:tint="@color/white"/>
+                    app:tint="@color/white"/>
             </RelativeLayout>
 
             <!-- Profile Image with Edit FAB overlay -->
