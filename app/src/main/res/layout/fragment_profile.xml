@@ -3,6 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/dark_background"
     android:padding="8dp">
 
     <androidx.core.widget.NestedScrollView
@@ -20,6 +21,32 @@
             android:paddingTop="32dp"
             android:paddingBottom="@dimen/bottom_nav_safe_padding">
 
+            <!-- Header with Settings Button -->
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerHorizontal="true"
+                    android:text="Profile"
+                    android:textColor="@color/white"
+                    android:textSize="20sp"
+                    android:fontFamily="@font/assistant_bold"/>
+
+                <ImageButton
+                    android:id="@+id/btnSettings"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_alignParentEnd="true"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_settings"
+                    android:contentDescription="Settings"
+                    android:tint="@color/white"/>
+            </RelativeLayout>
+
             <!-- Profile Image with Edit FAB overlay -->
             <FrameLayout
                 android:layout_width="wrap_content"
@@ -33,7 +60,9 @@
                     android:contentDescription="Profile picture"
                     android:scaleType="centerCrop"
                     android:src="@drawable/ic_default_profile"
-                    app:shapeAppearanceOverlay="@style/CircleImage" />
+                    app:shapeAppearanceOverlay="@style/CircleImage"
+                    app:strokeColor="@color/accent_blue"
+                    app:strokeWidth="2dp" />
 
                 <com.google.android.material.floatingactionbutton.FloatingActionButton
                     android:id="@+id/btnEditProfile"
@@ -44,6 +73,8 @@
                     android:layout_marginBottom="-5dp"
                     android:contentDescription="Edit Profile"
                     app:fabCustomSize="32dp"
+                    app:backgroundTint="@color/accent_blue"
+                    app:tint="@color/white"
                     app:layout_anchor="@id/ivProfileImage"
                     app:srcCompat="@drawable/ic_edit" />
             </FrameLayout>
@@ -57,6 +88,7 @@
                 android:layout_marginTop="12dp"
                 android:fontFamily="@font/assistant_extra_bold"
                 android:text="Username"
+                android:textColor="@color/white"
                 android:textSize="20sp"
                 android:textStyle="bold" />
 
@@ -66,7 +98,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
                 android:layout_marginBottom="16dp"
-                app:dividerColor="@color/black" />
+                app:dividerColor="@color/card_background" />
 
             <!-- Children Section Title + Add Button -->
             <LinearLayout
@@ -84,31 +116,25 @@
                     android:layout_weight="1"
                     android:fontFamily="@font/assistant_bold"
                     android:text="My Kids"
+                    android:textColor="@color/white"
                     android:textSize="18sp"
                     android:textStyle="bold" />
 
-                <Button
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnAddChild"
-                    style="@style/Widget.Material3.ExtendedFloatingActionButton.Icon.Primary"
+                    style="@style/Widget.Material3.Button.TonalButton"
                     android:layout_width="wrap_content"
-                    android:layout_height="36dp"
+                    android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     android:layout_marginRight="10dp"
                     android:layout_marginBottom="10dp"
                     android:contentDescription="add child desc"
                     android:fontFamily="@font/assistant_bold"
                     android:text="Add Child"
-                    app:icon="@drawable/ic_add_24dp" />
-                <Button
-                    android:id="@+id/btnTwoFactor"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Enable 2FA"
-                    android:layout_gravity="center_horizontal"
-                    android:layout_marginTop="8dp"
-                    android:fontFamily="@font/assistant_bold"
-                    android:textAllCaps="false" />
-
+                    android:textColor="@color/white"
+                    app:backgroundTint="@color/accent_blue"
+                    app:icon="@drawable/ic_add_24dp"
+                    app:iconTint="@color/white" />
             </LinearLayout>
 
             <!-- No children message -->
@@ -120,6 +146,7 @@
                 android:layout_marginTop="8dp"
                 android:fontFamily="@font/assistant_medium"
                 android:text="No children added yet"
+                android:textColor="@color/text_secondary"
                 android:textSize="14sp"
                 android:visibility="gone" />
 

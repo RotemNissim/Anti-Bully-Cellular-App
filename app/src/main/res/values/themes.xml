@@ -1,11 +1,17 @@
-<!-- themes.xml -->
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <style name="Theme.AntiBully" parent="Theme.Material3.DayNight.NoActionBar">
-    </style>
-    <style name="CircleImage" parent="">
-        <item name="cornerFamily">rounded</item>
-        <item name="cornerSize">50%</item>
-        <item name="android:fontFamily">@font/my_font_family</item>
 
+    <style name="Theme.AntiBully" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="android:windowBackground">@color/dark_background</item>
+        <item name="android:statusBarColor">@color/dark_background</item>
+        <item name="android:navigationBarColor">@color/dark_background</item>
+
+        <!-- ודא שאין שקיפות שגורמת לרווחים -->
+        <item name="android:windowTranslucentStatus">false</item>
+        <item name="android:windowTranslucentNavigation">false</item>
+
+        <!-- לוודא שאייקונים יהיו לבנים ולא שחורים -->
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
     </style>
+
 </resources>

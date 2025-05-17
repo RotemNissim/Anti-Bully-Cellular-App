@@ -4,42 +4,43 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="true">
+    android:fitsSystemWindows="true"
+    android:background="@color/dark_background">
 
-    <!-- ✅ TOP TOOLBAR always at the top -->
+    <!-- Top Toolbar -->
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/top_nav_bar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:background="?android:attr/windowBackground"
-        android:theme="@style/ThemeOverlay.AppCompat.DayNight.ActionBar"
-        app:titleTextColor="@android:color/black"
-        android:logo="@drawable/ic_app_logo"
+        android:background="@color/dark_background"
+        android:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar"
+        app:titleTextColor="@color/white"
+        android:logo="@drawable/untitled"
         android:gravity="center_vertical"
         android:contentInsetStart="0dp"
         android:contentInsetLeft="0dp"
-        android:contentInsetStartWithNavigation="0dp"
-        />
+        android:contentInsetStartWithNavigation="0dp" />
 
-    <!-- ✅ NAVHOST, placed *below* toolbar -->
+    <!-- NavHost -->
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/nav_host_fragment"
         android:name="androidx.navigation.fragment.NavHostFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginTop="?attr/actionBarSize"
+        android:background="@color/dark_background"
         app:defaultNavHost="true"
         app:navGraph="@navigation/nav_graph" />
 
-    <!-- ✅ BOTTOM NAV -->
+    <!-- Bottom Nav -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_nav_menu"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        android:layout_marginTop="26dp"
-        android:background="?android:attr/windowBackground"
-        android:theme="@style/ThemeOverlay.AppCompat.DayNight.ActionBar"
+        android:background="@color/surface_dark"
+        app:itemIconTint="@color/primary"
+        app:itemTextColor="@color/primary"
         app:menu="@menu/bottom_nav_menu" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -82,10 +82,18 @@ class LoginFragment : Fragment() {
             signInWithGoogle()
         }
     }
-    private fun registerUserToServer(token: String, email: String) {
+    private fun registerUserToServer(token: String, email: String, name: String, imageUrl: String?) {
         lifecycleScope.launch {
             try {
-                val body = mapOf("email" to email)
+                val body = mutableMapOf(
+                    "email" to email,
+                    "username" to name
+                )
+
+                imageUrl?.let {
+                    body["profileImageUrl"] = it
+                }
+
                 val response = com.example.antibully.data.api.AuthRetrofitClient.authService.registerFirebaseUser(
                     "Bearer $token", body
                 )
@@ -137,7 +145,7 @@ class LoginFragment : Fragment() {
                         Toast.makeText(requireContext(), "Google Sign-In Successful!", Toast.LENGTH_SHORT).show()
                         firebaseUser.getIdToken(false).addOnSuccessListener { result ->
                             val token = result.token ?: return@addOnSuccessListener
-                            registerUserToServer(token, email)
+                            registerUserToServer(token, email, name, profileImageUrl)
                         }
 
                         findNavController().navigate(R.id.feedFragment)
@@ -159,7 +167,10 @@ class LoginFragment : Fragment() {
                     firebaseUser?.getIdToken(false)?.addOnSuccessListener { result ->
                         val token = result.token ?: return@addOnSuccessListener
                         val emailFromUser = firebaseUser.email ?: ""
-                        registerUserToServer(token, emailFromUser)
+                        val name = firebaseUser.displayName ?: emailFromUser.substringBefore("@")
+                        val profileImageUrl = firebaseUser.photoUrl?.toString() ?: ""
+
+                        registerUserToServer(token, emailFromUser, name, profileImageUrl)
                     }
 
                     Toast.makeText(requireContext(), "Login successful!", Toast.LENGTH_SHORT).show()

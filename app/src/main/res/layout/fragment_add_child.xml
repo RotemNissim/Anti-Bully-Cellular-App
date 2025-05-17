@@ -3,6 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/dark_background"
     android:padding="16dp">
 
     <LinearLayout
@@ -16,16 +17,19 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:layout_marginBottom="15dp">
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="24dp">
 
             <com.google.android.material.imageview.ShapeableImageView
                 android:id="@+id/ivAddChildImage"
-                android:layout_width="120dp"
-                android:layout_height="120dp"
+                android:layout_width="140dp"
+                android:layout_height="140dp"
                 android:contentDescription="Profile picture"
                 android:scaleType="centerCrop"
                 android:src="@drawable/ic_default_profile"
-                app:shapeAppearanceOverlay="@style/CircleImage" />
+                app:shapeAppearanceOverlay="@style/CircleImage"
+                app:strokeColor="#95B4F2"
+                app:strokeWidth="2dp" />
 
             <com.google.android.material.floatingactionbutton.FloatingActionButton
                 android:id="@+id/btnChooseChildImage"
@@ -35,9 +39,10 @@
                 android:layout_marginEnd="-5dp"
                 android:layout_marginBottom="-5dp"
                 android:contentDescription="Change Profile Image"
-                app:fabCustomSize="32dp"
-                app:layout_anchor="@id/ivProfileImage"
-                app:srcCompat="@android:drawable/ic_menu_camera" />
+                app:backgroundTint="#95B4F2"
+                app:fabCustomSize="40dp"
+                app:tint="@android:color/white"
+                app:srcCompat="@drawable/ic_camera" />
         </FrameLayout>
 
         <!-- Child ID -->
@@ -45,13 +50,19 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Child's ID"
-            android:layout_marginTop="16dp">
+            android:layout_marginTop="16dp"
+            app:boxBackgroundColor="#2C2C2E"
+            app:boxStrokeColor="#95B4F2"
+            android:textColorHint="@color/text_secondary"
+            android:textColor="@color/white"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etChildId"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="text" />
+                android:inputType="text"
+                android:textColor="@android:color/white" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Child Name -->
@@ -59,27 +70,42 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Child's Full Name"
-            android:layout_marginTop="12dp">
+            android:layout_marginTop="16dp"
+            app:boxBackgroundColor="#2C2C2E"
+            app:boxStrokeColor="#95B4F2"
+            android:textColorHint="@color/text_secondary"
+            android:textColor="@color/white"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etChildName"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="text" />
+                android:inputType="text"
+                android:textColor="@android:color/white" />
         </com.google.android.material.textfield.TextInputLayout>
 
-        <Button
+        <!-- Save Button -->
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnSaveChild"
-            style="@style/Widget.Material3.ExtendedFloatingActionButton.Icon.Primary"
             android:layout_width="match_parent"
-            android:layout_height="41dp"
-            android:layout_marginStart="10dp"
-            android:layout_marginLeft="10dp"
+            android:layout_height="56dp"
+            android:layout_marginTop="32dp"
+            android:layout_marginHorizontal="16dp"
+            android:text="Save Child"
+            android:textSize="16sp"
+            android:textAllCaps="false"
+            app:cornerRadius="12dp"
+            android:backgroundTint="#95B4F2" />
+
+        <!-- Progress Bar -->
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:layout_marginTop="24dp"
-            android:layout_marginEnd="10dp"
-            android:layout_marginRight="10dp"
-            android:layout_marginBottom="10dp"
-            android:text="Save Child" />
+            android:visibility="gone"
+            android:indeterminateTint="#95B4F2" />
 
     </LinearLayout>
 </ScrollView>

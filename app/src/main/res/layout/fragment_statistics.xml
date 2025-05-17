@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#1C1B1F"
     android:padding="16dp">
 
     <LinearLayout
@@ -9,48 +11,89 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <!-- Pie Chart Section -->
+        <!-- Header -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Statistics"
+            android:textColor="#FFFFFF"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            android:fontFamily="@font/assistant_bold"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="24dp"
+            android:gravity="center" />
 
+        <!-- Pie Chart Section -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
+            android:layout_marginBottom="16dp"
             android:fontFamily="@font/assistant_bold"
             android:text="Alerts Per Child"
+            android:textColor="#FFFFFF"
             android:textSize="18sp"
             android:textStyle="bold" />
 
-        <com.github.mikephil.charting.charts.PieChart
-            android:id="@+id/pieChart"
+        <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
-            android:layout_height="300dp"
-            android:layout_marginBottom="24dp" />
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp"
+            app:cardCornerRadius="16dp"
+            app:cardBackgroundColor="#2C2C2E"
+            app:cardElevation="0dp">
+
+            <com.github.mikephil.charting.charts.PieChart
+                android:id="@+id/pieChart"
+                android:layout_width="match_parent"
+                android:layout_height="300dp"
+                android:padding="16dp" />
+        </androidx.cardview.widget.CardView>
 
         <!-- Line Chart Section -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
+            android:layout_marginBottom="16dp"
             android:fontFamily="@font/assistant_bold"
             android:text="Number of Alerts This Week"
+            android:textColor="#FFFFFF"
             android:textSize="18sp"
             android:textStyle="bold" />
 
-        <!-- Spinner only for line chart -->
-
-        <Spinner
-            android:id="@+id/spinnerChildren"
+        <!-- Spinner in a card -->
+        <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp" />
+            android:layout_marginBottom="16dp"
+            app:cardCornerRadius="12dp"
+            app:cardBackgroundColor="#2C2C2E"
+            app:cardElevation="0dp">
 
-        <com.github.mikephil.charting.charts.BarChart
-            android:id="@+id/barChart"
+            <Spinner
+                android:id="@+id/spinnerChildren"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:background="@null"
+                android:popupBackground="#2C2C2E"
+                android:layout_margin="4dp" />
+        </androidx.cardview.widget.CardView>
+
+        <!-- Bar Chart in a card -->
+        <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
-            android:layout_height="300dp"
-            android:layout_marginTop="16dp"
-            android:layout_marginBottom="80dp" />
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="80dp"
+            app:cardCornerRadius="16dp"
+            app:cardBackgroundColor="#2C2C2E"
+            app:cardElevation="0dp">
 
+            <com.github.mikephil.charting.charts.BarChart
+                android:id="@+id/barChart"
+                android:layout_width="match_parent"
+                android:layout_height="300dp"
+                android:padding="16dp" />
+        </androidx.cardview.widget.CardView>
 
     </LinearLayout>
 </ScrollView>

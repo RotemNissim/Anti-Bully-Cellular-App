@@ -1,65 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/dark_background">
 
-    <!-- Horizontally scrollable and centered toggle buttons -->
+    <!-- Header -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/headerLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <!-- Profile Image -->
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/profileImage"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:scaleType="centerCrop"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:shapeAppearanceOverlay="@style/CircleImage" />
+
+        <!-- Welcome Text -->
+        <TextView
+            android:id="@+id/welcomeText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="12dp"
+            android:text="Hello User,"
+            android:textColor="@color/primary"
+            android:textSize="16sp"
+            android:fontFamily="@font/assistant_bold"
+            app:layout_constraintStart_toEndOf="@id/profileImage"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/profileImage" />
+
+
+        <!-- Subtitle -->
+        <TextView
+            android:id="@+id/subtitleText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="12dp"
+            android:text="Stay Informed About Your Child"
+            android:textColor="@color/text_secondary"
+            android:textSize="14sp"
+            android:fontFamily="@font/assistant_regular"
+            app:layout_constraintStart_toEndOf="@id/profileImage"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/welcomeText" />
+
+
+        <!-- Search Bar -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/searchLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            app:hintEnabled="false"
+            app:boxBackgroundColor="@color/surface_dark"
+            app:boxCornerRadiusTopStart="12dp"
+            app:boxCornerRadiusTopEnd="12dp"
+            app:boxCornerRadiusBottomStart="12dp"
+            app:boxCornerRadiusBottomEnd="12dp"
+            app:startIconDrawable="@drawable/ic_search"
+            app:startIconTint="@color/text_secondary"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            app:layout_constraintTop_toBottomOf="@id/subtitleText">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/searchInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Search here ..."
+                android:textColorHint="@color/text_secondary"
+                android:textColor="@color/white"
+                android:fontFamily="@font/assistant_regular" />
+        </com.google.android.material.textfield.TextInputLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!-- Filter Chips -->
     <HorizontalScrollView
         android:id="@+id/horizontalFilterScroll"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:layout_marginStart="12dp"
-        android:layout_marginEnd="12dp"
-        android:fillViewport="false"
+        android:layout_marginTop="8dp"
         android:scrollbars="none"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/headerLayout"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <FrameLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/reasonToggleGroup"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="16dp"
+            app:singleSelection="true"
+            app:selectionRequired="false">
 
-            <com.google.android.material.button.MaterialButtonToggleGroup
-                android:id="@+id/reasonToggleGroup"
+            <com.google.android.material.chip.Chip
+                android:id="@+id/btnAll"
+                style="@style/Widget.AntiBully.FilterChip"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:orientation="horizontal"
-                app:singleSelection="true"
-                app:selectionRequired="false">
+                android:text="All" />
 
-                <!-- Buttons -->
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnAll"
-                    style="@style/Widget.AntiBully.ToggleButton"
-                    android:text="All" />
+            <com.google.android.material.chip.Chip
+                android:id="@+id/btnHarassment"
+                style="@style/Widget.AntiBully.FilterChip"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Harassment" />
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnHarassment"
-                    style="@style/Widget.AntiBully.ToggleButton"
-                    android:text="Harassment" />
+            <com.google.android.material.chip.Chip
+                android:id="@+id/btnExclusion"
+                style="@style/Widget.AntiBully.FilterChip"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Social Exclusion" />
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnExclusion"
-                    style="@style/Widget.AntiBully.ToggleButton"
-                    android:text="Social Exclusion" />
+            <com.google.android.material.chip.Chip
+                android:id="@+id/btnHateSpeech"
+                style="@style/Widget.AntiBully.FilterChip"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Hate Speech" />
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnHateSpeech"
-                    style="@style/Widget.AntiBully.ToggleButton"
-                    android:text="Hate Speech" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnCursing"
-                    style="@style/Widget.AntiBully.ToggleButton"
-                    android:text="Cursing" />
-
-            </com.google.android.material.button.MaterialButtonToggleGroup>
-        </FrameLayout>
+            <com.google.android.material.chip.Chip
+                android:id="@+id/btnCursing"
+                style="@style/Widget.AntiBully.FilterChip"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Cursing" />
+        </com.google.android.material.chip.ChipGroup>
     </HorizontalScrollView>
+
+    <!-- Recent Updates Header -->
+    <TextView
+        android:id="@+id/recentUpdatesHeader"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Recent updates"
+        android:textColor="@color/white"
+        android:textSize="16sp"
+        android:fontFamily="@font/assistant_bold"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="24dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/horizontalFilterScroll" />
 
     <!-- RecyclerView -->
     <androidx.recyclerview.widget.RecyclerView
@@ -68,12 +161,12 @@
         android:layout_height="0dp"
         android:clipToPadding="false"
         android:paddingTop="12dp"
-        android:paddingStart="12dp"
-        android:paddingEnd="12dp"
-        android:paddingBottom="@dimen/bottom_nav_safe_padding"
+        android:paddingHorizontal="16dp"
+        android:paddingBottom="16dp"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        app:layout_constraintTop_toBottomOf="@id/horizontalFilterScroll"
+        app:layout_constraintTop_toBottomOf="@id/recentUpdatesHeader"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
