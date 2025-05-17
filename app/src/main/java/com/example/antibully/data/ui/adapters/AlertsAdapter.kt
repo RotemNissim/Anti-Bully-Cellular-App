@@ -45,7 +45,7 @@ class AlertsAdapter(
             )
 
             // ✅ Set profile image (if available)
-            childData?.imageUrl?.let { imageUrl ->
+            childData?.imageUrl?.takeIf { it.isNotBlank() }?.let { imageUrl ->
                 Picasso.get()
                     .load(imageUrl)
                     .placeholder(R.drawable.ic_default_profile)
