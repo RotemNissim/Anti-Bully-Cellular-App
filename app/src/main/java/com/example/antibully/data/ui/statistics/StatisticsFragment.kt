@@ -11,6 +11,7 @@ import com.example.antibully.R
 import com.example.antibully.data.db.AppDatabase
 import com.example.antibully.data.models.Alert
 import com.example.antibully.data.models.ChildLocalData
+import com.example.antibully.data.models.TwoFactorStatusResponse
 import com.example.antibully.data.repository.AlertRepository
 import com.example.antibully.viewmodel.AlertViewModel
 import com.example.antibully.viewmodel.AlertViewModelFactory
@@ -25,6 +26,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import retrofit2.Response
 import java.util.*
 
 class StatisticsFragment : Fragment() {
@@ -61,6 +63,7 @@ class StatisticsFragment : Fragment() {
             override suspend fun updateMessageFlag(id: String, updateData: Map<String, Any>) = throw NotImplementedError()
             override suspend fun deleteMessage(id: String) = throw NotImplementedError()
         }
+
         val repository = AlertRepository(alertDao, dummyApi)
         alertViewModel = ViewModelProvider(this, AlertViewModelFactory(repository))[AlertViewModel::class.java]
 

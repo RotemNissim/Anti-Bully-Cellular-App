@@ -99,6 +99,16 @@
                     android:fontFamily="@font/assistant_bold"
                     android:text="Add Child"
                     app:icon="@drawable/ic_add_24dp" />
+                <Button
+                    android:id="@+id/btnTwoFactor"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Enable 2FA"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginTop="8dp"
+                    android:fontFamily="@font/assistant_bold"
+                    android:textAllCaps="false" />
+
             </LinearLayout>
 
             <!-- No children message -->

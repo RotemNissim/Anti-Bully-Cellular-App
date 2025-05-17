@@ -10,6 +10,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.example.antibully.R
+import com.example.antibully.data.api.AuthRetrofitClient
 import com.example.antibully.data.db.AppDatabase
 import com.example.antibully.data.models.User
 import com.example.antibully.data.models.UserApiResponse
@@ -19,6 +20,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import com.example.antibully.data.api.CloudinaryUploader
 import com.squareup.picasso.Picasso
+import com.example.antibully.data.api.RetrofitClient
 
 class SignUpFragment : Fragment() {
 
@@ -68,6 +70,19 @@ class SignUpFragment : Fragment() {
             }
         }
     }
+    private fun registerUserToServer(token: String, email: String) {
+        lifecycleScope.launch {
+            try {
+                val body = mapOf("email" to email)
+                val response = AuthRetrofitClient.authService.registerFirebaseUser("Bearer $token", body)
+                if (!response.isSuccessful) {
+                    Toast.makeText(requireContext(), "Failed to sync user to server", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                Toast.makeText(requireContext(), "Error syncing user to server: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
 
     private fun registerUser(fullName: String, email: String, password: String, profileImageUrl: String?) {
         auth.createUserWithEmailAndPassword(email, password)
@@ -93,9 +108,15 @@ class SignUpFragment : Fragment() {
                                 userDao.insertUser(userEntity)
                             }
 
+                            auth.currentUser?.getIdToken(false)?.addOnSuccessListener { result ->
+                                val token = result.token ?: return@addOnSuccessListener
+                                registerUserToServer(token, email)
+                            }
+
                             Toast.makeText(requireContext(), "Welcome, $fullName!", Toast.LENGTH_SHORT).show()
                             findNavController().navigate(R.id.feedFragment)
                         }
+
                         .addOnFailureListener {
                             Toast.makeText(requireContext(), "Failed to save user data", Toast.LENGTH_SHORT).show()
                         }
