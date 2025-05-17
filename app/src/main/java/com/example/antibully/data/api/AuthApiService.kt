@@ -30,9 +30,16 @@ interface AuthApiService {
     suspend fun checkTwoFactorStatus(
         @Header("Authorization") token: String
     ): TwoFactorStatusResponse
+
     @POST("status")
     suspend fun updateTwoFactorStatus(
         @Header("Authorization") token: String,
         @Body status: Map<String, Boolean>
     ): Response<Unit>
+
+    @POST("firebase-login")
+    suspend fun loginWithFirebase(
+        @Header("Authorization") token: String
+    ): Response<Unit>
+
 }
