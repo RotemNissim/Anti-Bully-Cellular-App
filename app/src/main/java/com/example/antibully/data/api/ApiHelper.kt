@@ -1,5 +1,6 @@
 package com.example.antibully.data.api
 
+import android.util.Log
 import retrofit2.Response
 import java.io.IOException
 
@@ -8,6 +9,7 @@ object ApiHelper {
         return try {
             val response = apiCall()
             if (response.isSuccessful) {
+                Log.d("api", response.toString())
                 response.body()?.let {
                     Result.success(it)
                 } ?: Result.failure(IOException("Empty response body"))

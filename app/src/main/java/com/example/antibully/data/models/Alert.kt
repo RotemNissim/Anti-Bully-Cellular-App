@@ -13,14 +13,14 @@ data class Alert(
     val timestamp: Long = System.currentTimeMillis()
 ) {
     companion object {
-        fun fromApi(response: MessageRequest): Alert {
+        fun fromApi(response: AlertApiRequest): Alert {
             return Alert(
-                postId = response.messageId,
-                reporterId = response.userId,
-                text = response.text,
-                reason = response.reason ?:"No reason provided",
+                postId = response._id,
+                reporterId = response.childId,
+                text = response.severity,
+                reason = response.summary ?:"No reason provided",
                 imageUrl = response.imageUrl,
-                timestamp = response.timestamp  * 1000
+                timestamp = response.timestamp
             )
         }
     }

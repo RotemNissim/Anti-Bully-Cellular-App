@@ -94,5 +94,6 @@ dependencies {
     implementation (libs.glide)
     kapt ("com.github.bumptech.glide:compiler:4.12.0")
     implementation(libs.core)
+    implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.6.4")
 
 }
