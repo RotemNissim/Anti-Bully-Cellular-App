@@ -11,9 +11,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.example.antibully.R
-import com.example.antibully.data.api.RetrofitClient
 import com.example.antibully.data.db.AppDatabase
-import com.example.antibully.data.models.ChildLocalData
 import com.example.antibully.data.repository.AlertRepository
 import com.example.antibully.data.ui.adapters.AlertsAdapter
 import com.example.antibully.databinding.FragmentFeedBinding
@@ -21,27 +19,35 @@ import com.example.antibully.viewmodel.AlertViewModel
 import com.example.antibully.viewmodel.AlertViewModelFactory
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import java.util.concurrent.TimeUnit
 
 class FeedFragment : Fragment() {
 
     private var _binding: FragmentFeedBinding? = null
     private val binding get() = _binding!!
-
     private lateinit var viewModel: AlertViewModel
-    private lateinit var alertAdapter: AlertsAdapter
-    private lateinit var alertFactory: AlertViewModelFactory
+
+    private var childIds: List<String> = emptyList()
+    private lateinit var adapter: AlertsAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val alertDao = AppDatabase.getDatabase(requireContext()).alertDao()
-        val alertRepository = AlertRepository(alertDao, RetrofitClient.apiService)
-        alertFactory = AlertViewModelFactory(alertRepository)
+        val dao = AppDatabase.getDatabase(requireContext()).alertDao()
+        val repo = AlertRepository(dao)
+        viewModel = ViewModelProvider(
+            this,
+            AlertViewModelFactory(repo)
+        )[AlertViewModel::class.java]
     }
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentFeedBinding.inflate(inflater, container, false)
@@ -51,21 +57,17 @@ class FeedFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        viewModel = ViewModelProvider(this, alertFactory)[AlertViewModel::class.java]
-        val chipGroup = binding.reasonToggleGroup
+        // 1. Load profile info (image + name)
         val currentUserId = FirebaseAuth.getInstance().currentUser?.uid.orEmpty()
-        val localChildDao = AppDatabase.getDatabase(requireContext()).childDao()
-
-        // Load user profile
         FirebaseFirestore.getInstance()
             .collection("users")
             .document(currentUserId)
             .get()
-            .addOnSuccessListener { document ->
-                val userName = document.getString("fullName") ?: "User"
+            .addOnSuccessListener { doc ->
+                val userName = doc.getString("fullName") ?: "User"
                 binding.welcomeText.text = getString(R.string.welcome_user, userName)
 
-                val imageUrl = document.getString("profileImageUrl")
+                val imageUrl = doc.getString("profileImageUrl")
                 if (!imageUrl.isNullOrEmpty()) {
                     Glide.with(requireContext())
                         .load(imageUrl)
@@ -76,76 +78,69 @@ class FeedFragment : Fragment() {
                 }
             }
 
-        // Load children data and set up alerts
-        FirebaseFirestore.getInstance()
-            .collection("users")
-            .document(currentUserId)
-            .collection("children")
-            .get()
-            .addOnSuccessListener { result ->
-                val firebaseChildren = result.documents.map { doc ->
-                    val id = doc.id
-                    val name = doc.getString("name") ?: id
-                    id to name
-                }.toMap()
+        // 2. RecyclerView setup
+        adapter = AlertsAdapter(emptyMap()) { alert ->
+            val action = FeedFragmentDirections
+                .actionFeedFragmentToAlertDetailsFragment(alert.postId)
+            findNavController().navigate(action)
+        }
+        binding.alertsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
+        binding.alertsRecyclerView.adapter = adapter
 
-                lifecycleScope.launch {
-                    val localChildren = localChildDao.getChildrenForUser(currentUserId)
-                    val roomMap = localChildren.associateBy { it.childId }
-
-                    val mergedMap = firebaseChildren.mapValues { (childId, name) ->
-                        val local = roomMap[childId]
-                        ChildLocalData(
-                            childId = childId,
-                            parentUserId = currentUserId,
-                            name = name,
-                            imageUrl = local?.imageUrl ?: ""
-                        )
-                    }
-
-                    alertAdapter = AlertsAdapter(mergedMap) { alert ->
-                        val action = FeedFragmentDirections.actionFeedFragmentToAlertDetailsFragment(alert.postId)
-                        findNavController().navigate(action)
-                    }
-
-                    binding.alertsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
-                    binding.alertsRecyclerView.adapter = alertAdapter
-
-                    // Set up filtering
-                    chipGroup.setOnCheckedChangeListener { _, checkedId ->
-                        val reason = when (checkedId) {
-                            R.id.btnHarassment -> "Harassment"
-                            R.id.btnExclusion -> "Social Exclusion"
-                            R.id.btnHateSpeech -> "Hate Speech"
-                            R.id.btnCursing -> "Cursing"
-                            else -> null
-                        }
-
-                        lifecycleScope.launch {
-                            if (reason == null) {
-                                viewModel.allAlerts.collectLatest { alerts ->
-                                    alertAdapter.submitList(alerts)
-                                }
-                            } else {
-                                viewModel.getFilteredAlerts(reason).collectLatest { alerts ->
-                                    alertAdapter.submitList(alerts)
-                                }
-                            }
-                        }
-                    }
-
-                    // Set default filter
-                    binding.btnAll.isChecked = true
-                    viewModel.fetchAlerts()
-                }
+        // 3. Token to fetch alerts
+        FirebaseAuth.getInstance().currentUser
+            ?.getIdToken(false)
+            ?.addOnSuccessListener { result ->
+                val token = result.token ?: return@addOnSuccessListener
+                startLiveFeed(token)
             }
-        // חיפוש – לוגיקה עתידית
+
+        // 4. Search input (placeholder)
         binding.searchInput.setOnEditorActionListener { textView, _, _ ->
             val query = textView.text.toString().trim()
-            // TODO: filtering logic
+            // TODO: implement search logic
             true
         }
 
+        // 5. Filter chips (logic optional - not wired yet)
+        binding.reasonToggleGroup.setOnCheckedChangeListener { _, checkedId ->
+            val reason = when (checkedId) {
+                R.id.btnHarassment -> "Harassment"
+                R.id.btnExclusion -> "Social Exclusion"
+                R.id.btnHateSpeech -> "Hate Speech"
+                R.id.btnCursing -> "Cursing"
+                else -> null
+            }
+            // Future: filter alerts list by reason
+        }
+    }
+
+    private fun startLiveFeed(token: String) {
+        val uid = FirebaseAuth.getInstance().currentUser?.uid.orEmpty()
+        FirebaseFirestore.getInstance()
+            .collection("users")
+            .document(uid)
+            .collection("children")
+            .get()
+            .addOnSuccessListener { snap ->
+                childIds = snap.documents.map { it.id }
+
+                // Live updates from Room
+                viewLifecycleOwner.lifecycleScope.launch {
+                    viewModel.allAlerts.collectLatest { alerts ->
+                        val filtered = alerts.filter { it.reporterId in childIds }
+                        adapter.submitList(filtered)
+                    }
+                }
+
+                // Polling from server
+                viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
+                    while (isActive) {
+                        childIds.forEach { viewModel.fetchAlerts(token, it) }
+                        delay(TimeUnit.SECONDS.toMillis(15))
+                    }
+                }
+            }
     }
 
     override fun onDestroyView() {

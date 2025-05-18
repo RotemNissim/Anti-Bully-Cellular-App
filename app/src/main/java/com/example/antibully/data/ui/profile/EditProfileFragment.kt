@@ -112,8 +112,9 @@ class EditProfileFragment : Fragment() {
                         id = uid,
                         name = newName,
                         email = auth.currentUser?.email ?: "",
-                        profilePictureUrl = null
+                        profilePictureUrl = finalImagePath
                     )
+
                     val userEntity = User.fromApi(apiResponse, finalImagePath)
 
                     lifecycleScope.launch(Dispatchers.IO) {
@@ -140,7 +141,8 @@ class EditProfileFragment : Fragment() {
                 context = requireContext(),
                 imageUri = uri!!,
                 onSuccess = { url ->
-                    requireActivity().runOnUiThread {
+                    activity?.runOnUiThread {
+                        if (!isAdded) return@runOnUiThread
                         selectedCloudinaryUrl = url
                         spinner.visibility = View.GONE
                         Picasso.get().load(url).into(profileImageView)
@@ -148,12 +150,14 @@ class EditProfileFragment : Fragment() {
                     }
                 },
                 onFailure = { e ->
-                    requireActivity().runOnUiThread {
+                    activity?.runOnUiThread {
+                        if (!isAdded) return@runOnUiThread
                         spinner.visibility = View.GONE
                         Toast.makeText(requireContext(), "Upload failed: ${e.message}", Toast.LENGTH_SHORT).show()
                     }
                 }
             )
+
         }
     }
 }
