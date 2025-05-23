@@ -1,5 +1,6 @@
 package com.example.antibully.data.ui.statistics
 
+import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
 import android.view.*
@@ -120,8 +121,14 @@ class StatisticsFragment : Fragment() {
         }.filterValues { it > 0 }
 
         if (counts.isEmpty()) {
-            pieChart.clear()
-            pieChart.centerText = "No Data"
+            pieChart.apply {
+                clear()
+                centerText = "No Data"
+                setEntryLabelColor(Color.WHITE) // Set label color to white
+                setCenterTextColor(Color.WHITE) // Set center text color to white
+                setHoleColor(Color.TRANSPARENT) // Make the hole transparent
+                legend.textColor = Color.WHITE // Set legend text color to white
+            }
             return
         }
 
@@ -139,24 +146,50 @@ class StatisticsFragment : Fragment() {
                 childColorMap[ counts.keys.elementAt(entries.indexOf(e)).childId ] ?: Color.GRAY
             }
             valueTextSize = 14f
+            valueTextColor = Color.WHITE // Set value text color to white
+            valueLineColor = Color.WHITE // Set value line color to white
         }
+
         pieChart.apply {
             data = PieData(ds)
             description.isEnabled = false
             centerText = "Alerts"
+            setEntryLabelColor(Color.WHITE) // Set entry label color to white
+            setCenterTextColor(Color.WHITE) // Set center text color to white
+            setHoleColor(Color.TRANSPARENT) // Make the hole transparent
+            legend.textColor = Color.WHITE // Set legend text color to white
             invalidate()
+        }
+    }
+    private class CustomSpinnerAdapter(
+        context: Context,
+        private val items: List<String>
+    ) : ArrayAdapter<String>(context, R.layout.spinner_item, items) {
+
+        override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+            val view = super.getView(position, convertView, parent)
+            val textView = view.findViewById<TextView>(android.R.id.text1)
+            textView.setTextColor(Color.WHITE)
+            textView.textSize = 16f
+            return view
+        }
+
+        override fun getDropDownView(position: Int, convertView: View?, parent: ViewGroup): View {
+            val view = super.getDropDownView(position, convertView, parent)
+            val textView = view.findViewById<TextView>(android.R.id.text1)
+            textView.setTextColor(Color.WHITE)
+            textView.textSize = 16f
+            textView.setPadding(32, 16, 32, 16)
+            return view
         }
     }
 
     private fun setupSpinner() {
         val names = children.map { it.name }
-        val adapter = ArrayAdapter(
-            requireContext(),
-            android.R.layout.simple_spinner_item,
-            names
-        ).apply {
-            setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        }
+        val adapter = CustomSpinnerAdapter(requireContext(), names)
+
+        // Set the dropdown layout style
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
 
         spinner.adapter = adapter
         spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
@@ -168,7 +201,7 @@ class StatisticsFragment : Fragment() {
             override fun onNothingSelected(parent: AdapterView<*>) {}
         }
 
-        // preload first child’s chart
+        // preload first child's chart
         if (children.isNotEmpty()) {
             loadBarChartForChild(children[0].childId)
         }
@@ -201,6 +234,7 @@ class StatisticsFragment : Fragment() {
         val ds = BarDataSet(entries, "Alerts / Day").apply {
             color = childColorMap[childId] ?: Color.BLUE
             valueTextSize = 12f
+            valueTextColor = Color.WHITE // Set value text color to white
             valueFormatter = object : ValueFormatter() {
                 override fun getFormattedValue(value: Float) = value.toInt().toString()
             }
@@ -213,8 +247,16 @@ class StatisticsFragment : Fragment() {
                 granularity = 1f
                 labelRotationAngle = -45f
                 valueFormatter = IndexAxisValueFormatter(labels)
+                textColor = Color.WHITE // Set X-axis text color to white
+                gridColor = Color.GRAY // Set grid lines to gray
+            }
+            axisLeft.apply {
+                textColor = Color.WHITE // Set Y-axis text color to white
+                gridColor = Color.GRAY // Set grid lines to gray
             }
             axisRight.isEnabled = false
+            legend.textColor = Color.WHITE // Set legend text color to white
+            description.textColor = Color.WHITE // Set description text color to white
             setFitBars(true)
             description.isEnabled = false
             invalidate()
