@@ -64,8 +64,12 @@ class FeedFragment : Fragment() {
             .document(currentUserId)
             .get()
             .addOnSuccessListener { doc ->
+//                val userName = doc.getString("fullName") ?: "User"
+//                binding.welcomeText.text = getString(R.string.welcome_user, userName)
                 val userName = doc.getString("fullName") ?: "User"
                 binding.welcomeText.text = getString(R.string.welcome_user, userName)
+                binding.welcomeText.visibility = View.VISIBLE
+                binding.nameLoading.visibility = View.GONE
 
                 val imageUrl = doc.getString("profileImageUrl")
                 if (!imageUrl.isNullOrEmpty()) {
@@ -73,6 +77,8 @@ class FeedFragment : Fragment() {
                         .load(imageUrl)
                         .circleCrop()
                         .into(binding.profileImage)
+                    binding.profileImage.visibility = View.VISIBLE
+
                 } else {
                     binding.profileImage.setImageResource(R.drawable.ic_default_profile)
                 }

@@ -36,6 +36,7 @@ class StatisticsFragment : Fragment() {
     private lateinit var spinner: Spinner
     private lateinit var alertViewModel: AlertViewModel
     private lateinit var auth: FirebaseAuth
+    private lateinit var progressBar: ProgressBar
 
     // Our data holders
     private var children: List<ChildLocalData> = emptyList()
@@ -55,6 +56,7 @@ class StatisticsFragment : Fragment() {
         barChart   = view.findViewById(R.id.barChart)
         spinner    = view.findViewById(R.id.spinnerChildren)
         auth       = FirebaseAuth.getInstance()
+        progressBar = view.findViewById(R.id.progressBar)
 
         // 2) Init ViewModel
         val dao    = AppDatabase.getDatabase(requireContext()).alertDao()
@@ -74,6 +76,7 @@ class StatisticsFragment : Fragment() {
     }
 
     private fun loadChildrenAndAlerts(token: String) {
+        progressBar.visibility = View.VISIBLE
         val uid = auth.currentUser?.uid ?: return
 
         // fetch children from Firestore
@@ -108,6 +111,7 @@ class StatisticsFragment : Fragment() {
                         withContext(Dispatchers.Main) {
                             setupPieChart()
                             setupSpinner()
+                            progressBar.visibility = View.GONE
                         }
                     }
                 }

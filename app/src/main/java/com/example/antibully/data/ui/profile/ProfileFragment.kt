@@ -35,6 +35,7 @@ class ProfileFragment : Fragment() {
     private lateinit var usernameTextView: TextView
     private var isTwoFactorEnabled: Boolean = false
 
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -118,10 +119,16 @@ class ProfileFragment : Fragment() {
         withContext(Dispatchers.IO) {
             val localUser = userDao.getUserById(userId)
             val children = childDao.getChildrenForUser(userId)
+            val loadingBar = view?.findViewById<ProgressBar>(R.id.profileLoading)
+            val editButton = view?.findViewById<FloatingActionButton>(R.id.btnEditProfile)
 
             withContext(Dispatchers.Main) {
                 localUser?.let {
                     usernameTextView.text = it.name
+                    usernameTextView.visibility = View.VISIBLE
+                    profileImageView.visibility = View.VISIBLE
+                    editButton?.visibility = View.VISIBLE
+                    loadingBar?.visibility = View.GONE
                     if (!it.profileImageUrl.isNullOrEmpty()) {
                         Picasso.get().load(it.profileImageUrl).into(profileImageView)
                     } else if (it.localProfileImagePath.isNotEmpty()) {
