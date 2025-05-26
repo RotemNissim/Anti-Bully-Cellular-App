@@ -40,5 +40,10 @@
         <item name="android:padding">16dp</item>
         <item name="cornerRadius">8dp</item>
     </style>
-
+    <style name="SpinnerTheme">
+        <item name="android:textColor">#FFFFFF</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:fontFamily">@font/assistant_medium</item>
+        <item name="android:background">#383838</item>
+    </style>
 </resources>

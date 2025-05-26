@@ -35,6 +35,7 @@ class ProfileFragment : Fragment() {
     private lateinit var usernameTextView: TextView
     private var isTwoFactorEnabled: Boolean = false
 
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -118,10 +119,16 @@ class ProfileFragment : Fragment() {
         withContext(Dispatchers.IO) {
             val localUser = userDao.getUserById(userId)
             val children = childDao.getChildrenForUser(userId)
+            val loadingBar = view?.findViewById<ProgressBar>(R.id.profileLoading)
+            val editButton = view?.findViewById<FloatingActionButton>(R.id.btnEditProfile)
 
             withContext(Dispatchers.Main) {
                 localUser?.let {
                     usernameTextView.text = it.name
+                    usernameTextView.visibility = View.VISIBLE
+                    profileImageView.visibility = View.VISIBLE
+                    editButton?.visibility = View.VISIBLE
+                    loadingBar?.visibility = View.GONE
                     if (!it.profileImageUrl.isNullOrEmpty()) {
                         Picasso.get().load(it.profileImageUrl).into(profileImageView)
                     } else if (it.localProfileImagePath.isNotEmpty()) {
@@ -169,33 +176,7 @@ class ProfileFragment : Fragment() {
                     ProfileFragmentDirections.actionProfileFragmentToEditChildFragment(child.childId)
                 findNavController().navigate(action)
             }
-//
-//            holder.deleteButton.setOnClickListener {
-//                AlertDialog.Builder(requireContext())
-//                    .setTitle("Delete Child")
-//                    .setMessage("Are you sure you want to delete this child from your list?")
-//                    .setPositiveButton("Delete") { _, _ ->
-//
-//                        if (isTwoFactorEnabled)
-//                        {
-//                            // לפתוח VerifyTwoFactorDialogFragment
-//                            val dialog = VerifyTwoFactorDialogFragment { verified ->
-//                                if (verified) {
-//                                    deleteChild(child)
-//                                } else {
-//                                    Toast.makeText(requireContext(), "Authentication failed", Toast.LENGTH_SHORT).show()
-//                                }
-//                            }
-//                            dialog.show(parentFragmentManager, "VerifyTwoFactor")
-//                        } else {
-//                            deleteChild(child)
-//                        }
-//
-//                    }
-//                    .setNegativeButton("Cancel", null)
-//                    .show()
-//            }
-//        }
+
             holder.deleteButton.setOnClickListener {
                 val dialogView = LayoutInflater.from(requireContext())
                     .inflate(R.layout.dialog_delete_child, null)
@@ -241,6 +222,20 @@ class ProfileFragment : Fragment() {
             private fun deleteChild(child: ChildLocalData) {
             lifecycleScope.launch(Dispatchers.IO) {
                 childDao.deleteChild(child.childId, child.parentUserId)
+                try {
+                    val db = FirebaseFirestore.getInstance()
+                    db.collection("users")
+                        .document(child.parentUserId)
+                        .collection("children")
+                        .document(child.childId)
+                        .delete()
+                        .await()
+                } catch (e: Exception) {
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(requireContext(), "Failed to delete from Firestore", Toast.LENGTH_SHORT).show()
+                    }
+                }
+
                 val updated = childDao.getChildrenForUser(child.parentUserId)
                 withContext(Dispatchers.Main) {
                     updateData(updated)
