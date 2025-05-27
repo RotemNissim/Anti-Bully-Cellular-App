@@ -89,37 +89,19 @@ class AddChildFragment : Fragment() {
                 saveChild(childId, childName, parentUserId)
             }
         }
-//        val connectDiscordButton = view.findViewById<Button>(R.id.btnConnectDiscord)
-//
-//        connectDiscordButton.setOnClickListener {
-//            val oauthUrl = "https://discord.com/api/oauth2/authorize" +
-//                    "?client_id=$clientId" +
-//                    "&redirect_uri=${Uri.encode(redirectUri)}"+
-//                    "&response_type=code" +
-//                    "&scope=identify"
-//
-//            android.util.Log.d("DiscordOAuth", "OAuth URL: $oauthUrl")
-//
-//            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(oauthUrl))
-//            startActivity(intent)
-//        }
+
         val connectDiscordButton = view.findViewById<Button>(R.id.btnConnectDiscord)
 
         connectDiscordButton.setOnClickListener {
-            val redirectUri = "antibully://discord-callback"
+            val redirectUri = "http://10.0.2.2:3000/api/oauth/discord/callback"
 
-            val oauthUrl = "https://discord.com/api/oauth2/authorize" +
-                    "?client_id=1373612221166391397" +
-                    "&redirect_uri=${Uri.encode(redirectUri)}" +
-                    "&response_type=code" +
-                    "&scope=identify"
+            val oauthUrl = "https://discord.com/oauth2/authorize?client_id=1373612221166391397&response_type=code&redirect_uri=http%3A%2F%2F10.0.2.2%3A3000%2Fapi%2Foauth%2Fdiscord%2Fcallback&scope=identify"
 
             android.util.Log.d("DiscordOAuth", "Opening URL: $oauthUrl")
 
             val intent = Intent(Intent.ACTION_VIEW, Uri.parse(oauthUrl))
             startActivity(intent)
         }
-
 
     }
 
