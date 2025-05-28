@@ -93,7 +93,6 @@ class AddChildFragment : Fragment() {
         val connectDiscordButton = view.findViewById<Button>(R.id.btnConnectDiscord)
 
         connectDiscordButton.setOnClickListener {
-            val redirectUri = "http://10.0.2.2:3000/api/oauth/discord/callback"
 
             val oauthUrl = "https://discord.com/oauth2/authorize?client_id=1373612221166391397&response_type=code&redirect_uri=http%3A%2F%2F10.0.2.2%3A3000%2Fapi%2Foauth%2Fdiscord%2Fcallback&scope=identify"
 

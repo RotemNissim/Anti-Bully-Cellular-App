@@ -78,6 +78,8 @@
         android:name="com.example.antibully.data.ui.profile.ProfileFragment"
         android:label="Profile"
         tools:layout="@layout/fragment_profile">
+        <deepLink
+            app:uri="antibully://user-profile" />
         <action
             android:id="@+id/action_profileFragment_to_twoFactorLoginFragment"
             app:destination="@id/twoFactorLoginFragment" />
