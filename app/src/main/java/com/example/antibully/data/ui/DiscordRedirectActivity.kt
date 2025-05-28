@@ -5,11 +5,19 @@ import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
+import com.example.antibully.data.db.AppDatabase
+import com.google.firebase.auth.FirebaseAuth
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
 import java.io.IOException
+import com.example.antibully.data.models.ChildLocalData
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class DiscordRedirectActivity : AppCompatActivity() {
 
@@ -61,6 +69,46 @@ class DiscordRedirectActivity : AppCompatActivity() {
 
                 val json = JSONObject(responseBody ?: "{}")
                 val discordId = json.optString("id")
+                val discordUsername = json.optString("username")
+                val discordFullName = json.optString("fullName")
+
+                val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return finish()
+
+                val child = ChildLocalData(
+                    childId = discordId,
+                    parentUserId = userId,
+                    name =  "$discordFullName ($discordUsername)",
+                    imageUrl = null
+                )
+                val db = FirebaseFirestore.getInstance()
+                db.collection("users").document(userId)
+                    .collection("children").document(discordId)
+                    .set(child)
+                    .addOnSuccessListener {
+                        // Save to ROOM too
+                        runOnUiThread {
+                            CoroutineScope(Dispatchers.Main).launch {
+                                withContext(Dispatchers.IO) {
+                                    AppDatabase.getDatabase(this@DiscordRedirectActivity)
+                                        .childDao()
+                                        .insertChild(child)
+                                }
+
+                                val intent = Intent(this@DiscordRedirectActivity, MainActivity::class.java)
+                                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                                intent.putExtra("navigateToProfile", true)
+                                startActivity(intent)
+                                finish()
+                            }
+                        }
+
+                    }
+                    .addOnFailureListener {
+                        Log.e("OAuth", "Failed to save to Firestore", it)
+                        finish()
+                    }
+
+
 
                 runOnUiThread {
                     // 🔥 Save the Discord ID or use it in your app
