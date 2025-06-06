@@ -18,4 +18,5 @@
     <string name="comment_image">Comment Image</string>
     <string name="image_preview">Image Preview</string>
     <string name="welcome_user">Hello %1$s,</string>
+    <string name="title_alerts">Alerts</string>
 </resources>

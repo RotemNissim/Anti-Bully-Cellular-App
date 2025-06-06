@@ -3,6 +3,7 @@ package com.example.antibully.data.ui.statistics
 import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
+import android.util.Log
 import android.view.*
 import android.widget.*
 import androidx.fragment.app.Fragment
@@ -79,43 +80,57 @@ class StatisticsFragment : Fragment() {
         progressBar.visibility = View.VISIBLE
         val uid = auth.currentUser?.uid ?: return
 
-        // fetch children from Firestore
-        FirebaseFirestore.getInstance()
-            .collection("users")
-            .document(uid)
-            .collection("children")
-            .get()
-            .addOnSuccessListener { snap ->
-                // map Firestore → local models, extract IDs
-                children = snap.documents.mapNotNull { doc ->
-                    doc.toObject(ChildLocalData::class.java)?.copy(childId = doc.id)
+        // ✅ Get children from local database instead of Firestore
+        lifecycleScope.launch {
+            val childDao = AppDatabase.getDatabase(requireContext()).childDao()
+            children = childDao.getChildrenForUser(uid)
+            
+            Log.d("StatisticsFragment", "Found ${children.size} children for statistics")
+            
+            if (children.isEmpty()) {
+                Log.w("StatisticsFragment", "No children found for user $uid")
+                withContext(Dispatchers.Main) {
+                    progressBar.visibility = View.GONE
+                    // Show "no children" message
+                    pieChart.centerText = "No Children Added"
+                    pieChart.setCenterTextColor(Color.WHITE)
+                }
+                return@launch
+            }
+
+            // Fetch alerts for each child
+            children.forEach { child ->
+                Log.d("StatisticsFragment", "Fetching alerts for child: ${child.childId}")
+                alertViewModel.fetchAlerts(token, child.childId)
+            }
+
+            // Observe alerts and update charts
+            alertViewModel.allAlerts.collectLatest { alerts ->
+                Log.d("StatisticsFragment", "Received ${alerts.size} total alerts")
+                
+                // Filter alerts for our children
+                allAlerts = alerts.filter { alert ->
+                    children.any { child -> child.childId == alert.reporterId }
+                }.map { alert ->
+                    val t = if (alert.timestamp < 1_000_000_000_000L)
+                        alert.timestamp * 1000L
+                    else
+                        alert.timestamp
+                    alert.copy(timestamp = t)
+                }
+                
+                Log.d("StatisticsFragment", "Filtered to ${allAlerts.size} alerts for our children")
+                allAlerts.forEach { alert ->
+                    Log.d("StatisticsFragment", "Alert: reporterId=${alert.reporterId}, reason=${alert.reason}")
                 }
 
-                // 1) Trigger server fetch for each child
-                children.forEach { child ->
-                    alertViewModel.fetchAlerts(token, child.childId)
-                }
-
-                // 2) Observe the Room cache, filter to only our children,
-                //    then draw charts on the main thread
-                viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
-                    alertViewModel.allAlerts.collectLatest { alerts ->
-                        // normalize timestamps and filter
-                        allAlerts = alerts.map { alert ->
-                            val t = if (alert.timestamp < 1_000_000_000_000L)
-                                alert.timestamp * 1000L
-                            else
-                                alert.timestamp
-                            alert.copy(timestamp = t)
-                        }
-                        withContext(Dispatchers.Main) {
-                            setupPieChart()
-                            setupSpinner()
-                            progressBar.visibility = View.GONE
-                        }
-                    }
+                withContext(Dispatchers.Main) {
+                    setupPieChart()
+                    setupSpinner()
+                    progressBar.visibility = View.GONE
                 }
             }
+        }
     }
 
     private fun setupPieChart() {

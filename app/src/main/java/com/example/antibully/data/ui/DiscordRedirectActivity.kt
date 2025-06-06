@@ -5,19 +5,22 @@ import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelStoreOwner
 import com.example.antibully.data.db.AppDatabase
+import com.example.antibully.data.repository.ChildRepository
+import com.example.antibully.viewmodel.ChildViewModel
+import com.example.antibully.viewmodel.ChildViewModelFactory
 import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
 import java.io.IOException
-import com.example.antibully.data.models.ChildLocalData
-import com.google.firebase.firestore.FirebaseFirestore
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class DiscordRedirectActivity : AppCompatActivity() {
 
@@ -25,11 +28,6 @@ class DiscordRedirectActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         handleDiscordRedirect(intent)
     }
-
-//    override fun onNewIntent(intent: Intent?) {
-//        super.onNewIntent(intent)
-//        handleDiscordRedirect(intent)
-//    }
 
     private fun handleDiscordRedirect(intent: Intent?) {
         val uri: Uri? = intent?.data
@@ -45,6 +43,8 @@ class DiscordRedirectActivity : AppCompatActivity() {
     }
 
     private fun sendCodeToBackend(code: String) {
+        Log.d("OAuth", "Starting Discord OAuth flow with code: ${code.take(10)}...")
+        
         val client = OkHttpClient()
 
         val json = JSONObject()
@@ -53,7 +53,7 @@ class DiscordRedirectActivity : AppCompatActivity() {
 
         val requestBody = json.toString().toRequestBody("application/json".toMediaTypeOrNull())
         val request = Request.Builder()
-            .url("http://10.0.2.2:3000/api/oauth/discord/exchange") // use local IP on same WiFi
+            .url("http://10.0.2.2:3000/api/oauth/discord/exchange")
             .post(requestBody)
             .build()
 
@@ -65,55 +65,64 @@ class DiscordRedirectActivity : AppCompatActivity() {
 
             override fun onResponse(call: Call, response: Response) {
                 val responseBody = response.body?.string()
+                Log.d("OAuth", "Backend response code: ${response.code}")
                 Log.d("OAuth", "Backend response: $responseBody")
 
-                val json = JSONObject(responseBody ?: "{}")
-                val discordId = json.optString("id")
-                val discordUsername = json.optString("username")
-                val discordFullName = json.optString("fullName")
+                if (response.isSuccessful) {
+                    val json = JSONObject(responseBody ?: "{}")
+                    val discordId = json.optString("id")
+                    val discordUsername = json.optString("username")
+                    val discordFullName = json.optString("global_name", discordUsername) // ✅ Use global_name if available
 
-                val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return finish()
+                    Log.d("OAuth", "Discord ID: $discordId, Username: $discordUsername, Full Name: $discordFullName")
 
-                val child = ChildLocalData(
-                    childId = discordId,
-                    parentUserId = userId,
-                    name =  "$discordFullName ($discordUsername)",
-                    imageUrl = null
-                )
-                val db = FirebaseFirestore.getInstance()
-                db.collection("users").document(userId)
-                    .collection("children").document(discordId)
-                    .set(child)
-                    .addOnSuccessListener {
-                        // Save to ROOM too
-                        runOnUiThread {
-                            CoroutineScope(Dispatchers.Main).launch {
-                                withContext(Dispatchers.IO) {
-                                    AppDatabase.getDatabase(this@DiscordRedirectActivity)
-                                        .childDao()
-                                        .insertChild(child)
+                    val userId = FirebaseAuth.getInstance().currentUser?.uid
+                    if (userId == null) {
+                        Log.e("OAuth", "No Firebase user found")
+                        return finish()
+                    }
+
+                    val childName = if (discordFullName.isNotEmpty()) {
+                        "$discordFullName ($discordUsername)"
+                    } else {
+                        discordUsername
+                    }
+
+                    Log.d("OAuth", "Linking child '$childName' with Discord ID '$discordId' to parent '$userId'")
+
+                    // Initialize repository and viewmodel
+                    val childDao = AppDatabase.getDatabase(this@DiscordRedirectActivity).childDao()
+                    val childRepository = ChildRepository(childDao)
+                    val factory = ChildViewModelFactory(childRepository)
+                    val childViewModel = ViewModelProvider(this@DiscordRedirectActivity as ViewModelStoreOwner, factory)[ChildViewModel::class.java]
+
+                    runOnUiThread {
+                        CoroutineScope(Dispatchers.Main).launch {
+                            val token = FirebaseAuth.getInstance().currentUser?.getIdToken(false)?.await()?.token
+                            if (token != null) {
+                                Log.d("OAuth", "Got Firebase token, calling linkChild API...")
+                                childViewModel.linkChild(token, userId, discordId, childName) { success ->
+                                    Log.d("OAuth", "Link child result: $success")
+                                    if (success) {
+                                        Log.d("OAuth", "Child linked successfully!")
+                                        val intent = Intent(this@DiscordRedirectActivity, MainActivity::class.java)
+                                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                                        intent.putExtra("navigateToProfile", true)
+                                        startActivity(intent)
+                                        finish()
+                                    } else {
+                                        Log.e("OAuth", "Failed to link child to backend")
+                                        finish()
+                                    }
                                 }
-
-                                val intent = Intent(this@DiscordRedirectActivity, MainActivity::class.java)
-                                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                                intent.putExtra("navigateToProfile", true)
-                                startActivity(intent)
+                            } else {
+                                Log.e("OAuth", "Failed to get Firebase token")
                                 finish()
                             }
                         }
-
                     }
-                    .addOnFailureListener {
-                        Log.e("OAuth", "Failed to save to Firestore", it)
-                        finish()
-                    }
-
-
-
-                runOnUiThread {
-                    // 🔥 Save the Discord ID or use it in your app
-                    Log.d("OAuth", "Child Discord ID: $discordId")
-                    // Optionally send it to Firestore or pass to parent activity
+                } else {
+                    Log.e("OAuth", "Discord OAuth failed with code: ${response.code}")
                     finish()
                 }
             }

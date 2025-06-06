@@ -2,7 +2,26 @@
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    app:startDestination="@id/splashFragment">
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/splashFragment">  <!-- ✅ Start with splash instead of login -->
+
+    <fragment
+        android:id="@+id/splashFragment"
+        android:name="com.example.antibully.data.ui.auth.SplashFragment"
+        android:label="Splash"
+        tools:layout="@layout/fragment_splash">
+        <!-- ✅ Add navigation actions from splash -->
+        <action
+            android:id="@+id/action_splashFragment_to_loginFragment"
+            app:destination="@id/loginFragment"
+            app:popUpTo="@id/splashFragment"
+            app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_splashFragment_to_feedFragment"
+            app:destination="@id/feedFragment"
+            app:popUpTo="@id/splashFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
 
     <fragment
         android:id="@+id/loginFragment"
@@ -16,12 +35,6 @@
             android:id="@+id/action_loginFragment_to_signUpFragment"
             app:destination="@id/signUpFragment" />
     </fragment>
-
-    <fragment
-        android:id="@+id/splashFragment"
-        android:name="com.example.antibully.data.ui.auth.SplashFragment"
-        android:label="Splash"
-        tools:layout="@layout/fragment_splash" />
 
     <fragment
         android:id="@+id/statisticsFragment"
@@ -64,12 +77,28 @@
     </fragment>
 
     <fragment
+        android:id="@+id/alertsFragment"
+        android:name="com.example.antibully.data.ui.alert.AlertsFragment"
+        android:label="@string/title_alerts"
+        tools:layout="@layout/fragment_alerts">
+        
+        <action
+            android:id="@+id/action_alertsFragment_to_alertDetailsFragment"
+            app:destination="@id/alertDetailsFragment">
+            <argument
+                android:name="alertId"
+                app:argType="string" />
+        </action>
+    </fragment>
+
+    <fragment
         android:id="@+id/alertDetailsFragment"
         android:name="com.example.antibully.data.ui.alert.AlertDetailsFragment"
         android:label="Alert Details"
         tools:layout="@layout/fragment_alert_details">
+        
         <argument
-            android:name="postId"
+            android:name="alertId"
             app:argType="string" />
     </fragment>
 

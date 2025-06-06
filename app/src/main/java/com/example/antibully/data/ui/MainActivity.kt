@@ -1,27 +1,33 @@
 package com.example.antibully.data.ui
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.view.View
+import android.util.Log
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.content.res.AppCompatResources
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
+import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.ui.NavigationUI
 import androidx.navigation.ui.setupWithNavController
 import com.example.antibully.R
 import com.example.antibully.data.db.AppDatabase
-import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.appbar.MaterialToolbar
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
-import androidx.lifecycle.lifecycleScope
-import androidx.navigation.NavController
-import androidx.navigation.ui.NavigationUI
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
-import android.widget.Toast
 import java.io.IOException
 
 class MainActivity : AppCompatActivity() {
@@ -128,8 +134,76 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-
+        // ✅ Request notification permission for Android 13+
+        requestNotificationPermission()
     }
+
+    private fun requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            when {
+                ContextCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) == PackageManager.PERMISSION_GRANTED -> {
+                    Log.d("MainActivity", "✅ Notification permission already granted")
+                }
+                shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS) -> {
+                    // Show explanation dialog
+                    showNotificationPermissionDialog()
+                }
+                else -> {
+                    // Request permission
+                    ActivityCompat.requestPermissions(
+                        this,
+                        arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                        NOTIFICATION_PERMISSION_REQUEST_CODE
+                    )
+                }
+            }
+        } else {
+            Log.d("MainActivity", "✅ Notification permission not required for this Android version")
+        }
+    }
+
+    private fun showNotificationPermissionDialog() {
+        androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle("Enable Notifications")
+            .setMessage("This app needs notification permission to alert you about important security events and bullying incidents.")
+            .setPositiveButton("Allow") { _, _ ->
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                    NOTIFICATION_PERMISSION_REQUEST_CODE
+                )
+            }
+            .setNegativeButton("Deny") { dialog, _ ->
+                dialog.dismiss()
+                Log.w("MainActivity", "User denied notification permission")
+            }
+            .setCancelable(false)
+            .show()
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+
+        when (requestCode) {
+            NOTIFICATION_PERMISSION_REQUEST_CODE -> {
+                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Log.d("MainActivity", "✅ Notification permission granted by user")
+                    Toast.makeText(this, "Notifications enabled!", Toast.LENGTH_SHORT).show()
+                } else {
+                    Log.w("MainActivity", "❌ Notification permission denied by user")
+                    Toast.makeText(this, "Notifications disabled. You won't receive alerts.", Toast.LENGTH_LONG).show()
+                }
+            }
+        }
+    }
+
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         handleDiscordOAuthCode(intent)
@@ -186,50 +260,54 @@ class MainActivity : AppCompatActivity() {
 //            }
 //        })
 //    }
-private fun sendCodeToServer(code: String?) {
-    if (code.isNullOrEmpty()) {
-        android.util.Log.e("OAuth", "Code is null or empty – aborting request")
-        return
-    }
-
-    android.util.Log.d("OAuth", "Sending code to backend: $code")
-
-    val requestBody = JSONObject().apply {
-        put("code", code)
-    }
-
-    val request = Request.Builder()
-        .url("http://10.0.2.2:3000/api/oauth/discord/exchange")
-        .post(
-            requestBody.toString()
-                .toRequestBody("application/json".toMediaTypeOrNull())
-        )
-        .build()
-
-    OkHttpClient().newCall(request).enqueue(object : Callback {
-        override fun onFailure(call: Call, e: IOException) {
-            android.util.Log.e("OAuth", "Network failure: ${e.message}")
+    private fun sendCodeToServer(code: String?) {
+        if (code.isNullOrEmpty()) {
+            android.util.Log.e("OAuth", "Code is null or empty – aborting request")
+            return
         }
 
-        override fun onResponse(call: Call, response: Response) {
-            val body = response.body?.string()
-            android.util.Log.d("OAuth", "Backend response status: ${response.code}")
-            android.util.Log.d("OAuth", "Backend response body: $body")
+        android.util.Log.d("OAuth", "Sending code to backend: $code")
 
-            if (response.isSuccessful) {
-                val discordId = JSONObject(body ?: "{}").optString("id")
-                runOnUiThread {
-                    Toast.makeText(this@MainActivity, "Connected to Discord ID: $discordId", Toast.LENGTH_LONG).show()
-                }
-            } else {
-                android.util.Log.e("OAuth", "Request failed with status: ${response.code}")
+        val requestBody = JSONObject().apply {
+            put("code", code)
+        }
+
+        val request = Request.Builder()
+            .url("http://10.0.2.2:3000/api/oauth/discord/exchange")
+            .post(
+                requestBody.toString()
+                    .toRequestBody("application/json".toMediaTypeOrNull())
+            )
+            .build()
+
+        OkHttpClient().newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                android.util.Log.e("OAuth", "Network failure: ${e.message}")
             }
-        }
-    })
-}
+
+            override fun onResponse(call: Call, response: Response) {
+                val body = response.body?.string()
+                android.util.Log.d("OAuth", "Backend response status: ${response.code}")
+                android.util.Log.d("OAuth", "Backend response body: $body")
+
+                if (response.isSuccessful) {
+                    val discordId = JSONObject(body ?: "{}").optString("id")
+                    runOnUiThread {
+                        Toast.makeText(this@MainActivity, "Connected to Discord ID: $discordId", Toast.LENGTH_LONG).show()
+                    }
+                } else {
+                    android.util.Log.e("OAuth", "Request failed with status: ${response.code}")
+                }
+            }
+        })
+    }
 
 
     override fun onSupportNavigateUp(): Boolean {
         return navController.navigateUp() || super.onSupportNavigateUp()
+    }
+
+    companion object {
+        private const val NOTIFICATION_PERMISSION_REQUEST_CODE = 1001
     }
 }

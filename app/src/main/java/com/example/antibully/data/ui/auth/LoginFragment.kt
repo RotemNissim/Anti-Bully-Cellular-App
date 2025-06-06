@@ -15,6 +15,7 @@ import com.example.antibully.R
 import com.example.antibully.data.db.AppDatabase
 import com.example.antibully.data.models.User
 import com.example.antibully.data.models.UserApiResponse
+import com.example.antibully.utils.SessionManager
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -135,127 +136,74 @@ class LoginFragment : Fragment() {
         googleSignInLauncher.launch(signInIntent)
     }
 
-//    private fun firebaseAuthWithGoogle(idToken: String) {
-//        val credential = GoogleAuthProvider.getCredential(idToken, null)
-//        auth.signInWithCredential(credential)
-//            .addOnCompleteListener(requireActivity()) { task ->
-//                if (task.isSuccessful) {
-//                    val firebaseUser = auth.currentUser
-//                    val uid = firebaseUser?.uid ?: return@addOnCompleteListener
-//                    val name = firebaseUser.displayName ?: "No Name"
-//                    val email = firebaseUser.email ?: ""
-//                    val profileImageUrl = firebaseUser.photoUrl?.toString() ?: ""
-//
-//                    val db = FirebaseFirestore.getInstance()
-//                    val userDocRef = db.collection("users").document(uid)
-//
-//                    userDocRef.get().addOnSuccessListener { document ->
-//                        if (!document.exists()) {
-//                            val newUser = hashMapOf(
-//                                "fullName" to name,
-//                                "email" to email,
-//                                "profileImageUrl" to profileImageUrl
-//                            )
-//                            userDocRef.set(newUser)
-//                        }
-//
-//                        val apiUser = UserApiResponse(uid, name, email, profileImageUrl)
-//                        val userEntity = User.fromApi(apiUser, localImagePath = "")
-//                        val userDao = AppDatabase.getDatabase(requireContext()).userDao()
-//                        lifecycleScope.launch(Dispatchers.IO) {
-//                            userDao.insertUser(userEntity)
-//                        }
-//
-//                        Toast.makeText(
-//                            requireContext(),
-//                            "Google Sign-In Successful!",
-//                            Toast.LENGTH_SHORT
-//                        ).show()
-//                        firebaseUser.getIdToken(false).addOnSuccessListener { result ->
-//                            val token = result.token ?: return@addOnSuccessListener
-//                            loginWithFirebaseToServer(token)
-//                            if (!document.exists()) {
-//                                registerUserToServer(token, email, name, profileImageUrl)
-//                            }
-//                        }
-//
-//                        findNavController().navigate(R.id.feedFragment)
-//                    }.addOnFailureListener { e ->
-//                        Toast.makeText(
-//                            requireContext(),
-//                            "Failed to check/create Firestore user: ${e.message}",
-//                            Toast.LENGTH_SHORT
-//                        ).show()
-//                    }
-//
-//                } else {
-//                    Toast.makeText(requireContext(), "Google Sign-In Failed!", Toast.LENGTH_SHORT)
-//                        .show()
-//                }
-//            }
-//    }
-private fun firebaseAuthWithGoogle(idToken: String) {
-    val credential = GoogleAuthProvider.getCredential(idToken, null)
-    auth.signInWithCredential(credential)
-        .addOnCompleteListener(requireActivity()) { task ->
-            if (task.isSuccessful) {
-                val firebaseUser = auth.currentUser
-                val uid = firebaseUser?.uid ?: return@addOnCompleteListener
-                val name = firebaseUser.displayName ?: "No Name"
-                val email = firebaseUser.email ?: ""
-                val profileImageUrl = firebaseUser.photoUrl?.toString() ?: ""
+    private fun firebaseAuthWithGoogle(idToken: String) {
+        val credential = GoogleAuthProvider.getCredential(idToken, null)
+        auth.signInWithCredential(credential)
+            .addOnCompleteListener(requireActivity()) { task ->
+                if (task.isSuccessful) {
+                    val firebaseUser = auth.currentUser
+                    val uid = firebaseUser?.uid ?: return@addOnCompleteListener
+                    val name = firebaseUser.displayName ?: "No Name"
+                    val email = firebaseUser.email ?: ""
+                    val profileImageUrl = firebaseUser.photoUrl?.toString() ?: ""
 
-                val db = FirebaseFirestore.getInstance()
-                val userDocRef = db.collection("users").document(uid)
+                    val db = FirebaseFirestore.getInstance()
+                    val userDocRef = db.collection("users").document(uid)
 
-                userDocRef.get().addOnSuccessListener { document ->
-                    if (!document.exists()) {
-                        val newUser = hashMapOf(
-                            "fullName" to name,
-                            "email" to email,
-                            "profileImageUrl" to profileImageUrl
-                        )
-                        userDocRef.set(newUser)
+                    userDocRef.get().addOnSuccessListener { document ->
+                        if (!document.exists()) {
+                            val newUser = hashMapOf(
+                                "fullName" to name,
+                                "email" to email,
+                                "profileImageUrl" to profileImageUrl
+                            )
+                            userDocRef.set(newUser)
+                        }
+
+                        val apiUser = UserApiResponse(uid, name, email, profileImageUrl)
+                        val userEntity = User.fromApi(apiUser, localImagePath = "")
+                        val userDao = AppDatabase.getDatabase(requireContext()).userDao()
+                        lifecycleScope.launch(Dispatchers.IO) {
+                            userDao.insertUser(userEntity)
+                        }
+
+                        Toast.makeText(requireContext(), "Google Sign-In Successful!", Toast.LENGTH_SHORT).show()
+
+                        firebaseUser.getIdToken(false).addOnSuccessListener { result ->
+                            val token = result.token ?: return@addOnSuccessListener
+                            loginWithFirebaseToServer(token)
+                            registerUserToServer(token, email, name, profileImageUrl)
+
+                            SessionManager.login(requireContext(), uid)
+                        }
+
+                        findNavController().navigate(R.id.feedFragment)
+                    }.addOnFailureListener { e ->
+                        Toast.makeText(requireContext(), "Failed to check/create Firestore user: ${e.message}", Toast.LENGTH_SHORT).show()
                     }
 
-                    val apiUser = UserApiResponse(uid, name, email, profileImageUrl)
-                    val userEntity = User.fromApi(apiUser, localImagePath = "")
-                    val userDao = AppDatabase.getDatabase(requireContext()).userDao()
-                    lifecycleScope.launch(Dispatchers.IO) {
-                        userDao.insertUser(userEntity)
-                    }
-
-                    Toast.makeText(requireContext(), "Google Sign-In Successful!", Toast.LENGTH_SHORT).show()
-
-                    firebaseUser.getIdToken(false).addOnSuccessListener { result ->
-                        val token = result.token ?: return@addOnSuccessListener
-                        loginWithFirebaseToServer(token)
-                        registerUserToServer(token, email, name, profileImageUrl)
-                    }
-
-                    findNavController().navigate(R.id.feedFragment)
-                }.addOnFailureListener { e ->
-                    Toast.makeText(requireContext(), "Failed to check/create Firestore user: ${e.message}", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(requireContext(), "Google Sign-In Failed!", Toast.LENGTH_SHORT).show()
                 }
-
-            } else {
-                Toast.makeText(requireContext(), "Google Sign-In Failed!", Toast.LENGTH_SHORT).show()
             }
-        }
-}
+    }
 
     private fun loginUser(email: String, password: String) {
         auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     val firebaseUser = auth.currentUser
-                    firebaseUser?.getIdToken(false)?.addOnSuccessListener { result ->
+                    val uid = firebaseUser?.uid ?: return@addOnCompleteListener
+
+                    firebaseUser.getIdToken(false).addOnSuccessListener { result ->
                         val token = result.token ?: return@addOnSuccessListener
                         val emailFromUser = firebaseUser.email ?: ""
                         val name = firebaseUser.displayName ?: emailFromUser.substringBefore("@")
                         val profileImageUrl = firebaseUser.photoUrl?.toString() ?: ""
 
                         registerUserToServer(token, emailFromUser, name, profileImageUrl)
+
+                        SessionManager.login(requireContext(), uid)
                     }
 
                     Toast.makeText(requireContext(), "Login successful!", Toast.LENGTH_SHORT).show()

@@ -14,6 +14,7 @@ import com.example.antibully.data.api.AuthRetrofitClient
 import com.example.antibully.data.db.AppDatabase
 import com.example.antibully.data.models.User
 import com.example.antibully.data.models.UserApiResponse
+import com.example.antibully.utils.SessionManager // ✅ Add this import
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.Dispatchers
@@ -125,6 +126,9 @@ private fun registerUserToServer(token: String, email: String, fullName: String,
                             auth.currentUser?.getIdToken(false)?.addOnSuccessListener { result ->
                                 val token = result.token ?: return@addOnSuccessListener
                                 registerUserToServer(token, email, fullName, profileImageUrl)
+                                
+                                // ✅ Initialize FCM token after successful registration
+                                SessionManager.login(requireContext(), uid)
                             }
 
                             Toast.makeText(requireContext(), "Welcome, $fullName!", Toast.LENGTH_SHORT).show()
