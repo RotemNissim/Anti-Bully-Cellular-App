@@ -2,24 +2,31 @@ package com.example.antibully.data.ui.profile
 
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.*
 import android.widget.*
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.antibully.R
+import com.example.antibully.data.api.CloudinaryUploader
 import com.example.antibully.data.db.AppDatabase
 import com.example.antibully.data.models.ChildLocalData
 import com.example.antibully.data.models.User
-import com.example.antibully.data.ui.common.VerifyTwoFactorDialogFragment
+import com.example.antibully.data.repository.ChildRepository
+import com.example.antibully.viewmodel.ChildViewModel
+import com.example.antibully.viewmodel.ChildViewModelFactory
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.squareup.picasso.Picasso
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
@@ -34,7 +41,8 @@ class ProfileFragment : Fragment() {
     private lateinit var profileImageView: ImageView
     private lateinit var usernameTextView: TextView
     private var isTwoFactorEnabled: Boolean = false
-
+    private lateinit var childViewModel: ChildViewModel
+    private lateinit var childRepository: ChildRepository
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -55,17 +63,56 @@ class ProfileFragment : Fragment() {
         val addChildButton = view.findViewById<Button>(R.id.btnAddChild)
         noChildrenText = view.findViewById(R.id.tvNoChildren)
         val settingsButton = view.findViewById<ImageButton>(R.id.btnSettings)
+        
         settingsButton.setOnClickListener {
             findNavController().navigate(R.id.action_profileFragment_to_securitySettingsFragment)
         }
 
+        // Initialize child repository and viewmodel
+        childRepository = ChildRepository(childDao)
+        val factory = ChildViewModelFactory(childRepository)
+        childViewModel = ViewModelProvider(this, factory)[ChildViewModel::class.java]
 
         val userId = auth.currentUser?.uid ?: return
+        Log.d("ProfileFragment", "Current user ID: $userId")
 
         lifecycleScope.launch {
-            syncUserFromFirestore(userId)
-            loadUserDataAndChildren(userId)
+            try {
+                // Load user data
+                syncUserFromFirestore(userId)
+                
+                // Get Firebase token and fetch children from backend
+                val token = auth.currentUser?.getIdToken(false)?.await()?.token
+                Log.d("ProfileFragment", "Firebase token obtained: ${token != null}")
+                
+                if (token != null) {
+                    Log.d("ProfileFragment", "Fetching children from API for user: $userId")
+                    childViewModel.fetchChildrenFromApi(token, userId)
+                    
+                    // ✅ Add a small delay and check again
+                    kotlinx.coroutines.delay(2000)
+                    
+                    // ✅ Also try to get children from local DB directly
+                    val localChildren = AppDatabase.getDatabase(requireContext()).childDao().getChildrenForUser(userId)
+                    Log.d("ProfileFragment", "Local children count: ${localChildren.size}")
+                } else {
+                    Log.e("ProfileFragment", "Failed to get Firebase token")
+                }
+                
+                // Observe children from local database (updated by API calls)
+                childViewModel.getChildrenForUser(userId).collectLatest { children ->
+                    Log.d("ProfileFragment", "Received ${children.size} children from local DB")
+                    withContext(Dispatchers.Main) {
+                        recyclerView.layoutManager = LinearLayoutManager(requireContext())
+                        recyclerView.adapter = ChildrenAdapter(children)
+                        noChildrenText.visibility = if (children.isEmpty()) View.VISIBLE else View.GONE
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("ProfileFragment", "Error in onViewCreated: ${e.message}", e)
+            }
         }
+        
         lifecycleScope.launch {
             checkTwoFactorStatus()
         }
@@ -77,6 +124,9 @@ class ProfileFragment : Fragment() {
         addChildButton.setOnClickListener {
             findNavController().navigate(R.id.action_profileFragment_to_addChildFragment)
         }
+        
+        // ✅ FOR DEBUGGING - uncomment this line
+        debugLocalData()
     }
 
     private suspend fun syncUserFromFirestore(userId: String) {
@@ -101,6 +151,7 @@ class ProfileFragment : Fragment() {
             }
         }
     }
+
     private suspend fun checkTwoFactorStatus() {
         try {
             val token = FirebaseAuth.getInstance().currentUser?.getIdToken(false)?.await()?.token
@@ -112,34 +163,6 @@ class ProfileFragment : Fragment() {
             }
         } catch (e: Exception) {
             isTwoFactorEnabled = false
-        }
-    }
-
-    private suspend fun loadUserDataAndChildren(userId: String) {
-        withContext(Dispatchers.IO) {
-            val localUser = userDao.getUserById(userId)
-            val children = childDao.getChildrenForUser(userId)
-            val loadingBar = view?.findViewById<ProgressBar>(R.id.profileLoading)
-            val editButton = view?.findViewById<FloatingActionButton>(R.id.btnEditProfile)
-
-            withContext(Dispatchers.Main) {
-                localUser?.let {
-                    usernameTextView.text = it.name
-                    usernameTextView.visibility = View.VISIBLE
-                    profileImageView.visibility = View.VISIBLE
-                    editButton?.visibility = View.VISIBLE
-                    loadingBar?.visibility = View.GONE
-                    if (!it.profileImageUrl.isNullOrEmpty()) {
-                        Picasso.get().load(it.profileImageUrl).into(profileImageView)
-                    } else if (it.localProfileImagePath.isNotEmpty()) {
-                        profileImageView.setImageURI(Uri.parse(it.localProfileImagePath))
-                    }
-                }
-
-                recyclerView.layoutManager = LinearLayoutManager(requireContext())
-                recyclerView.adapter = ChildrenAdapter(children)
-                noChildrenText.visibility = if (children.isEmpty()) View.VISIBLE else View.GONE
-            }
         }
     }
 
@@ -185,72 +208,58 @@ class ProfileFragment : Fragment() {
                     .setView(dialogView)
                     .create()
 
-                // כפתורי הדיאלוג
                 val cancelButton = dialogView.findViewById<Button>(R.id.cancelButton)
                 val deleteButton = dialogView.findViewById<Button>(R.id.deleteButton)
 
-                cancelButton.setOnClickListener {
-                    dialog.dismiss()
-                }
+                cancelButton.setOnClickListener { dialog.dismiss() }
 
                 deleteButton.setOnClickListener {
                     dialog.dismiss()
-
-                    if (isTwoFactorEnabled) {
-                        // פתיחת דיאלוג אימות דו שלבי
-                        val verifyDialog = VerifyTwoFactorDialogFragment { verified ->
-                            if (verified) {
-                                deleteChild(child)
-                            } else {
-                                Toast.makeText(
-                                    requireContext(),
-                                    "Authentication failed",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            }
-                        }
-                        verifyDialog.show(parentFragmentManager, "VerifyTwoFactor")
-                    } else {
-                        // אם אין אימות – מחיקה ישירה
-                        deleteChild(child)
-                    }
+                    deleteChildFromBackend(child)
                 }
 
                 dialog.show()
             }
         }
-            private fun deleteChild(child: ChildLocalData) {
-            lifecycleScope.launch(Dispatchers.IO) {
-                childDao.deleteChild(child.childId, child.parentUserId)
-                try {
-                    val db = FirebaseFirestore.getInstance()
-                    db.collection("users")
-                        .document(child.parentUserId)
-                        .collection("children")
-                        .document(child.childId)
-                        .delete()
-                        .await()
-                } catch (e: Exception) {
-                    withContext(Dispatchers.Main) {
-                        Toast.makeText(requireContext(), "Failed to delete from Firestore", Toast.LENGTH_SHORT).show()
-                    }
-                }
 
-                val updated = childDao.getChildrenForUser(child.parentUserId)
-                withContext(Dispatchers.Main) {
-                    updateData(updated)
-                    noChildrenText.visibility = if (updated.isEmpty()) View.VISIBLE else View.GONE
-                    Toast.makeText(requireContext(), "Child deleted", Toast.LENGTH_SHORT).show()
+        override fun getItemCount() = children.size
+    }
+
+    private fun deleteChildFromBackend(child: ChildLocalData) {
+        lifecycleScope.launch {
+            val token = auth.currentUser?.getIdToken(false)?.await()?.token
+            if (token != null) {
+                childViewModel.unlinkChild(token, child.parentUserId, child.childId) { success ->
+                    if (success) {
+                        Toast.makeText(requireContext(), "Child removed successfully", Toast.LENGTH_SHORT).show()
+                        // Children list will be automatically updated through Flow
+                    } else {
+                        Toast.makeText(requireContext(), "Failed to remove child", Toast.LENGTH_SHORT).show()
+                    }
                 }
             }
         }
+    }
 
-
-        override fun getItemCount() = children.size
-
-        fun updateData(newChildren: List<ChildLocalData>) {
-            children = newChildren
-            notifyDataSetChanged()
+    // ✅ Add this debugging method
+    private fun debugLocalData() {
+        lifecycleScope.launch {
+            val userId = auth.currentUser?.uid ?: return@launch
+            
+            // Check children
+            val children = AppDatabase.getDatabase(requireContext()).childDao().getChildrenForUser(userId)
+            Log.d("ProfileFragment", "=== LOCAL DATABASE DEBUG ===")
+            Log.d("ProfileFragment", "Children count: ${children.size}")
+            children.forEach { child ->
+                Log.d("ProfileFragment", "Child: ID=${child.childId}, Name=${child.name}")
+            }
+            
+            // Check alerts
+            val alerts = AppDatabase.getDatabase(requireContext()).alertDao().getAllAlertsSync()
+            Log.d("ProfileFragment", "Total alerts: ${alerts.size}")
+            alerts.forEach { alert ->
+                Log.d("ProfileFragment", "Alert: postId=${alert.postId}, reporterId=${alert.reporterId}, reason=${alert.reason}")
+            }
         }
     }
 }

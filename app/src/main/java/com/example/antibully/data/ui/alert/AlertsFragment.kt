@@ -2,12 +2,14 @@ package com.example.antibully.data.ui.alert
 
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.antibully.data.db.AppDatabase
 import com.example.antibully.data.models.ChildLocalData
@@ -20,6 +22,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 class AlertsFragment : Fragment() {
 
@@ -44,7 +47,9 @@ class AlertsFragment : Fragment() {
 
         // 1) RecyclerView + Adapter
         val adapter = AlertsAdapter(childDataMap) { alert ->
-            // handle click if you want
+            // Navigate to alert details
+            val action = AlertsFragmentDirections.actionAlertsFragmentToAlertDetailsFragment(alert.postId) // ✅ This passes alert.postId as alertId
+            findNavController().navigate(action)
         }
         binding.alertsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.alertsRecyclerView.adapter = adapter
@@ -58,37 +63,37 @@ class AlertsFragment : Fragment() {
         // 3) Observe local DB updates
         lifecycleScope.launch {
             viewModel.allAlerts.collectLatest { alerts ->
+                Log.d("AlertsFragment", "Received ${alerts.size} alerts from local DB") // ✅ Add logging
                 adapter.submitList(alerts)
             }
         }
 
-        // 4) Load saved Firebase ID-token
-        val prefs = requireContext().getSharedPreferences("auth", Context.MODE_PRIVATE)
-        val token = prefs.getString("auth_token", "") ?: ""
+        // 4) Get Firebase token and fetch children data
+        lifecycleScope.launch {
+            val token = FirebaseAuth.getInstance().currentUser?.getIdToken(false)?.await()?.token
+            if (token != null) {
+                Log.d("AlertsFragment", "Got Firebase token, fetching children...")
 
-        // 5) Fetch children list, build map, and fetch each child’s alerts
-        val currentUserId = FirebaseAuth.getInstance().currentUser?.uid.orEmpty()
-        FirebaseFirestore.getInstance()
-            .collection("users")
-            .document(currentUserId)
-            .collection("children")
-            .get()
-            .addOnSuccessListener { snapshot ->
-                snapshot.documents.forEach { doc ->
-                    // Convert Firestore data to your local model
-                    val child = doc.toObject(ChildLocalData::class.java)
-                    if (child != null) {
-                        // Store for adapter lookups
-                        childDataMap[child.childId] = child
-                        adapter.notifyDataSetChanged()
-                        // Trigger API + DB sync for this child
-                        viewModel.fetchAlerts(token, child.childId)
-                    }
+                // 5) Get children from local database (already synced by ProfileFragment)
+                val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
+                val childDao = AppDatabase.getDatabase(requireContext()).childDao()
+                val children = childDao.getChildrenForUser(userId)
+
+                Log.d("AlertsFragment", "Found ${children.size} children")
+
+                children.forEach { child ->
+                    Log.d("AlertsFragment", "Fetching alerts for child: ${child.childId}")
+                    childDataMap[child.childId] = child
+
+                    // Fetch alerts for this child
+                    viewModel.fetchAlerts(token, child.childId)
                 }
+
+                adapter.notifyDataSetChanged()
+            } else {
+                Log.e("AlertsFragment", "Failed to get Firebase token")
             }
-            .addOnFailureListener {
-                // TODO: show an error message
-            }
+        }
     }
 
     override fun onDestroyView() {

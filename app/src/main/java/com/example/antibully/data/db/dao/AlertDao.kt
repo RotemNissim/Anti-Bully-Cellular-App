@@ -14,6 +14,15 @@ interface AlertDao {
     @Query("SELECT * FROM alerts ORDER BY timestamp DESC")
     fun getAllAlerts(): Flow<List<Alert>>
 
+    @Query("SELECT * FROM alerts ORDER BY timestamp DESC") // ✅ Add this method
+    suspend fun getAllAlertsSync(): List<Alert>
+
+    @Query("SELECT * FROM alerts WHERE reason = :reason ORDER BY timestamp DESC")
+    fun getAlertsByReason(reason: String): Flow<List<Alert>>
+
+    @Query("SELECT * FROM alerts WHERE reporterId = :childId ORDER BY timestamp DESC")
+    fun getAlertsForChild(childId: String): Flow<List<Alert>>
+
     @Query("DELETE FROM alerts")
     suspend fun deleteAll()
 
@@ -25,12 +34,6 @@ interface AlertDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAlert(alert: Alert)
-
-    @Query("SELECT * FROM alerts WHERE reason = :reason")
-    fun getAlertsByReason(reason: String):Flow<List<Alert>>
-
-    @Query("SELECT * FROM alerts WHERE reporterId = :childId")
-    fun getAlertsForChild(childId: String): Flow<List<Alert>>
 
 }
 

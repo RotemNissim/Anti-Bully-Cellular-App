@@ -1,6 +1,7 @@
 package com.example.antibully.data.ui.auth
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,6 +10,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.example.antibully.R
 import com.example.antibully.data.db.AppDatabase
+import com.example.antibully.utils.SessionManager
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -34,13 +36,24 @@ class SplashFragment : Fragment() {
             val userDao = AppDatabase.getDatabase(requireContext()).userDao()
             val userInRoom = currentUser?.uid?.let { userDao.getUserById(it) }
 
+            // ✅ Also check SessionManager
+            val isLoggedInSession = SessionManager.isLoggedIn(requireContext())
+            val sessionUserId = SessionManager.getCurrentUserId(requireContext())
+
             delay(1000) // brief pause for splash feel
 
             withContext(Dispatchers.Main) {
-                if (currentUser != null && userInRoom != null) {
-                    findNavController().navigate(R.id.feedFragment)
+                // ✅ Check both Firebase and SessionManager
+                if (currentUser != null && userInRoom != null && isLoggedInSession && sessionUserId != null) {
+                    Log.d("SplashFragment", "User is fully logged in - navigating to feed")
+                    findNavController().navigate(R.id.action_splashFragment_to_feedFragment)
                 } else {
-                    findNavController().navigate(R.id.loginFragment)
+                    Log.d("SplashFragment", "User not logged in - navigating to login")
+                    // Clear any inconsistent session data
+                    if (currentUser == null) {
+                        SessionManager.logout(requireContext())
+                    }
+                    findNavController().navigate(R.id.action_splashFragment_to_loginFragment)
                 }
             }
         }

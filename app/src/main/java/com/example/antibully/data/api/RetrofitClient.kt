@@ -47,4 +47,17 @@ object RetrofitClient {
     val alertApiService: AlertApiService by lazy {
         alertRetrofit.create(AlertApiService::class.java)
     }
+
+    // Retrofit for children (newly added)
+    private val childRetrofit: Retrofit by lazy {
+        Retrofit.Builder()
+            .baseUrl(ALERT_BASE_URL) // Assuming the base URL is the same as MESSAGE_BASE_URL
+            .client(httpClient)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+    }
+
+    val childApiService: ChildApiService by lazy {
+        childRetrofit.create(ChildApiService::class.java)
+    }
 }

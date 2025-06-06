@@ -6,18 +6,23 @@ import android.view.*
 import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.example.antibully.R
 import com.example.antibully.data.api.CloudinaryUploader
 import com.example.antibully.data.db.AppDatabase
+import com.example.antibully.data.repository.ChildRepository
+import com.example.antibully.viewmodel.ChildViewModel
+import com.example.antibully.viewmodel.ChildViewModelFactory
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.squareup.picasso.Picasso
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 
 class EditChildFragment : Fragment() {
@@ -102,20 +107,25 @@ class EditChildFragment : Fragment() {
     }
 
     private fun updateChild(childId: String, parentUserId: String, newName: String) {
-        lifecycleScope.launch(Dispatchers.IO) {
-            val dao = AppDatabase.getDatabase(requireContext()).childDao()
-            dao.updateChild(childId, parentUserId, newName, uploadedImageUrl ?: "")
-
-            FirebaseFirestore.getInstance()
-                .collection("users")
-                .document(parentUserId)
-                .collection("children")
-                .document(childId)
-                .update(mapOf("name" to newName))
-
-            withContext(Dispatchers.Main) {
-                Toast.makeText(requireContext(), "Child updated", Toast.LENGTH_SHORT).show()
-                findNavController().navigateUp()
+        lifecycleScope.launch {
+            val token = auth.currentUser?.getIdToken(false)?.await()?.token
+            if (token != null) {
+                // Initialize child repository and viewmodel
+                val childDao = AppDatabase.getDatabase(requireContext()).childDao()
+                val childRepository = ChildRepository(childDao)
+                val factory = ChildViewModelFactory(childRepository)
+                val childViewModel = ViewModelProvider(this@EditChildFragment, factory)[ChildViewModel::class.java]
+                
+                childViewModel.updateChild(token, parentUserId, childId, newName, uploadedImageUrl) { success ->
+                    if (success) {
+                        Toast.makeText(requireContext(), "Child updated successfully", Toast.LENGTH_SHORT).show()
+                        findNavController().navigateUp()
+                    } else {
+                        Toast.makeText(requireContext(), "Failed to update child", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            } else {
+                Toast.makeText(requireContext(), "Authentication required", Toast.LENGTH_SHORT).show()
             }
         }
     }

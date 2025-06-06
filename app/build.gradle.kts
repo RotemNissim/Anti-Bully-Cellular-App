@@ -95,5 +95,9 @@ dependencies {
     kapt ("com.github.bumptech.glide:compiler:4.12.0")
     implementation(libs.core)
     implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.6.4")
+    implementation("com.google.firebase:firebase-messaging-ktx:23.4.0")
+    implementation("com.google.firebase:firebase-analytics-ktx:21.5.0")
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("com.google.code.gson:gson:2.10.1")
 
 }

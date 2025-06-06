@@ -38,7 +38,7 @@ class AlertDetailsFragment : Fragment() {
     private lateinit var postFactory: PostViewModelFactory
 
     private val args: AlertDetailsFragmentArgs by navArgs()
-    private val alertId: String by lazy { args.postId }
+    private val alertId: String by lazy { args.alertId } // ✅ Use 'alertId' instead of 'postId'
 
     private var selectedImageUrl: String? = null
 
