@@ -160,7 +160,7 @@
         android:fontFamily="@font/assistant_semi_bold"
         android:text="Sign Up"
         android:textAllCaps="false"
-        android:textColor="@color/accent"
+        android:textColor="@color/accent_blue"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

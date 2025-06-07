@@ -10,6 +10,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -80,7 +81,24 @@ class ProfileFragment : Fragment() {
             try {
                 // Load user data
                 syncUserFromFirestore(userId)
-                
+                val user = withContext(Dispatchers.IO) {
+                    userDao.getUserById(userId)
+                }
+
+                user?.let {
+                    usernameTextView.text = it.name
+                    usernameTextView.visibility = View.VISIBLE
+                    profileImageView.visibility = View.VISIBLE
+                    editProfileButton?.visibility = View.VISIBLE
+                    view.findViewById<ProgressBar>(R.id.profileLoading)?.visibility = View.GONE
+
+                    if (!it.profileImageUrl.isNullOrEmpty()) {
+                        Picasso.get().load(it.profileImageUrl).into(profileImageView)
+                    } else if (it.localProfileImagePath.isNotEmpty()) {
+                        profileImageView.setImageURI(Uri.parse(it.localProfileImagePath))
+                    }
+                }
+
                 // Get Firebase token and fetch children from backend
                 val token = auth.currentUser?.getIdToken(false)?.await()?.token
                 Log.d("ProfileFragment", "Firebase token obtained: ${token != null}")
@@ -90,24 +108,26 @@ class ProfileFragment : Fragment() {
                     childViewModel.fetchChildrenFromApi(token, userId)
                     
                     // ✅ Add a small delay and check again
-                    kotlinx.coroutines.delay(2000)
-                    
-                    // ✅ Also try to get children from local DB directly
-                    val localChildren = AppDatabase.getDatabase(requireContext()).childDao().getChildrenForUser(userId)
-                    Log.d("ProfileFragment", "Local children count: ${localChildren.size}")
+//                    kotlinx.coroutines.delay(2000)
+//
+//                    // ✅ Also try to get children from local DB directly
+//                    val localChildren = AppDatabase.getDatabase(requireContext()).childDao().getChildrenForUser(userId)
+//                    Log.d("ProfileFragment", "Local children count: ${localChildren.size}")
                 } else {
                     Log.e("ProfileFragment", "Failed to get Firebase token")
                 }
-                
-                // Observe children from local database (updated by API calls)
-                childViewModel.getChildrenForUser(userId).collectLatest { children ->
-                    Log.d("ProfileFragment", "Received ${children.size} children from local DB")
-                    withContext(Dispatchers.Main) {
-                        recyclerView.layoutManager = LinearLayoutManager(requireContext())
-                        recyclerView.adapter = ChildrenAdapter(children)
-                        noChildrenText.visibility = if (children.isEmpty()) View.VISIBLE else View.GONE
+
+                viewLifecycleOwner.lifecycleScope.launch {
+                    viewLifecycleOwner.lifecycle.repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) {
+                        childViewModel.getChildrenForUser(userId).collectLatest { children ->
+                            Log.d("ProfileFragment", "Received ${children.size} children from local DB")
+                            recyclerView.layoutManager = LinearLayoutManager(requireContext())
+                            recyclerView.adapter = ChildrenAdapter(children)
+                            noChildrenText.visibility = if (children.isEmpty()) View.VISIBLE else View.GONE
+                        }
                     }
                 }
+
             } catch (e: Exception) {
                 Log.e("ProfileFragment", "Error in onViewCreated: ${e.message}", e)
             }
