@@ -33,10 +33,6 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         Log.d(TAG, "Data: ${remoteMessage.data}")
         Log.d(TAG, "Notification: ${remoteMessage.notification}")
         
-        // ✅ Force show a notification regardless of content
-        showNotification("FCM Test", "onMessageReceived was called at ${System.currentTimeMillis()}")
-        
-        // Also handle the actual message
         val title = remoteMessage.notification?.title 
             ?: remoteMessage.data["title"] 
             ?: "Alert"
