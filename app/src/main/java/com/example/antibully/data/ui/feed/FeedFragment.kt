@@ -84,22 +84,31 @@ class FeedFragment : Fragment() {
                 }
             }
 
-        // 2. RecyclerView setup
-        adapter = AlertsAdapter(emptyMap()) { alert ->
-            val action = FeedFragmentDirections
-                .actionFeedFragmentToAlertDetailsFragment(alert.postId)
-            findNavController().navigate(action)
-        }
-        binding.alertsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
-        binding.alertsRecyclerView.adapter = adapter
+        // 2. Setup RecyclerView with child data map
+        lifecycleScope.launch {
+            val childDao = AppDatabase.getDatabase(requireContext()).childDao()
+            val children = childDao.getChildrenForUser(currentUserId)
 
-        // 3. Token to fetch alerts
-        FirebaseAuth.getInstance().currentUser
-            ?.getIdToken(false)
-            ?.addOnSuccessListener { result ->
-                val token = result.token ?: return@addOnSuccessListener
-                startLiveFeed(token)
+            // ✅ Create child data map for the adapter
+            val childDataMap = children.associateBy { it.childId }
+
+            adapter = AlertsAdapter(childDataMap) { alert ->
+                val action = FeedFragmentDirections
+                    .actionFeedFragmentToAlertDetailsFragment(alert.postId)
+                findNavController().navigate(action)
             }
+
+            binding.alertsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
+            binding.alertsRecyclerView.adapter = adapter
+
+            // 3. Get token and start live feed
+            FirebaseAuth.getInstance().currentUser
+                ?.getIdToken(false)
+                ?.addOnSuccessListener { result ->
+                    val token = result.token ?: return@addOnSuccessListener
+                    startLiveFeed(token)
+                }
+        }
 
         // 4. Search input (placeholder)
         binding.searchInput.setOnEditorActionListener { textView, _, _ ->
@@ -123,30 +132,36 @@ class FeedFragment : Fragment() {
 
     private fun startLiveFeed(token: String) {
         val uid = FirebaseAuth.getInstance().currentUser?.uid.orEmpty()
-        FirebaseFirestore.getInstance()
-            .collection("users")
-            .document(uid)
-            .collection("children")
-            .get()
-            .addOnSuccessListener { snap ->
-                childIds = snap.documents.map { it.id }
 
+        // ✅ Get children from Room database instead of Firestore
+        lifecycleScope.launch {
+            val childDao = AppDatabase.getDatabase(requireContext()).childDao()
+            val children = childDao.getChildrenForUser(uid)
+
+            childIds = children.map { it.childId }
+
+            // ✅ Now setup the live feed with correct child IDs
+            if (childIds.isNotEmpty()) {
                 // Live updates from Room
-                viewLifecycleOwner.lifecycleScope.launch {
-                    viewModel.allAlerts.collectLatest { alerts ->
-                        val filtered = alerts.filter { it.reporterId in childIds }
-                        adapter.submitList(filtered)
+                viewModel.allAlerts.collectLatest { alerts ->
+                    val filtered = alerts.filter { alert ->
+                        val isForOurChild = alert.reporterId in childIds
+                        isForOurChild
                     }
+                    adapter.submitList(filtered)
                 }
 
-                // Polling from server
-                viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
+                // Polling from server for each child
+                launch(Dispatchers.IO) {
                     while (isActive) {
-                        childIds.forEach { viewModel.fetchAlerts(token, it) }
+                        childIds.forEach { childId ->
+                            viewModel.fetchAlerts(token, childId)
+                        }
                         delay(TimeUnit.SECONDS.toMillis(15))
                     }
                 }
             }
+        }
     }
 
     override fun onDestroyView() {
