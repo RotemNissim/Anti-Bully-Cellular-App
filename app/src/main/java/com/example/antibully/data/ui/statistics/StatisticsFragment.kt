@@ -84,9 +84,9 @@ class StatisticsFragment : Fragment() {
         lifecycleScope.launch {
             val childDao = AppDatabase.getDatabase(requireContext()).childDao()
             children = childDao.getChildrenForUser(uid)
-            
+
             Log.d("StatisticsFragment", "Found ${children.size} children for statistics")
-            
+
             if (children.isEmpty()) {
                 Log.w("StatisticsFragment", "No children found for user $uid")
                 withContext(Dispatchers.Main) {
@@ -107,7 +107,7 @@ class StatisticsFragment : Fragment() {
             // Observe alerts and update charts
             alertViewModel.allAlerts.collectLatest { alerts ->
                 Log.d("StatisticsFragment", "Received ${alerts.size} total alerts")
-                
+
                 // Filter alerts for our children
                 allAlerts = alerts.filter { alert ->
                     children.any { child -> child.childId == alert.reporterId }
@@ -118,7 +118,7 @@ class StatisticsFragment : Fragment() {
                         alert.timestamp
                     alert.copy(timestamp = t)
                 }
-                
+
                 Log.d("StatisticsFragment", "Filtered to ${allAlerts.size} alerts for our children")
                 allAlerts.forEach { alert ->
                     Log.d("StatisticsFragment", "Alert: reporterId=${alert.reporterId}, reason=${alert.reason}")
