@@ -1,6 +1,7 @@
 package com.example.antibully.data.ui.feed
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -64,8 +65,6 @@ class FeedFragment : Fragment() {
             .document(currentUserId)
             .get()
             .addOnSuccessListener { doc ->
-//                val userName = doc.getString("fullName") ?: "User"
-//                binding.welcomeText.text = getString(R.string.welcome_user, userName)
                 val userName = doc.getString("fullName") ?: "User"
                 binding.welcomeText.text = getString(R.string.welcome_user, userName)
                 binding.welcomeText.visibility = View.VISIBLE
@@ -78,16 +77,20 @@ class FeedFragment : Fragment() {
                         .circleCrop()
                         .into(binding.profileImage)
                     binding.profileImage.visibility = View.VISIBLE
-
                 } else {
                     binding.profileImage.setImageResource(R.drawable.ic_default_profile)
                 }
             }
 
-        // 2. Setup RecyclerView with child data map
+        // 2. Setup RecyclerView and start everything
         lifecycleScope.launch {
             val childDao = AppDatabase.getDatabase(requireContext()).childDao()
             val children = childDao.getChildrenForUser(currentUserId)
+
+            // ✅ Store child IDs immediately
+            childIds = children.map { it.childId }
+
+            Log.d("FeedFragment", "Found ${children.size} children: $childIds")
 
             // ✅ Create child data map for the adapter
             val childDataMap = children.associateBy { it.childId }
@@ -101,12 +104,34 @@ class FeedFragment : Fragment() {
             binding.alertsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
             binding.alertsRecyclerView.adapter = adapter
 
-            // 3. Get token and start live feed
+            // ✅ Setup live data collection FIRST (this stays active)
+            viewModel.allAlerts.collectLatest { alerts ->
+                Log.d("FeedFragment", "Received ${alerts.size} total alerts from Room")
+
+                val filtered = alerts.filter { alert ->
+                    val isForOurChild = alert.reporterId in childIds
+                    if (isForOurChild) {
+                        Log.d("FeedFragment", "✅ Alert ${alert.postId} is for our child ${alert.reporterId}")
+                    } else {
+                        Log.d("FeedFragment", "❌ Alert ${alert.postId} is NOT for our children (reporter: ${alert.reporterId})")
+                    }
+                    isForOurChild
+                }
+
+                Log.d("FeedFragment", "Filtered to ${filtered.size} alerts for our children")
+                adapter.submitList(filtered)
+            }
+        }
+
+        // 3. Start polling separately (after a small delay to ensure collection is active)
+        lifecycleScope.launch {
+            delay(1000) // Wait for collection to be set up
+
             FirebaseAuth.getInstance().currentUser
                 ?.getIdToken(false)
                 ?.addOnSuccessListener { result ->
                     val token = result.token ?: return@addOnSuccessListener
-                    startLiveFeed(token)
+                    startPolling(token)
                 }
         }
 
@@ -130,36 +155,24 @@ class FeedFragment : Fragment() {
         }
     }
 
-    private fun startLiveFeed(token: String) {
-        val uid = FirebaseAuth.getInstance().currentUser?.uid.orEmpty()
-
-        // ✅ Get children from Room database instead of Firestore
-        lifecycleScope.launch {
-            val childDao = AppDatabase.getDatabase(requireContext()).childDao()
-            val children = childDao.getChildrenForUser(uid)
-
-            childIds = children.map { it.childId }
-
-            // ✅ Now setup the live feed with correct child IDs
-            if (childIds.isNotEmpty()) {
-                // Live updates from Room
-                viewModel.allAlerts.collectLatest { alerts ->
-                    val filtered = alerts.filter { alert ->
-                        val isForOurChild = alert.reporterId in childIds
-                        isForOurChild
-                    }
-                    adapter.submitList(filtered)
-                }
-
-                // Polling from server for each child
-                launch(Dispatchers.IO) {
-                    while (isActive) {
-                        childIds.forEach { childId ->
+    // ✅ Separate polling function that only handles server fetching
+    private fun startPolling(token: String) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            while (isActive) {
+                if (childIds.isNotEmpty()) {
+                    Log.d("FeedFragment", "Polling server for children: $childIds")
+                    childIds.forEach { childId ->
+                        try {
+                            Log.d("FeedFragment", "Fetching alerts for child: $childId")
                             viewModel.fetchAlerts(token, childId)
+                        } catch (e: Exception) {
+                            Log.e("FeedFragment", "Error fetching alerts for $childId: ${e.message}")
                         }
-                        delay(TimeUnit.SECONDS.toMillis(15))
                     }
+                } else {
+                    Log.w("FeedFragment", "No children found - skipping poll")
                 }
+                delay(TimeUnit.SECONDS.toMillis(15))
             }
         }
     }
