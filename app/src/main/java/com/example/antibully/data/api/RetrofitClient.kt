@@ -11,7 +11,7 @@ object RetrofitClient {
         "https://67cd7757dd7651e464ee70df.mockapi.io/api/v1/"
 
     // === Alerts API ===
-    private const val ALERT_BASE_URL = "http://10.0.2.2:3000/"
+    private const val ALERT_BASE_URL = "http://10.100.102.35:3000/"
 
     // Shared logging interceptor for debugging
     private val logging = HttpLoggingInterceptor().apply {
