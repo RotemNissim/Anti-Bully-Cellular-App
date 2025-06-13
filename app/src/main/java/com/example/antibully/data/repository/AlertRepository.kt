@@ -7,16 +7,16 @@ import com.example.antibully.data.api.RetrofitClient
 import com.example.antibully.data.db.dao.AlertDao
 import com.example.antibully.data.models.Alert
 import kotlinx.coroutines.flow.Flow
+import com.example.antibully.utils.Encryption
+
 
 class AlertRepository(
     private val alertDao: AlertDao,
     private val alertApiService: AlertApiService = RetrofitClient.alertApiService
+
 ) {
     val allAlerts: Flow<List<Alert>> = alertDao.getAllAlerts()
 
-    /**
-     * Pull from server for a specific child, then upsert into local DB.
-     */
     suspend fun fetchAlertsFromApi(
         token: String,
         childId: String? = null
@@ -24,15 +24,19 @@ class AlertRepository(
         val bearer = "Bearer $token"
         
         if (childId != null) {
-            Log.d("AlertRepository", "Fetching alerts for child: $childId")
+            val encryptedChildId = Encryption.encrypt(childId)
+            Log.d("AlertRepository", "Fetching alerts for child: $childId $encryptedChildId ")
+
+
+
             
             val result = ApiHelper.safeApiCall {
-                alertApiService.getAlertsForChild(bearer, childId)
+                alertApiService.getAlertsForChild(bearer, encryptedChildId)
             }
             
             if (result.isSuccess) {
                 val remoteList = result.getOrNull() ?: emptyList()
-                Log.d("AlertRepository", "API returned ${remoteList.size} alerts for child $childId")
+                Log.d("AlertRepository", "API returned ${remoteList.size} alerts for child $childId $encryptedChildId")
                 
                 // ✅ Convert API response to local Alert format
                 val localAlerts = remoteList.map { apiAlert ->
