@@ -12,38 +12,6 @@
         android:orientation="vertical"
         android:padding="24dp">
 
-        <!-- Child Image -->
-        <FrameLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_marginBottom="32dp">
-
-            <com.google.android.material.imageview.ShapeableImageView
-                android:id="@+id/ivAddChildImage"
-                android:layout_width="140dp"
-                android:layout_height="140dp"
-                android:contentDescription="Profile picture"
-                android:scaleType="centerCrop"
-                android:src="@drawable/ic_default_profile"
-                app:shapeAppearanceOverlay="@style/CircleImage"
-                app:strokeColor="@color/accent_blue"
-                app:strokeWidth="2dp" />
-
-            <com.google.android.material.floatingactionbutton.FloatingActionButton
-                android:id="@+id/btnChooseChildImage"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="bottom|end"
-                android:layout_marginEnd="-8dp"
-                android:layout_marginBottom="-8dp"
-                android:contentDescription="Change Profile Image"
-                app:backgroundTint="@color/accent_blue"
-                app:fabCustomSize="40dp"
-                app:tint="@color/white"
-                app:srcCompat="@drawable/ic_camera" />
-        </FrameLayout>
-
         <!-- Discord Connection Card -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
