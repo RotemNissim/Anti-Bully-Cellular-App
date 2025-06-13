@@ -21,20 +21,14 @@ import com.example.antibully.data.repository.ChildRepository
 import com.example.antibully.viewmodel.ChildViewModel
 import com.example.antibully.viewmodel.ChildViewModelFactory
 import com.google.firebase.auth.FirebaseAuth
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
-import kotlinx.coroutines.withContext
-import org.json.JSONObject
-import java.net.HttpURLConnection
-import java.net.URL
 
 class AddChildFragment : Fragment() {
 
     private lateinit var auth: FirebaseAuth
     private var selectedImageUri: Uri? = null
-    private var uploadedImageUrl: String? = null
-    private val redirectUri = "antibully://discord-callback"
+    private val redirectUri = "http://10.0.2.2:3000/api/oauth/discord/callback"
 
     private lateinit var childImageView: ImageView
     private lateinit var childViewModel: ChildViewModel
@@ -82,56 +76,32 @@ class AddChildFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         val data: Uri? = requireActivity().intent?.data
-        val code = data?.getQueryParameter("code")
+        val discordId = data?.getQueryParameter("discordId")
+        val name = data?.getQueryParameter("name")
+        val imageUrl = data?.getQueryParameter("imageUrl")
 
-        if (code != null) {
+        if (!discordId.isNullOrBlank() && !name.isNullOrBlank()) {
             requireActivity().intent?.data = null
-            handleDiscordCode(code)
+            linkChildAfterServerHandled(discordId, name, imageUrl)
         }
     }
 
-    private fun handleDiscordCode(code: String) {
+    private fun linkChildAfterServerHandled(discordId: String, name: String, imageUrl: String?) {
         lifecycleScope.launch {
-            val token = auth.currentUser?.getIdToken(false)?.await()?.token ?: return@launch
-            val parentId = auth.currentUser?.uid ?: return@launch
             progressBar.visibility = View.VISIBLE
-
             try {
-                val response = withContext(Dispatchers.IO) {
-                    val url = URL("http://10.0.2.2:3000/api/oauth/discord/exchange")
-                    val conn = url.openConnection() as HttpURLConnection
-                    conn.requestMethod = "POST"
-                    conn.setRequestProperty("Content-Type", "application/json")
-                    conn.doOutput = true
+                val token = auth.currentUser?.getIdToken(false)?.await()?.token ?: return@launch
+                val parentId = auth.currentUser?.uid ?: return@launch
 
-                    val json = """{ \"code\": \"$code\" }"""
-                    conn.outputStream.use { it.write(json.toByteArray()) }
-
-                    if (conn.responseCode == 200) {
-                        val result = conn.inputStream.bufferedReader().readText()
-                        JSONObject(result)
-                    } else null
-                }
-
-                response?.let { json ->
-                    val discordId = json.getString("discordId")
-                    val name = json.getString("username")
-                    val imageUrl = json.optString("avatarUrl", null)
-
-                    childViewModel.linkChild(token, parentId, discordId, name, imageUrl) { success ->
-                        if (success) {
-                            Toast.makeText(requireContext(), "Child linked", Toast.LENGTH_SHORT).show()
-                            findNavController().navigateUp()
-                        } else {
-                            Toast.makeText(requireContext(), "Link failed", Toast.LENGTH_SHORT).show()
-                        }
+                childViewModel.linkChild(token, parentId, discordId, name, imageUrl) { success ->
+                    if (success) {
+                        Toast.makeText(requireContext(), "Child linked", Toast.LENGTH_SHORT).show()
+                        findNavController().navigateUp()
+                    } else {
+                        Toast.makeText(requireContext(), "Link failed", Toast.LENGTH_SHORT).show()
                     }
-                } ?: run {
-                    Toast.makeText(requireContext(), "Failed to get user data from server", Toast.LENGTH_LONG).show()
                 }
-
             } catch (e: Exception) {
-                Log.e("DiscordOAuth", "Error handling Discord code", e)
                 Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_LONG).show()
             } finally {
                 progressBar.visibility = View.GONE
