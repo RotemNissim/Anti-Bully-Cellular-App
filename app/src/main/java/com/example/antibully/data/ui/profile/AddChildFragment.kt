@@ -18,26 +18,22 @@ import com.example.antibully.data.repository.ChildRepository
 import com.example.antibully.viewmodel.ChildViewModel
 import com.example.antibully.viewmodel.ChildViewModelFactory
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
-import kotlinx.coroutines.withContext
 
 class AddChildFragment : Fragment() {
 
     private lateinit var auth: FirebaseAuth
     private var selectedImageUri: Uri? = null
     private var uploadedImageUrl: String? = null
-    private val clientId = "1373612221166391397"
-
-    //    private val redirectUri = "http://localhost:3000/api/oauth/discord/callback"
-//    private val redirectUri = "https://a6f1-62-56-174-220.ngrok-free.app/api/oauth/discord/callback"
-    private val redirectUri = "antibully://discord-callback"
 
     private lateinit var childImageView: ImageView
     private lateinit var childViewModel: ChildViewModel
     private lateinit var childRepository: ChildRepository
+
+    private var existingChildren: List<ChildLocalData> = emptyList()
+    private var parentUserId: String? = null
 
     private val pickImageLauncher =
         registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
@@ -54,6 +50,7 @@ class AddChildFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         auth = FirebaseAuth.getInstance()
+        parentUserId = auth.currentUser?.uid
 
         childImageView = view.findViewById(R.id.ivAddChildImage)
         val chooseImageButton = view.findViewById<View>(R.id.btnChooseChildImage)
@@ -67,6 +64,13 @@ class AddChildFragment : Fragment() {
         val factory = ChildViewModelFactory(childRepository)
         childViewModel = ViewModelProvider(this, factory)[ChildViewModel::class.java]
 
+        // Load existing children
+        parentUserId?.let { uid ->
+            lifecycleScope.launch {
+                existingChildren = childViewModel.getChildrenForUser(uid).first()
+            }
+        }
+
         chooseImageButton.setOnClickListener {
             pickImageLauncher.launch("image/*")
         }
@@ -74,36 +78,40 @@ class AddChildFragment : Fragment() {
         saveButton.setOnClickListener {
             val childId = childIdInput.text.toString().trim()
             val childName = childNameInput.text.toString().trim()
-            val parentUserId = auth.currentUser?.uid ?: return@setOnClickListener
 
             if (childId.isEmpty() || childName.isEmpty()) {
-                Toast.makeText(requireContext(), "Please fill all fields", Toast.LENGTH_SHORT)
-                    .show()
+                Toast.makeText(requireContext(), "Please fill all fields", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
-            saveChildToBackend(childId, childName, parentUserId)
+            val childExists = existingChildren.any { it.childId == childId }
+            if (childExists) {
+                Toast.makeText(requireContext(), "Child with this ID already exists", Toast.LENGTH_LONG).show()
+                return@setOnClickListener
+            }
+
+            parentUserId?.let { uid ->
+                saveChildToBackend(childId, childName, uid)
+            } ?: Toast.makeText(requireContext(), "User not logged in", Toast.LENGTH_SHORT).show()
         }
 
         val connectDiscordButton = view.findViewById<Button>(R.id.btnConnectDiscord)
 
         connectDiscordButton.setOnClickListener {
-
-            val oauthUrl = "https://discord.com/oauth2/authorize?client_id=1373612221166391397&response_type=code&redirect_uri=http%3A%2F%2F10.0.2.2%3A3000%2Fapi%2Foauth%2Fdiscord%2Fcallback&scope=identify"
+            val oauthUrl =
+                "https://discord.com/oauth2/authorize?client_id=1373612221166391397&response_type=code&redirect_uri=http%3A%2F%2F10.0.2.2%3A3000%2Fapi%2Foauth%2Fdiscord%2Fcallback&scope=identify"
 
             android.util.Log.d("DiscordOAuth", "Opening URL: $oauthUrl")
 
             val intent = Intent(Intent.ACTION_VIEW, Uri.parse(oauthUrl))
             startActivity(intent)
         }
-
     }
 
     private fun saveChildToBackend(childId: String, childName: String, parentUserId: String) {
         lifecycleScope.launch {
             val token = auth.currentUser?.getIdToken(false)?.await()?.token
             if (token != null) {
-                // Pass imageUrl to linkChild
                 childViewModel.linkChild(token, parentUserId, childId, childName, uploadedImageUrl) { success ->
                     if (success) {
                         Toast.makeText(requireContext(), "Child added successfully", Toast.LENGTH_SHORT).show()

@@ -145,7 +145,7 @@
     <fragment
         android:id="@+id/twoFactorLoginFragment"
         android:name="com.example.antibully.data.ui.auth.TwoFactorLoginFragment"
-        android:label="אימות דו שלבי"
+        android:label="Two Factor Login"
         tools:layout="@layout/fragment_two_factor_login" />
     <fragment
         android:id="@+id/securitySettingsFragment"
@@ -161,7 +161,7 @@
     <fragment
         android:id="@+id/twoFactorSetupFragment"
         android:name="com.example.antibully.data.ui.settings.TwoFactorSetupFragment"
-        android:label="הגדרת אימות דו-שלבי"
+        android:label="Two Factor Setup"
         tools:layout="@layout/fragment_two_factor_setup" />
 
 </navigation>
