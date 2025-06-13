@@ -44,48 +44,6 @@
                 app:srcCompat="@drawable/ic_camera" />
         </FrameLayout>
 
-        <!-- Child ID -->
-        <com.google.android.material.textfield.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Child's ID"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            app:boxBackgroundColor="@color/surface_dark"
-            app:boxStrokeColor="@color/accent_blue"
-            app:startIconDrawable="@drawable/ic_id_card"
-            app:startIconTint="@color/accent_blue"
-            android:textColorHint="@color/text_secondary"
-            android:layout_marginBottom="16dp">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etChildId"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="text"
-                android:textColor="@color/white" />
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <!-- Child Name -->
-        <com.google.android.material.textfield.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Child's Full Name"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            app:boxBackgroundColor="@color/surface_dark"
-            app:boxStrokeColor="@color/accent_blue"
-            app:startIconDrawable="@drawable/ic_user"
-            app:startIconTint="@color/accent_blue"
-            android:textColorHint="@color/text_secondary"
-            android:layout_marginBottom="24dp">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etChildName"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="text"
-                android:textColor="@color/white" />
-        </com.google.android.material.textfield.TextInputLayout>
-
         <!-- Discord Connection Card -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
@@ -146,17 +104,6 @@
                     android:backgroundTint="@color/discord_accent" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
-
-        <!-- Save Button -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnSaveChild"
-            android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:text="Save Child"
-            android:textSize="16sp"
-            android:textAllCaps="false"
-            app:cornerRadius="12dp"
-            android:backgroundTint="@color/accent_blue" />
 
         <!-- Progress Bar -->
         <ProgressBar
