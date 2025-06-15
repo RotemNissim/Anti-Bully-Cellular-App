@@ -18,8 +18,8 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
     }
 
     buildTypes {
@@ -59,6 +59,7 @@ dependencies {
     implementation(libs.firebase.storage.ktx)
     implementation(libs.androidx.recyclerview)
     implementation(libs.androidx.media3.common.ktx)
+    implementation(libs.firebase.messaging.ktx)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
