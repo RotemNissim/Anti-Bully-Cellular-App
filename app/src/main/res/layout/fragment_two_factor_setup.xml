@@ -82,6 +82,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/codeInput"
+        app:layout_constraintBottom_toTopOf="@id/bottomGuideline"
         app:layout_constraintWidth_percent="0.7" />
 
     <ProgressBar
@@ -94,5 +95,12 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/bottomGuideline"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.9" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
