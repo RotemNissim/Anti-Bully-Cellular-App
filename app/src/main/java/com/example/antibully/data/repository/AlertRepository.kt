@@ -46,6 +46,7 @@ class AlertRepository(
                         text = apiAlert.severity,
                         reason = apiAlert.summary ?: "No reason provided",
                         imageUrl = apiAlert.imageUrl,
+                        severity = apiAlert.severity,
                         timestamp = apiAlert.timestamp
                     )
                 }
