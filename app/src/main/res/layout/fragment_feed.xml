@@ -40,7 +40,9 @@
                 android:scaleType="centerCrop"
                 android:visibility="gone"
                 android:contentDescription="Profile"
-                app:shapeAppearanceOverlay="@style/CircleImage" />
+                app:shapeAppearanceOverlay="@style/CircleImage"
+                app:strokeColor="@color/accent_blue"
+                app:strokeWidth="2dp"/>
         </FrameLayout>
 
         <!-- Welcome Text -->

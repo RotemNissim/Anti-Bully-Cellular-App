@@ -41,6 +41,8 @@ class ProfileFragment : Fragment() {
     private lateinit var noChildrenText: TextView
     private lateinit var profileImageView: ImageView
     private lateinit var usernameTextView: TextView
+
+
     private var isTwoFactorEnabled: Boolean = false
     private lateinit var childViewModel: ChildViewModel
     private lateinit var childRepository: ChildRepository
@@ -60,6 +62,7 @@ class ProfileFragment : Fragment() {
 
         profileImageView = view.findViewById(R.id.ivProfileImage)
         usernameTextView = view.findViewById(R.id.tvUsername)
+        val emailTextView = view.findViewById<TextView>(R.id.tvUserEmail)
         val editProfileButton = view.findViewById<FloatingActionButton>(R.id.btnEditProfile)
         val addChildButton = view.findViewById<Button>(R.id.btnAddChild)
         noChildrenText = view.findViewById(R.id.tvNoChildren)
@@ -88,6 +91,8 @@ class ProfileFragment : Fragment() {
                 user?.let {
                     usernameTextView.text = it.name
                     usernameTextView.visibility = View.VISIBLE
+                    emailTextView.text = it.email
+                    emailTextView.visibility = View.VISIBLE
                     profileImageView.visibility = View.VISIBLE
                     editProfileButton?.visibility = View.VISIBLE
                     view.findViewById<ProgressBar>(R.id.profileLoading)?.visibility = View.GONE
