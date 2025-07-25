@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <com.google.android.material.card.MaterialCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -20,35 +21,7 @@
             android:layout_height="wrap_content"
             android:padding="12dp">
 
-            <!-- Container for severity + date, top-right corner -->
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/severityDateContainer"
-                android:orientation="vertical"
-                android:gravity="end"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintEnd_toEndOf="parent">
-
-                <TextView
-                    android:id="@+id/alertSeverity"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="HIGH SEVERITY"
-                    android:textStyle="bold"
-                    android:textSize="12sp"
-                    android:textColor="@android:color/holo_red_light" />
-
-                <TextView
-                    android:id="@+id/alertTime"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Jun 13, 2025"
-                    android:textSize="12sp"
-                    android:textColor="@color/text_secondary" />
-            </LinearLayout>
-
-
+            <!-- Profile Image -->
             <com.google.android.material.imageview.ShapeableImageView
                 android:id="@+id/childProfileImage"
                 android:layout_width="28dp"
@@ -61,33 +34,59 @@
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="@id/alertReason" />
 
-            <!-- Child ID (bold) -->
+            <!-- Child Name (bold) -->
             <TextView
                 android:id="@+id/alertTitle"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="Child's ID 318657947"
+                android:text="rotemnissim (rotemnissim)"
                 android:textColor="@color/white"
                 android:textSize="14sp"
                 android:textStyle="bold"
-                app:layout_constraintEnd_toStartOf="@id/severityDateContainer"
-                app:layout_constraintHorizontal_bias="1.0"
                 app:layout_constraintStart_toEndOf="@id/childProfileImage"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/alertSeverity"
+                app:layout_constraintHorizontal_bias="0.0" />
 
-            <!-- Reason (lighter text) -->
+            <!-- Severity Badge (top-right) -->
             <TextView
-                android:id="@+id/alertReason"
+                android:id="@+id/alertSeverity"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="28dp"
-                android:text="Hate Speech"
+                android:text="HIGH SEVERITY"
+                android:textStyle="bold"
+                android:textSize="12sp"
+                android:textColor="@android:color/holo_red_light"
+                android:textAllCaps="true"
+                android:fontFamily="sans-serif-medium"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+            <!-- Description (wraps if long) -->
+            <TextView
+                android:id="@+id/alertReason"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="Detected bullying with high severity due to: insult, obscene, toxicity."
                 android:textColor="@color/text_secondary"
                 android:textSize="14sp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="@id/childProfileImage"
-                app:layout_constraintTop_toBottomOf="@id/severityDateContainer"
-                app:layout_constraintVertical_bias="0.0" />
+                android:layout_marginTop="4dp"
+                android:ellipsize="end"
+                app:layout_constraintTop_toBottomOf="@id/alertTitle"
+                app:layout_constraintStart_toEndOf="@id/childProfileImage"
+                app:layout_constraintEnd_toStartOf="@id/alertTime"
+                app:layout_constraintHorizontal_bias="0.0" />
+
+            <!-- Timestamp (aligned with top of description) -->
+            <TextView
+                android:id="@+id/alertTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="21 minutes ago"
+                android:textSize="12sp"
+                android:textColor="@color/text_secondary"
+                app:layout_constraintTop_toTopOf="@id/alertReason"
+                app:layout_constraintEnd_toEndOf="parent" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </FrameLayout>
