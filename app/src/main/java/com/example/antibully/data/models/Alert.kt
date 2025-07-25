@@ -10,17 +10,19 @@ data class Alert(
     val text: String,
     val reason: String,
     val imageUrl: String?,
-    val timestamp: Long = System.currentTimeMillis()
+    val timestamp: Long = System.currentTimeMillis(),
+    val isRead: Boolean = false
 ) {
     companion object {
-        fun fromApi(response: AlertApiRequest): Alert {
+        fun fromApi(response: AlertApiResponse): Alert {
             return Alert(
-                postId = response._id,
+                postId = response.id,
                 reporterId = response.childId,
                 text = response.severity,
                 reason = response.summary ?:"No reason provided",
                 imageUrl = response.imageUrl,
-                timestamp = response.timestamp
+                timestamp = response.timestamp,
+                isRead = false
             )
         }
     }

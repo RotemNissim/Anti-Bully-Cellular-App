@@ -7,7 +7,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.antibully.data.api.AuthRetrofitClient
+import com.example.antibully.data.api.RetrofitClient
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
@@ -36,7 +36,7 @@ class TwoFactorSetupViewModel : ViewModel() {
             try {
                 val token = FirebaseAuth.getInstance().currentUser?.getIdToken(false)?.await()?.token
                 if (token != null) {
-                    val response = AuthRetrofitClient.authService.checkTwoFactorStatus("Bearer $token")
+                    val response = RetrofitClient.authApiService.checkTwoFactorStatus("Bearer $token")
                     _twoFactorEnabled.value = response.twoFactorEnabled
                 } else {
                     _twoFactorEnabled.value = false
@@ -54,13 +54,17 @@ class TwoFactorSetupViewModel : ViewModel() {
             try {
                 val token = FirebaseAuth.getInstance().currentUser?.getIdToken(false)?.await()?.token
                 if (token != null) {
-                    val response = AuthRetrofitClient.authService.setup2FA("Bearer $token")
+                    val response = RetrofitClient.authApiService.setup2FA("Bearer $token")
                     tempSecret = response.secret
 
                     val base64Image = response.qrCode.substringAfter("base64,")
                     val decodedBytes = Base64.decode(base64Image, Base64.DEFAULT)
                     val bitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)
-                    _qrCodeBitmap.value = bitmap
+                    if (bitmap != null) {
+                        _qrCodeBitmap.value = bitmap
+                    } else {
+                        _error.value = "Error generating QR code image"
+                    }
                 } else {
                     _error.value = "לא נמצא משתמש מחובר"
                 }
@@ -80,9 +84,9 @@ class TwoFactorSetupViewModel : ViewModel() {
                         "tempSecret" to tempSecret!!
                     )
 
-                    val response = AuthRetrofitClient.authService.verify2FA("Bearer $token", body)
+                    val response = RetrofitClient.authApiService.verify2FA("Bearer $token", body)
                     if (response.isSuccessful) {
-                        val updateResponse = AuthRetrofitClient.authService.updateTwoFactorStatus(
+                        val updateResponse = RetrofitClient.authApiService.updateTwoFactorStatus(
                             "Bearer $token",
                             mapOf("enabled" to true)
                         )

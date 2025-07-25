@@ -34,4 +34,7 @@
     <color name="delete">#FF4444</color>
     <color name="discord_background">#2F3136</color>
     <color name="discord_accent">#5865F2</color>
+    <color name="unread_background">#3A5F7A</color>
+    <color name="recent_updates_background">#4A6B8A</color>
+    <color name="unread_background_subtle">#252429</color>
 </resources>

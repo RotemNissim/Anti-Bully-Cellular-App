@@ -56,15 +56,7 @@
         android:id="@+id/feedFragment"
         android:name="com.example.antibully.data.ui.feed.FeedFragment"
         android:label="Feed"
-        tools:layout="@layout/fragment_feed">
-        <action
-            android:id="@+id/action_feedFragment_to_alertDetailsFragment"
-            app:destination="@id/alertDetailsFragment"
-            app:enterAnim="@anim/slide_in_right"
-            app:exitAnim="@anim/slide_out_left"
-            app:popEnterAnim="@anim/slide_in_left"
-            app:popExitAnim="@anim/slide_out_right" />
-    </fragment>
+        tools:layout="@layout/fragment_feed"></fragment>
 
     <fragment
         android:id="@+id/editChildFragment"
@@ -81,24 +73,34 @@
         android:name="com.example.antibully.data.ui.alert.AlertsFragment"
         android:label="@string/title_alerts"
         tools:layout="@layout/fragment_alerts">
-        
+
         <action
-            android:id="@+id/action_alertsFragment_to_alertDetailsFragment"
-            app:destination="@id/alertDetailsFragment">
+            android:id="@+id/action_alertsFragment_to_childAlertsFragment"
+            app:destination="@id/childAlertsFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right">
             <argument
-                android:name="alertId"
+                android:name="childId"
+                app:argType="string" />
+            <argument
+                android:name="childName"
                 app:argType="string" />
         </action>
     </fragment>
 
     <fragment
-        android:id="@+id/alertDetailsFragment"
-        android:name="com.example.antibully.data.ui.alert.AlertDetailsFragment"
-        android:label="Alert Details"
-        tools:layout="@layout/fragment_alert_details">
-        
+        android:id="@+id/childAlertsFragment"
+        android:name="com.example.antibully.data.ui.alert.ChildAlertsFragment"
+        android:label="Child Alerts"
+        tools:layout="@layout/fragment_child_alerts">
+
         <argument
-            android:name="alertId"
+            android:name="childId"
+            app:argType="string" />
+        <argument
+            android:name="childName"
             app:argType="string" />
     </fragment>
 
@@ -107,8 +109,7 @@
         android:name="com.example.antibully.data.ui.profile.ProfileFragment"
         android:label="Profile"
         tools:layout="@layout/fragment_profile">
-        <deepLink
-            app:uri="antibully://user-profile" />
+        <deepLink app:uri="antibully://user-profile" />
         <action
             android:id="@+id/action_profileFragment_to_twoFactorLoginFragment"
             app:destination="@id/twoFactorLoginFragment" />

@@ -174,6 +174,35 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/horizontalFilterScroll" />
 
+    <!-- ✅ Loading Indicator for Feed Content -->
+    <LinearLayout
+        android:id="@+id/loadingIndicator"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:visibility="visible"
+        app:layout_constraintTop_toBottomOf="@id/recentUpdatesHeader"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <ProgressBar
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:indeterminateTint="@color/accent_blue"
+            style="?android:attr/progressBarStyle" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Loading alerts..."
+            android:textColor="@color/text_secondary"
+            android:textSize="14sp"
+            android:fontFamily="@font/assistant_medium" />
+    </LinearLayout>
+
     <!-- RecyclerView with increased bottom padding -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/alertsRecyclerView"
@@ -184,6 +213,7 @@
         android:paddingHorizontal="16dp"
         android:paddingBottom="120dp"
         android:overScrollMode="never"
+        android:visibility="gone"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_constraintTop_toBottomOf="@id/recentUpdatesHeader"
         app:layout_constraintBottom_toBottomOf="parent"

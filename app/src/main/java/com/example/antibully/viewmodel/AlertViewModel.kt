@@ -3,6 +3,7 @@ package com.example.antibully.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.example.antibully.data.db.dao.UnreadAlertCount
 import com.example.antibully.data.models.Alert
 import com.example.antibully.data.repository.AlertRepository
 import kotlinx.coroutines.flow.Flow
@@ -26,6 +27,31 @@ class AlertViewModel(
 
     fun getAlertsForChild(childId: String): Flow<List<Alert>> =
         repository.getAlertsForChild(childId)
+
+    // ✅ Add method to mark alert as read
+    fun markAlertAsRead(postId: String) = viewModelScope.launch {
+        repository.markAlertAsRead(postId)
+    }
+
+    // ✅ Add method to get unread count
+    fun getUnreadAlertsCount(): Flow<Int> = repository.getUnreadAlertsCount()
+
+    fun getGroupedAlerts(): Flow<List<UnreadAlertCount>> =
+        repository.getGroupedAlerts()
+
+    // ✅ Add method to mark all alerts for a child as read
+    fun markAllAlertsAsReadForChild(childId: String) = viewModelScope.launch {
+        repository.markAllAlertsAsReadForChild(childId)
+    }
+
+    // ✅ Add method to get unread alerts count by child
+    suspend fun getUnreadAlertsCountByChild(): List<UnreadAlertCount> =
+        repository.getUnreadAlertsCountByChild()
+
+    // ✅ הוסף פונקציה לעדכון זמן פעילות
+    fun updateUserActivity(token: String) = viewModelScope.launch {
+        repository.updateUserActivity(token)
+    }
 }
 
 class AlertViewModelFactory(
@@ -39,3 +65,44 @@ class AlertViewModelFactory(
         throw IllegalArgumentException("Unknown ViewModel class")
     }
 }
+//package com.example.antibully.viewmodel
+//
+//import androidx.lifecycle.ViewModel
+//import androidx.lifecycle.ViewModelProvider
+//import androidx.lifecycle.viewModelScope
+//import com.example.antibully.data.models.Alert
+//import com.example.antibully.data.repository.AlertRepository
+//import kotlinx.coroutines.flow.Flow
+//import kotlinx.coroutines.launch
+//
+//class AlertViewModel(
+//    private val repository: AlertRepository
+//) : ViewModel() {
+//
+//    val allAlerts: Flow<List<Alert>> = repository.allAlerts
+//
+//    /**
+//     * Fetch alerts from server; pass null for childId to get all.
+//     */
+//    fun fetchAlerts(token: String, childId: String? = null) = viewModelScope.launch {
+//        repository.fetchAlertsFromApi(token, childId)
+//    }
+//
+//    fun getAlertsByReason(reason: String): Flow<List<Alert>> =
+//        repository.getAlertsByReason(reason)
+//
+//    fun getAlertsForChild(childId: String): Flow<List<Alert>> =
+//        repository.getAlertsForChild(childId)
+//}
+//
+//class AlertViewModelFactory(
+//    private val repository: AlertRepository
+//) : ViewModelProvider.Factory {
+//    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+//        if (modelClass.isAssignableFrom(AlertViewModel::class.java)) {
+//            @Suppress("UNCHECKED_CAST")
+//            return AlertViewModel(repository) as T
+//        }
+//        throw IllegalArgumentException("Unknown ViewModel class")
+//    }
+//}

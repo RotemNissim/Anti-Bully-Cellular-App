@@ -181,7 +181,7 @@ class ProfileFragment : Fragment() {
         try {
             val token = FirebaseAuth.getInstance().currentUser?.getIdToken(false)?.await()?.token
             if (token != null) {
-                val response = com.example.antibully.data.api.AuthRetrofitClient.authService.checkTwoFactorStatus("Bearer $token")
+                val response = com.example.antibully.data.api.RetrofitClient.authApiService.checkTwoFactorStatus("Bearer $token")
                 isTwoFactorEnabled = response.twoFactorEnabled
             } else {
                 isTwoFactorEnabled = false

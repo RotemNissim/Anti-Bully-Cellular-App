@@ -111,7 +111,7 @@ class LoginFragment : Fragment() {
                 }
 
                 val response =
-                    com.example.antibully.data.api.AuthRetrofitClient.authService.registerFirebaseUser(
+                    com.example.antibully.data.api.RetrofitClient.authApiService.registerFirebaseUser(
                         "Bearer $token", body
                     )
                 if (!response.isSuccessful) {
@@ -222,7 +222,7 @@ class LoginFragment : Fragment() {
         lifecycleScope.launch {
             try {
                 val response =
-                    com.example.antibully.data.api.AuthRetrofitClient.authService.loginWithFirebase(
+                    com.example.antibully.data.api.RetrofitClient.authApiService.loginWithFirebase(
                         "Bearer $token"
                     )
                 if (!response.isSuccessful) {

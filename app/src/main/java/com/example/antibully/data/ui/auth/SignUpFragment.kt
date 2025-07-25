@@ -10,7 +10,6 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.example.antibully.R
-import com.example.antibully.data.api.AuthRetrofitClient
 import com.example.antibully.data.db.AppDatabase
 import com.example.antibully.data.models.User
 import com.example.antibully.data.models.UserApiResponse
@@ -89,7 +88,7 @@ private fun registerUserToServer(token: String, email: String, fullName: String,
                 body["profileImageUrl"] = it
             }
 
-            val response = AuthRetrofitClient.authService.registerFirebaseUser("Bearer $token", body)
+            val response = RetrofitClient.authApiService.registerFirebaseUser("Bearer $token", body)
             if (!response.isSuccessful) {
                 Toast.makeText(requireContext(), "Failed to sync user to server", Toast.LENGTH_SHORT).show()
             }

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Unread alert background - subtle blue tint like Instagram -->
+    <item android:state_selected="true">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/unread_background_subtle" />
+            <corners android:radius="16dp" />
+        </shape>
+    </item>
+
+    <!-- Read alert background - seamless with main background -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@color/dark_background" />
+            <corners android:radius="16dp" />
+        </shape>
+    </item>
+</selector>

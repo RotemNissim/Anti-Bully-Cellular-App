@@ -11,7 +11,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
 import com.example.antibully.R
-import com.example.antibully.data.api.AuthRetrofitClient
+import com.example.antibully.data.api.RetrofitClient
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
@@ -64,7 +64,7 @@ class VerifyTwoFactorDialogFragment(private val onVerified: (Boolean) -> Unit) :
                 val token =
                     FirebaseAuth.getInstance().currentUser?.getIdToken(false)?.await()?.token
                 val success = if (token != null) {
-                    val response = AuthRetrofitClient.authService.verify2FA(
+                    val response = RetrofitClient.authApiService.verify2FA(
                         "Bearer $token",
                         mapOf("twoFactorCode" to code)
                     )

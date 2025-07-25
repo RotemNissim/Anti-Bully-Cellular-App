@@ -4,7 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.antibully.data.api.AuthRetrofitClient
+import com.example.antibully.data.api.RetrofitClient
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
@@ -29,7 +29,7 @@ class SecuritySettingsViewModel : ViewModel() {
             try {
                 val token = FirebaseAuth.getInstance().currentUser?.getIdToken(false)?.await()?.token
                 if (token != null) {
-                    val response = AuthRetrofitClient.authService.checkTwoFactorStatus("Bearer $token")
+                    val response = RetrofitClient.authApiService.checkTwoFactorStatus("Bearer $token")
                     _twoFactorEnabled.postValue(response.twoFactorEnabled)
                 } else {
                     _twoFactorEnabled.postValue(false)
@@ -51,13 +51,13 @@ class SecuritySettingsViewModel : ViewModel() {
             try {
                 val token = FirebaseAuth.getInstance().currentUser?.getIdToken(false)?.await()?.token
                 if (token != null) {
-                    val verifyResponse = AuthRetrofitClient.authService.verify2FA(
+                    val verifyResponse = RetrofitClient.authApiService.verify2FA(
                         "Bearer $token",
                         mapOf("twoFactorCode" to code)
                     )
 
                     if (verifyResponse.isSuccessful) {
-                        val updateResponse = AuthRetrofitClient.authService.updateTwoFactorStatus(
+                        val updateResponse = RetrofitClient.authApiService.updateTwoFactorStatus(
                             "Bearer $token",
                             mapOf("enabled" to false)
                         )

@@ -35,5 +35,29 @@ interface AlertDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAlert(alert: Alert)
 
+    // ✅ Add method to mark alert as read
+    @Query("UPDATE alerts SET isRead = 1 WHERE postId = :postId")
+    suspend fun markAlertAsRead(postId: String)
+
+    // ✅ Add method to get unread alerts count
+    @Query("SELECT COUNT(*) FROM alerts WHERE isRead = 0")
+    fun getUnreadAlertsCount(): Flow<Int>
+
+    // ✅ Add method to mark all alerts for a child as read
+    @Query("UPDATE alerts SET isRead = 1 WHERE reporterId = :childId")
+    suspend fun markAllAlertsAsReadForChild(childId: String)
+
+    // ✅ Add method to get unread alerts count by child
+    @Query("SELECT reporterId, COUNT(*) as count FROM alerts WHERE isRead = 0 GROUP BY reporterId")
+    suspend fun getUnreadAlertsCountByChild(): List<UnreadAlertCount>
+
+    @Query("SELECT reporterId, COUNT(*) as count FROM alerts WHERE isRead = 0 GROUP BY reporterId")
+    fun getGroupedUnreadAlerts(): Flow<List<UnreadAlertCount>>
+
 }
 
+// ✅ Data class for unread count by child
+data class UnreadAlertCount(
+    val reporterId: String,
+    val count: Int
+)
