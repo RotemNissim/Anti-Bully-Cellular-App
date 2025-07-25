@@ -10,6 +10,7 @@ data class Alert(
     val text: String,
     val reason: String,
     val imageUrl: String?,
+    val severity: String,
     val timestamp: Long = System.currentTimeMillis()
 ) {
     companion object {
@@ -20,6 +21,7 @@ data class Alert(
                 text = response.severity,
                 reason = response.summary ?:"No reason provided",
                 imageUrl = response.imageUrl,
+                severity = response.severity ?: "Unknown",
                 timestamp = response.timestamp
             )
         }
