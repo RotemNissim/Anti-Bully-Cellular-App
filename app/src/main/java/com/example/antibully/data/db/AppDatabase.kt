@@ -9,7 +9,7 @@ import com.example.antibully.data.models.*
 
 @Database(
     entities = [Post::class, Alert::class, User::class, ChildLocalData::class],
-    version = 12,exportSchema = false)
+    version = 13,exportSchema = false)
 
 abstract class AppDatabase : RoomDatabase() {
 
