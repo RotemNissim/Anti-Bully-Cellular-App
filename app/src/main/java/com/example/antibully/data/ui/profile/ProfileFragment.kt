@@ -31,6 +31,8 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
+import android.content.Intent
+
 
 class ProfileFragment : Fragment() {
 
@@ -147,8 +149,11 @@ class ProfileFragment : Fragment() {
         }
 
         addChildButton.setOnClickListener {
-            findNavController().navigate(R.id.action_profileFragment_to_addChildFragment)
+            val oauthUrl = "https://discord.com/oauth2/authorize?client_id=1373612221166391397&response_type=code&redirect_uri=http%3A%2F%2F10.0.2.2%3A3000%2Fapi%2Foauth%2Fdiscord%2Fcallback&scope=identify"
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(oauthUrl))
+            startActivity(intent)
         }
+
         
         // ✅ FOR DEBUGGING - uncomment this line
         debugLocalData()
