@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.*
 import android.widget.*
 import androidx.fragment.app.Fragment
@@ -20,6 +21,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.squareup.picasso.Picasso
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 
 class EditProfileFragment : Fragment() {
@@ -88,6 +90,7 @@ class EditProfileFragment : Fragment() {
         saveButton.setOnClickListener {
             val newName = fullNameEditText.text.toString().trim()
             val newPassword = passwordEditText.text.toString().trim()
+            val uid = auth.currentUser?.uid ?: return@setOnClickListener
 
             if (newName.isEmpty()) {
                 Toast.makeText(requireContext(), "Name can't be empty", Toast.LENGTH_SHORT).show()
@@ -121,11 +124,51 @@ class EditProfileFragment : Fragment() {
                         userDao.insertUser(userEntity)
                     }
 
+                    // 🔹🔹 ADD THIS BLOCK: call your server, but don't change your UI flow 🔹🔹
+                    lifecycleScope.launch {
+                        try {
+                            Log.d("EditProfile", "-------------------------------------!----------------------------------")
+                            Log.d("EditProfile", "HELLO")
+                            Log.d("EditProfile", "------------------------------------!!!---------------------------------")
+                            // 1) get Firebase ID token (suspend)
+                            val token = FirebaseAuth.getInstance().currentUser?.getIdToken(false)?.await()?.token
+                            Log.d("EditProfile", "-------------------------------------!----------------------------------")
+                            Log.d("EditProfile", "token: $token")
+                            Log.d("EditProfile", "------------------------------------!!!---------------------------------")
+                            if (token != null) {
+                                // 2) call your Retrofit suspend function (off main thread)
+                                withContext(Dispatchers.IO) {
+                                    Log.d("EditProfile", "-------------------------------------!----------------------------------")
+                                    Log.d("EditProfile", "uid: $uid, new name: $newName, profile image url: $finalImagePath")
+                                    Log.d("EditProfile", "------------------------------------!!!---------------------------------")
+                                    com.example.antibully.data.api.AuthRetrofitClient.authService.editProfileMongo(
+                                        "Bearer $token",
+                                        com.example.antibully.data.models.EditUserDTO(
+                                            userId = uid,
+                                            username = newName,
+                                            profileImageUrl = finalImagePath
+                                        )
+                                    )
+                                }
+                                // Optional: you can inspect response/isSuccessful if you want,
+                                // but we intentionally don't block UI or change your current flow.
+                            }
+                        } catch (e: Exception) {
+                            // Optional: log/toast. Keeping silent to avoid changing UX.
+                            // Log.e("EditProfile", "Server sync failed: ${e.message}", e)
+                        }
+                    }
+                    // 🔹🔹 END OF ADDED BLOCK 🔹🔹
+
                     Toast.makeText(requireContext(), "Profile updated!", Toast.LENGTH_SHORT).show()
                     findNavController().navigateUp()
                 }
                 .addOnFailureListener {
-                    Toast.makeText(requireContext(), "Failed to update Firestore", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        requireContext(),
+                        "Failed to update Firestore",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
         }
     }

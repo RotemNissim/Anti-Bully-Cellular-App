@@ -1,12 +1,15 @@
 package com.example.antibully.data.api
 
+import com.example.antibully.data.models.EditUserDTO
 import com.example.antibully.data.models.Setup2FAResponse
 import com.example.antibully.data.models.TwoFactorStatusResponse
+import com.example.antibully.data.models.User
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.POST
+import retrofit2.http.PUT
 
 interface AuthApiService {
     @POST("setup")
@@ -42,4 +45,9 @@ interface AuthApiService {
         @Header("Authorization") token: String
     ): Response<Unit>
 
+    @PUT("edit-profile")
+    suspend fun editProfileMongo(
+        @Header("Authorization") token: String,
+        @Body body: EditUserDTO
+    ): Response<User>
 }
