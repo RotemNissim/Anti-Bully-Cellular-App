@@ -24,7 +24,6 @@
         android:text="Log In"
         android:textColor="@color/white"
         android:textSize="24sp"
-        app:layout_constraintBottom_toTopOf="@id/subtitleText"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/appLogo" />
@@ -38,7 +37,6 @@
         android:text="Welcome Back to Your Account"
         android:textColor="@color/text_secondary"
         android:textSize="16sp"
-        app:layout_constraintBottom_toTopOf="@id/emailLayout"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/titleText" />

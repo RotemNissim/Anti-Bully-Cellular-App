@@ -23,6 +23,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.dropWhile
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
@@ -89,6 +90,7 @@ class FeedFragment : Fragment() {
 
             // ✅ Store child IDs immediately
             childIds = children.map { it.childId }
+            viewModel.setChildIds(children)
 
             Log.d("FeedFragment", "Found ${children.size} children: $childIds")
 
@@ -104,23 +106,13 @@ class FeedFragment : Fragment() {
             binding.alertsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
             binding.alertsRecyclerView.adapter = adapter
 
-            // ✅ Setup live data collection FIRST (this stays active)
-            viewModel.allAlerts.collectLatest { alerts ->
-                Log.d("FeedFragment", "Received ${alerts.size} total alerts from Room")
-
-                val filtered = alerts.filter { alert ->
-                    val isForOurChild = alert.reporterId in childIds
-                    if (isForOurChild) {
-                        Log.d("FeedFragment", "✅ Alert ${alert.postId} is for our child ${alert.reporterId}")
-                    } else {
-                        Log.d("FeedFragment", "❌ Alert ${alert.postId} is NOT for our children (reporter: ${alert.reporterId})")
-                    }
-                    isForOurChild
+            // Collect only the filtered list, skip the initial []
+            viewModel.visibleAlerts
+                .dropWhile { it.isEmpty() }
+                .collectLatest { filtered ->
+                    Log.d("FeedFragment", "Filtered: $filtered")
+                    adapter.submitList(filtered)
                 }
-
-                Log.d("FeedFragment", "Filtered to ${filtered.size} alerts for our children")
-                adapter.submitList(filtered)
-            }
         }
 
         // 3. Start polling separately (after a small delay to ensure collection is active)
@@ -135,14 +127,14 @@ class FeedFragment : Fragment() {
                 }
         }
 
-        // 4. Search input (placeholder)
+        // 4. Search input (send query to VM)
         binding.searchInput.setOnEditorActionListener { textView, _, _ ->
             val query = textView.text.toString().trim()
-            // TODO: implement search logic
+            viewModel.setSearchQuery(query)
             true
         }
 
-        // 5. Filter chips (logic optional - not wired yet)
+        // 5. Filter chips (future logic)
         binding.reasonToggleGroup.setOnCheckedChangeListener { _, checkedId ->
             val reason = when (checkedId) {
                 R.id.btnHarassment -> "Harassment"
@@ -151,7 +143,7 @@ class FeedFragment : Fragment() {
                 R.id.btnCursing -> "Cursing"
                 else -> null
             }
-            // Future: filter alerts list by reason
+            // TODO: pass reason to ViewModel if you want filtering by reason
         }
     }
 
