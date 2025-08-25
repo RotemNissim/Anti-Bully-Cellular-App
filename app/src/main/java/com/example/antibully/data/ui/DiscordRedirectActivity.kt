@@ -49,11 +49,11 @@ class DiscordRedirectActivity : AppCompatActivity() {
 
         val json = JSONObject()
         json.put("code", code)
-        json.put("redirectUri", "http://10.0.2.2:3000/api/oauth/discord/callback")
+        json.put("redirectUri", "http://10.100.102.35:3000/api/oauth/discord/callback")
 
         val requestBody = json.toString().toRequestBody("application/json".toMediaTypeOrNull())
         val request = Request.Builder()
-            .url("http://10.0.2.2:3000/api/oauth/discord/exchange")
+            .url("http://10.100.102.35:3000/api/oauth/discord/exchange")
             .post(requestBody)
             .build()
 

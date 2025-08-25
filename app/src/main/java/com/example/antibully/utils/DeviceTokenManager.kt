@@ -18,7 +18,7 @@ object DeviceTokenManager {
     private const val PREFS_NAME = "device_token_prefs"
     private const val KEY_TOKEN = "fcm_token"
     private const val KEY_USER_ID = "user_id"
-    private const val BASE_URL = "http://10.0.2.2:3000" // For emulator, use your actual IP for physical device
+    private const val BASE_URL = "http://10.100.102.35:3000" // For emulator, use your actual IP for physical device
     
     private val client = OkHttpClient()
     private val gson = Gson()

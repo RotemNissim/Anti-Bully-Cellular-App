@@ -99,7 +99,7 @@ class AddChildFragment : Fragment() {
 
         connectDiscordButton.setOnClickListener {
             val oauthUrl =
-                "https://discord.com/oauth2/authorize?client_id=1373612221166391397&response_type=code&redirect_uri=http%3A%2F%2F10.0.2.2%3A3000%2Fapi%2Foauth%2Fdiscord%2Fcallback&scope=identify"
+                "https://discord.com/oauth2/authorize?client_id=1373612221166391397&response_type=code&redirect_uri=http%3A%2F%2F10.100.102.35%3A3000%2Fapi%2Foauth%2Fdiscord%2Fcallback&scope=identify"
 
             android.util.Log.d("DiscordOAuth", "Opening URL: $oauthUrl")
 
