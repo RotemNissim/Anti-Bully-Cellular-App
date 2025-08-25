@@ -8,7 +8,6 @@ import androidx.room.Transaction
 import com.example.antibully.data.models.ChildLocalData
 import kotlinx.coroutines.flow.Flow
 
- 
 @Dao
 interface ChildDao {
 
