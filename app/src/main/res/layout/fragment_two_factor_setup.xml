@@ -53,7 +53,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="32dp"
         android:background="@drawable/edit_text_background"
-        android:hint="Enter 6-digit authentication code"
+        android:hint="Enter 6-digit code"
         android:inputType="number"
         android:maxLength="6"
         android:textAlignment="center"
