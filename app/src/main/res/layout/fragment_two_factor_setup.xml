@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/dark_background"
-    android:padding="16dp">
+    android:paddingLeft="50px"
+    android:background="@color/dark_background">
+
 
     <TextView
         android:id="@+id/titleText"
@@ -53,7 +53,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="32dp"
         android:background="@drawable/edit_text_background"
-        android:hint="Enter 6-digit authentication code"
+        android:hint="Enter 6-digit code"
         android:inputType="number"
         android:maxLength="6"
         android:textAlignment="center"
