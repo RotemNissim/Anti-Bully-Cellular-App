@@ -58,6 +58,9 @@
         android:label="Feed"
         tools:layout="@layout/fragment_feed">
         <action
+            android:id="@+id/action_feedFragment_to_unreadListFragment"
+            app:destination="@id/unreadListFragment" />
+        <action
             android:id="@+id/action_feedFragment_to_alertDetailsFragment"
             app:destination="@id/alertDetailsFragment"
             app:enterAnim="@anim/slide_in_right"
@@ -81,7 +84,10 @@
         android:name="com.example.antibully.data.ui.alert.AlertsFragment"
         android:label="@string/title_alerts"
         tools:layout="@layout/fragment_alerts">
-        
+        <action
+            android:id="@+id/action_alertsFragment_to_unreadListFragment"
+            app:destination="@id/unreadListFragment" />
+
         <action
             android:id="@+id/action_alertsFragment_to_alertDetailsFragment"
             app:destination="@id/alertDetailsFragment">
@@ -164,4 +170,16 @@
         android:label="Two Factor Setup"
         tools:layout="@layout/fragment_two_factor_setup" />
 
+    <fragment
+        android:id="@+id/unreadListFragment"
+        android:name="com.example.antibully.data.ui.unread.UnreadListFragment"
+        android:label="Unread">
+        <argument
+            android:name="childId"
+            app:argType="string" />
+        <argument
+            android:name="childName"
+            app:argType="string"
+            android:defaultValue="" />
+    </fragment>
 </navigation>

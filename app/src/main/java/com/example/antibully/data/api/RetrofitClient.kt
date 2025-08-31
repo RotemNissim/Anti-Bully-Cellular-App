@@ -60,4 +60,14 @@ object RetrofitClient {
     val childApiService: ChildApiService by lazy {
         childRetrofit.create(ChildApiService::class.java)
     }
+    private val userRetrofit: Retrofit by lazy {
+        Retrofit.Builder()
+            .baseUrl(ALERT_BASE_URL)
+            .client(httpClient)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+    }
+    val userApiService: UserApiService by lazy {
+        userRetrofit.create(UserApiService::class.java)
+    }
 }

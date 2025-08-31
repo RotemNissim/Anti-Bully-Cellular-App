@@ -23,10 +23,11 @@ import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.dropWhile
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import java.util.concurrent.TimeUnit
+import androidx.core.widget.doAfterTextChanged
 
 class FeedFragment : Fragment() {
 
@@ -41,10 +42,7 @@ class FeedFragment : Fragment() {
         super.onCreate(savedInstanceState)
         val dao = AppDatabase.getDatabase(requireContext()).alertDao()
         val repo = AlertRepository(dao)
-        viewModel = ViewModelProvider(
-            this,
-            AlertViewModelFactory(repo)
-        )[AlertViewModel::class.java]
+        viewModel = ViewModelProvider(this, AlertViewModelFactory(repo))[AlertViewModel::class.java]
     }
 
     override fun onCreateView(
@@ -59,82 +57,96 @@ class FeedFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // 1. Load profile info (image + name)
         val currentUserId = FirebaseAuth.getInstance().currentUser?.uid.orEmpty()
-        FirebaseFirestore.getInstance()
-            .collection("users")
-            .document(currentUserId)
-            .get()
-            .addOnSuccessListener { doc ->
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                val doc = FirebaseFirestore.getInstance()
+                    .collection("users")
+                    .document(currentUserId)
+                    .get()
+                    .await()
+
+                val b = _binding ?: return@launch
                 val userName = doc.getString("fullName") ?: "User"
-                binding.welcomeText.text = getString(R.string.welcome_user, userName)
-                binding.welcomeText.visibility = View.VISIBLE
-                binding.nameLoading.visibility = View.GONE
+                b.welcomeText.text = getString(R.string.welcome_user, userName)
+                b.welcomeText.visibility = View.VISIBLE
+                b.nameLoading.visibility = View.GONE
 
                 val imageUrl = doc.getString("profileImageUrl")
                 if (!imageUrl.isNullOrEmpty()) {
-                    Glide.with(requireContext())
-                        .load(imageUrl)
-                        .circleCrop()
-                        .into(binding.profileImage)
-                    binding.profileImage.visibility = View.VISIBLE
+                    Glide.with(b.root).load(imageUrl).circleCrop().into(b.profileImage)
+                    b.profileImage.visibility = View.VISIBLE
                 } else {
-                    binding.profileImage.setImageResource(R.drawable.ic_default_profile)
+                    b.profileImage.setImageResource(R.drawable.ic_default_profile)
                 }
+            } catch (e: Exception) {
+                _binding?.nameLoading?.visibility = View.GONE
+                Log.e("FeedFragment", "Failed to load user doc: ${e.message}")
             }
+        }
 
-        // 2. Setup RecyclerView and start everything
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             val childDao = AppDatabase.getDatabase(requireContext()).childDao()
             val children = childDao.getChildrenForUser(currentUserId)
 
-            // ✅ Store child IDs immediately
             childIds = children.map { it.childId }
             viewModel.setChildIds(children)
-
-            Log.d("FeedFragment", "Found ${children.size} children: $childIds")
-
-            // ✅ Create child data map for the adapter
             val childDataMap = children.associateBy { it.childId }
 
-            adapter = AlertsAdapter(childDataMap) { alert ->
-                val action = FeedFragmentDirections
-                    .actionFeedFragmentToAlertDetailsFragment(alert.postId)
-                findNavController().navigate(action)
-            }
+            adapter = AlertsAdapter(
+                childDataMap = childDataMap,
+                onAlertClick = { alert ->
+                    val action = FeedFragmentDirections
+                        .actionFeedFragmentToAlertDetailsFragment(alert.postId)
+                    findNavController().navigate(action)
+                },
+                onUnreadGroupClick = { childId ->
+                    val childName = childDataMap[childId]?.name.orEmpty()
+                    val action = FeedFragmentDirections
+                        .actionFeedFragmentToUnreadListFragment(
+                            childId = childId,
+                            childName = childName
+                        )
+                    findNavController().navigate(action)
+                }
+            )
 
             binding.alertsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
             binding.alertsRecyclerView.adapter = adapter
 
-            // Collect only the filtered list, skip the initial []
-            viewModel.visibleAlerts
-                .dropWhile { it.isEmpty() }
-                .collectLatest { filtered ->
-                    Log.d("FeedFragment", "Filtered: $filtered")
-                    adapter.submitList(filtered)
+            val backStackEntry = findNavController().getBackStackEntry(R.id.feedFragment)
+            backStackEntry.savedStateHandle
+                .getLiveData<Boolean>("refresh_feed")
+                .observe(viewLifecycleOwner) { shouldRefresh ->
+                    if (shouldRefresh == true) {
+                        backStackEntry.savedStateHandle.set("refresh_feed", false)
+                    }
                 }
+
+            FirebaseAuth.getInstance().currentUser?.getIdToken(false)?.await()?.token?.let { token ->
+                viewModel.refreshLastSeen(token)
+                children.forEach { child -> viewModel.fetchAlerts(token, child.childId) }
+            } ?: Log.e("FeedFragment", "Failed to get Firebase token")
+
+            viewLifecycleOwner.lifecycleScope.launch {
+                viewModel.rows.collectLatest { items -> adapter.submitList(items) }
+            }
         }
 
-        // 3. Start polling separately (after a small delay to ensure collection is active)
-        lifecycleScope.launch {
-            delay(1000) // Wait for collection to be set up
-
-            FirebaseAuth.getInstance().currentUser
-                ?.getIdToken(false)
-                ?.addOnSuccessListener { result ->
-                    val token = result.token ?: return@addOnSuccessListener
-                    startPolling(token)
-                }
+        viewLifecycleOwner.lifecycleScope.launch {
+            delay(1000)
+            FirebaseAuth.getInstance().currentUser?.getIdToken(false)?.await()?.token?.let {
+                startPolling(it)
+            }
         }
 
-        // 4. Search input (send query to VM)
-        binding.searchInput.setOnEditorActionListener { textView, _, _ ->
-            val query = textView.text.toString().trim()
-            viewModel.setSearchQuery(query)
+        binding.searchInput.setOnEditorActionListener { tv, _, _ ->
+            viewModel.setSearchQuery(tv.text.toString().trim())
             true
         }
-
-        // 5. Filter chips (future logic)
+        binding.searchInput.doAfterTextChanged { text ->
+            viewModel.setSearchQuery(text?.toString().orEmpty())
+        }
         binding.reasonToggleGroup.setOnCheckedChangeListener { _, checkedId ->
             val reason = when (checkedId) {
                 R.id.btnHarassment -> "Harassment"
@@ -143,23 +155,18 @@ class FeedFragment : Fragment() {
                 R.id.btnCursing -> "Cursing"
                 else -> null
             }
-            // TODO: pass reason to ViewModel if you want filtering by reason
+            Log.d("FeedFragment", "Reason filter: $reason")
         }
     }
 
-    // ✅ Separate polling function that only handles server fetching
     private fun startPolling(token: String) {
-        lifecycleScope.launch(Dispatchers.IO) {
+        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
             while (isActive) {
                 if (childIds.isNotEmpty()) {
                     Log.d("FeedFragment", "Polling server for children: $childIds")
-                    childIds.forEach { childId ->
-                        try {
-                            Log.d("FeedFragment", "Fetching alerts for child: $childId")
-                            viewModel.fetchAlerts(token, childId)
-                        } catch (e: Exception) {
-                            Log.e("FeedFragment", "Error fetching alerts for $childId: ${e.message}")
-                        }
+                    childIds.forEach { id ->
+                        try { viewModel.fetchAlerts(token, id) }
+                        catch (e: Exception) { Log.e("FeedFragment", "Error fetching $id: ${e.message}") }
                     }
                 } else {
                     Log.w("FeedFragment", "No children found - skipping poll")
