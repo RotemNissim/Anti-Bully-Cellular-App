@@ -19,4 +19,18 @@
     <string name="image_preview">Image Preview</string>
     <string name="welcome_user">Hello %1$s,</string>
     <string name="title_alerts">Alerts</string>
+    <string name="expand_collapse">Expand / Collapse</string>
+    <string name="mark_all_as_read">Mark all as read</string>
+    <string name="no_new_alerts">No new alerts</string>
+    <string name="unread_count_fmt">%1$d unread messages</string>
+    <string name="severity_fmt">%1$s SEVERITY</string>
+    <string name="unread_title_child">Unread – %1$s</string>
+    <string name="marked_all_read">Marked all as read</string>
+    <string name="auth_error">Authentication error</string>
+    <plurals name="unread_count">
+        <item quantity="one">%d new</item>
+        <item quantity="other">%d new</item>
+    </plurals>
+    <string name="unread_since_template">%1$d new since %2$s</string>
+
 </resources>

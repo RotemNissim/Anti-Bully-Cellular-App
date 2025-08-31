@@ -23,6 +23,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import  com.example.antibully.R
 
 class AlertsFragment : Fragment() {
 
@@ -30,7 +31,6 @@ class AlertsFragment : Fragment() {
     private val binding get() = _binding!!
     private lateinit var viewModel: AlertViewModel
 
-    // Holds child details for name/image lookups
     private val childDataMap = mutableMapOf<String, ChildLocalData>()
 
     override fun onCreateView(
@@ -45,53 +45,67 @@ class AlertsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // 1) RecyclerView + Adapter
-        val adapter = AlertsAdapter(childDataMap) { alert ->
-            // Navigate to alert details
-            val action = AlertsFragmentDirections.actionAlertsFragmentToAlertDetailsFragment(alert.postId) // ✅ This passes alert.postId as alertId
-            findNavController().navigate(action)
-        }
+        val adapter = AlertsAdapter(
+            childDataMap = childDataMap,
+            onAlertClick = { alert ->
+                val args = Bundle().apply { putString("alertId", alert.postId) }
+                findNavController().navigate(R.id.alertDetailsFragment, args)
+            },
+            onUnreadGroupClick = { childId ->
+                val childName = childDataMap[childId]?.name ?: ""
+                Log.d("AlertsFragment", ">>> navigate to UnreadList for child=$childId name=$childName")
+                val args = Bundle().apply {
+                    putString("childId", childId)
+                    putString("childName", childName)
+                }
+                findNavController().navigate(R.id.action_alertsFragment_to_unreadListFragment, args)
+            }
+        )
+
+        findNavController().currentBackStackEntry?.savedStateHandle
+            ?.getLiveData<Boolean>("refresh_feed")
+            ?.observe(viewLifecycleOwner) { shouldRefresh ->
+                if (shouldRefresh == true) {
+                    viewLifecycleOwner.lifecycleScope.launch {
+                        val token = FirebaseAuth.getInstance().currentUser?.getIdToken(false)?.await()?.token
+                        if (token != null) {
+                            viewModel.refreshLastSeen(token)
+                        }
+                    }
+                    findNavController().currentBackStackEntry?.savedStateHandle?.set("refresh_feed", false)
+                }
+            }
+
         binding.alertsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.alertsRecyclerView.adapter = adapter
 
-        // 2) ViewModel + Repository
         val alertDao = AppDatabase.getDatabase(requireContext()).alertDao()
         val repository = AlertRepository(alertDao)
         val factory = AlertViewModelFactory(repository)
         viewModel = ViewModelProvider(this, factory)[AlertViewModel::class.java]
 
-        // 3) Observe local DB updates
-        lifecycleScope.launch {
-            viewModel.allAlerts.collectLatest { alerts ->
-                Log.d("AlertsFragment", "Received ${alerts.size} alerts from local DB") // ✅ Add logging
-                adapter.submitList(alerts)
+        lifecycleScope.launchWhenStarted {
+            viewModel.rows.collectLatest { items ->
+                adapter.submitList(items)
             }
         }
 
-        // 4) Get Firebase token and fetch children data
         lifecycleScope.launch {
-            val token = FirebaseAuth.getInstance().currentUser?.getIdToken(false)?.await()?.token
-            if (token != null) {
-                Log.d("AlertsFragment", "Got Firebase token, fetching children...")
-
-                // 5) Get children from local database (already synced by ProfileFragment)
-                val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
-                val childDao = AppDatabase.getDatabase(requireContext()).childDao()
-                val children = childDao.getChildrenForUser(userId)
-
-                Log.d("AlertsFragment", "Found ${children.size} children")
-
-                children.forEach { child ->
-                    Log.d("AlertsFragment", "Fetching alerts for child: ${child.childId}")
-                    childDataMap[child.childId] = child
-
-                    // Fetch alerts for this child
-                    viewModel.fetchAlerts(token, child.childId)
-                }
-
-                adapter.notifyDataSetChanged()
-            } else {
+            val token = FirebaseAuth.getInstance().currentUser
+                ?.getIdToken(false)?.await()?.token ?: run {
                 Log.e("AlertsFragment", "Failed to get Firebase token")
+                return@launch
+            }
+            viewModel.refreshLastSeen(token)
+            val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
+            val childDao = AppDatabase.getDatabase(requireContext()).childDao()
+            val children = childDao.getChildrenForUser(userId)
+            viewModel.setChildIds(children)
+            children.forEach { child ->
+                childDataMap[child.childId] = child
+            }
+            children.forEach { child ->
+                viewModel.fetchAlerts(token, child.childId)
             }
         }
     }

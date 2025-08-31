@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        style="@style/Widget.Material3.Toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:paddingStart="16dp"
+        android:paddingEnd="8dp"
+        app:titleTextAppearance="@style/TextAppearance.Material3.TitleLarge"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:paddingHorizontal="16dp"
+        android:paddingTop="12dp"
+        android:layout_marginTop="?attr/actionBarSize">
+
+        <!-- שורת כותרת: משמאל הכותרת, מימין Mark all as read -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/titleUnread"
+                style="@style/TextAppearance.Material3.HeadlineLarge"
+                android:textStyle="bold"
+                android:textColor="@android:color/white"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Unread –" />
+
+            <TextView
+                android:id="@+id/btnMarkAllRead"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/mark_all_as_read"
+                android:textSize="16sp"
+                android:textColor="@color/blueAccent"
+                android:clickable="true"
+                android:focusable="true"
+                android:paddingStart="12dp"
+                android:paddingEnd="4dp"/>
+        </LinearLayout>
+
+        <!-- תת־כותרת: {N} new since {time} -->
+        <TextView
+            android:id="@+id/subtitleSince"
+            style="@style/TextAppearance.Material3.BodyLarge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:textColor="@android:color/white"
+            android:text="0 new since --:--" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/unreadRecycler"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="16dp"
+            android:layout_weight="1"
+            android:clipToPadding="false"
+            android:paddingBottom="16dp"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"/>
+    </LinearLayout>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
