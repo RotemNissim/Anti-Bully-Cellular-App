@@ -10,47 +10,61 @@
     app:strokeColor="@color/unread_stroke"
     app:strokeWidth="2dp">
 
-<LinearLayout
-android:foreground="?attr/selectableItemBackground"
-android:gravity="center_vertical"
-android:layout_height="68dp"
-android:layout_width="match_parent"
-android:orientation="horizontal"
-android:paddingHorizontal="16dp">
+    <LinearLayout
+        android:foreground="?attr/selectableItemBackground"
+        android:gravity="center_vertical"
+        android:layout_height="68dp"
+        android:layout_width="match_parent"
+        android:orientation="horizontal"
+        android:paddingHorizontal="16dp">
 
-<View
-    android:background="@drawable/bg_blue_dot"
-    android:id="@+id/dot"
-    android:layout_height="10dp"
-    android:layout_marginEnd="12dp"
-    android:layout_width="10dp" />
+        <View
+            android:background="@drawable/bg_blue_dot"
+            android:id="@+id/dot"
+            android:layout_height="10dp"
+            android:layout_width="10dp"
+            android:layout_marginEnd="12dp" />
 
-<TextView
-    android:id="@+id/unreadTitle"
-    android:layout_height="wrap_content"
-    android:layout_weight="1"
-    android:layout_width="0dp"
-    android:text="linoyniazov"
-    android:textColor="@color/white"
-    android:textSize="16sp"
-    android:textStyle="bold" />
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/profileImage"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_marginEnd="12dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_default_profile"
+            app:shapeAppearanceOverlay="@style/CircleImage" />
 
-<TextView
-    android:id="@+id/unreadCount"
-    android:layout_height="wrap_content"
-    android:layout_marginEnd="8dp"
-    android:layout_width="wrap_content"
-    android:text="2 unread messages"
-    android:textColor="@color/blueAccent"
-    android:textSize="14sp"
-    android:textStyle="bold" />
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+            <TextView
+                android:id="@+id/unreadTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="linoyniazov"
+                android:textColor="@color/white"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+            <TextView
+                android:id="@+id/unreadCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="2 unread messages"
+                android:textColor="@color/blueAccent"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:layout_marginTop="2dp" />
+        </LinearLayout>
 
-<ImageView
-    android:contentDescription="@string/expand_collapse"
-    android:id="@+id/chevron"
-    android:layout_height="24dp"
-    android:layout_width="24dp"
-    android:src="@drawable/ic_chevron_right"
-    app:tint="@color/blueAccent" />
-</LinearLayout>
-    </com.google.android.material.card.MaterialCardView>
+        <ImageView
+            android:contentDescription="@string/expand_collapse"
+            android:id="@+id/chevron"
+            android:layout_height="24dp"
+            android:layout_width="24dp"
+            android:src="@drawable/ic_chevron_right"
+            app:tint="@color/blueAccent"
+            android:layout_gravity="center_vertical" />
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

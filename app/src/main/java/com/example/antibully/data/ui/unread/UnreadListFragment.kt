@@ -24,7 +24,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import java.util.Date
-import java.util.Locale
 
 class UnreadListFragment : Fragment() {
 
@@ -57,7 +56,10 @@ class UnreadListFragment : Fragment() {
 
         val displayName = childName.ifBlank { childId }
         binding.titleUnread.text = getString(R.string.unread_title_child, displayName)
+
         binding.btnMarkAllRead.setOnClickListener { markAllRead() }
+
+        binding.unreadRecycler.layoutManager = LinearLayoutManager(requireContext())
 
         return binding.root
     }
@@ -66,30 +68,30 @@ class UnreadListFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         Log.d("UnreadListFragment", ">>> opened UnreadList for child=$childId name=$childName")
 
-        adapter = AlertsAdapter(
-            childDataMap = emptyMap(),
-            onAlertClick = { alert ->
-                Log.d("UnreadListFragment", "onAlertClick postId=${alert.postId} -> navigate")
-                val args = Bundle().apply { putString("alertId", alert.postId) }
-                findNavController().navigate(R.id.alertDetailsFragment, args)
-            },
-            onUnreadGroupClick = { }
-        )
-
-        binding.unreadRecycler.layoutManager = LinearLayoutManager(requireContext())
-        binding.unreadRecycler.adapter = adapter
-
         viewLifecycleOwner.lifecycleScope.launch {
             val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
             val childDao = AppDatabase.getDatabase(requireContext()).childDao()
             val children = childDao.getChildrenForUser(currentUserId)
             vm.setChildIds(children)
+
             if (childName.isBlank()) {
                 val fromDb = children.firstOrNull { it.childId == childId }?.name
                 if (!fromDb.isNullOrBlank()) {
                     binding.titleUnread.text = getString(R.string.unread_title_child, fromDb)
                 }
             }
+
+            val childDataMap = children.associateBy { it.childId }
+            adapter = AlertsAdapter(
+                childDataMap = childDataMap,
+                onAlertClick = { alert ->
+                    Log.d("UnreadListFragment", "onAlertClick postId=${alert.postId} -> navigate")
+                    val args = Bundle().apply { putString("alertId", alert.postId) }
+                    findNavController().navigate(R.id.alertDetailsFragment, args)
+                },
+                onUnreadGroupClick = { }
+            )
+            binding.unreadRecycler.adapter = adapter
         }
 
         viewLifecycleOwner.lifecycleScope.launch {
@@ -111,18 +113,20 @@ class UnreadListFragment : Fragment() {
                 }
                 .collectLatest { (alerts, lastSeen) ->
                     Log.d("UnreadListFragment", "unread for child=$childId -> ${alerts.size} items")
+
                     if (alerts.isEmpty() && lastSeenInitialized && !didAutoClose) {
                         didAutoClose = true
                         findNavController().popBackStack()
                         return@collectLatest
                     }
+
                     val rows = alerts.map { AlertItem.SingleAlert(it) }
                     adapter.submitList(rows)
-                    val count = alerts.size
+
                     val sinceText = lastSeen?.let { formatTime(it) } ?: "--:--"
                     binding.subtitleSince.text = getString(
                         R.string.unread_since_template,
-                        count, sinceText
+                        alerts.size, sinceText
                     )
                 }
         }
