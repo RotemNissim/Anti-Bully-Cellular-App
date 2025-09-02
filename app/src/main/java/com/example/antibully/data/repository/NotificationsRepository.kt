@@ -15,6 +15,11 @@ class NotificationsRepository(
         if (!res.isSuccessful) error("markAllRead failed ${res.code()}")
     }
 
+    suspend fun markAllReadForChild(token: String, childId: String) {
+        val res = api.markNotificationsReadForChild("Bearer $token", childId)
+        if (!res.isSuccessful) error("markAllReadForChild failed ${res.code()}")
+    }
+
     fun isoToMillis(iso: String): Long =
         Instant.parse(iso).toEpochMilli()
 }

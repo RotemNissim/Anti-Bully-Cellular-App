@@ -5,7 +5,7 @@ import android.text.format.DateFormat
 import android.util.Log
 import android.view.*
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -26,11 +26,14 @@ import kotlinx.coroutines.tasks.await
 import java.util.Date
 
 class UnreadListFragment : Fragment() {
-
     private var _binding: FragmentUnreadListBinding? = null
     private val binding get() = _binding!!
 
-    private lateinit var vm: AlertViewModel
+    private val vm: AlertViewModel by activityViewModels {
+        val dao = AppDatabase.getDatabase(requireContext()).alertDao()
+        AlertViewModelFactory(AlertRepository(dao))
+    }
+
     private lateinit var adapter: AlertsAdapter
 
     private val childId by lazy { requireArguments().getString("childId")!! }
@@ -41,10 +44,6 @@ class UnreadListFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val dao = AppDatabase.getDatabase(requireContext()).alertDao()
-        vm = ViewModelProvider(
-            this, AlertViewModelFactory(AlertRepository(dao))
-        )[AlertViewModel::class.java]
     }
 
     override fun onCreateView(
@@ -108,7 +107,7 @@ class UnreadListFragment : Fragment() {
 
         viewLifecycleOwner.lifecycleScope.launch {
             vm.getUnreadForChild(childId)
-                .combine(vm.lastSeenMillis) { alerts, lastSeen ->
+                .combine(vm.getLastSeenForChild(childId)) { alerts, lastSeen ->
                     Pair(alerts, lastSeen)
                 }
                 .collectLatest { (alerts, lastSeen) ->
@@ -140,8 +139,8 @@ class UnreadListFragment : Fragment() {
     private fun markAllRead() = viewLifecycleOwner.lifecycleScope.launch {
         val token = FirebaseAuth.getInstance().currentUser?.getIdToken(false)?.await()?.token
         if (token != null) {
-            Log.d("UnreadListFragment", "markAllRead()")
-            vm.markAllRead(token)
+            Log.d("UnreadListFragment", "markAllRead() for child=$childId")
+            vm.markAllRead(token, childId)
             Snackbar.make(
                 binding.root,
                 getString(R.string.marked_all_read),
