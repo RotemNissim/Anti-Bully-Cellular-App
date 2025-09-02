@@ -19,9 +19,12 @@ class AlertViewModel(
 
     private fun tsMillis(t: Long) = if (t < 1_000_000_000_000L) t * 1000 else t
 
-    private val _lastSeenMillis = MutableStateFlow<Long?>(null)
+    private val _globalLastSeenMillis = MutableStateFlow<Long?>(null)
 
-    val lastSeenMillis: StateFlow<Long?> = _lastSeenMillis.asStateFlow()
+    private val _lastSeenMillisByChild =
+        MutableStateFlow<Map<String, Long>>(emptyMap())
+
+    val lastSeenMillis: StateFlow<Long?> = _globalLastSeenMillis.asStateFlow()
 
     private val _expandedUnread = MutableStateFlow(false)
     fun toggleUnread() { _expandedUnread.value = !_expandedUnread.value }
@@ -49,13 +52,19 @@ class AlertViewModel(
             }
         }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
-
     val rows: StateFlow<List<AlertItem>> =
-        combine(visibleAlerts, _lastSeenMillis, _expandedUnread) { alerts, lastSeen, _ ->
-            val (unread, read) = if (lastSeen == null) {
+        combine(visibleAlerts, _globalLastSeenMillis, _lastSeenMillisByChild, _expandedUnread) { alerts, globalLastSeen, perChild, _ ->
+            val (unread, read) = if (globalLastSeen == null && perChild.isEmpty()) {
                 alerts to emptyList()
             } else {
-                alerts.partition { tsMillis(it.timestamp) > lastSeen }
+                alerts.partition { alert ->
+                    val childSeen = perChild[alert.reporterId]
+                    when {
+                        childSeen != null -> tsMillis(alert.timestamp) > childSeen
+                        globalLastSeen != null -> tsMillis(alert.timestamp) > globalLastSeen
+                        else -> true
+                    }
+                }
             }
 
             val unreadByChild: Map<String, Int> =
@@ -71,25 +80,40 @@ class AlertViewModel(
 
     fun refreshLastSeen(token: String) = viewModelScope.launch {
         val me = notifications.getMe(token)
-        _lastSeenMillis.value = me.notificationsLastSeenAt?.let { notifications.isoToMillis(it) }
+        _globalLastSeenMillis.value = me.notificationsLastSeenAt?.let { notifications.isoToMillis(it) }
     }
 
-    fun markAllRead(token: String) = viewModelScope.launch {
-        notifications.markAllRead(token)
-        _lastSeenMillis.value = System.currentTimeMillis()
+    fun markAllRead(token: String, childId: String) = viewModelScope.launch {
+        notifications.markAllReadForChild(token, childId)
+        val now = System.currentTimeMillis()
+        _lastSeenMillisByChild.value = _lastSeenMillisByChild.value.toMutableMap().apply {
+            put(childId, now)
+        }
     }
 
     fun fetchAlerts(token: String, childId: String? = null) = viewModelScope.launch {
         repository.fetchAlertsFromApi(token, childId)
     }
+
     fun getUnreadForChild(childId: String): Flow<List<Alert>> =
-        combine(allAlerts, _lastSeenMillis) { alerts, lastSeen ->
+        combine(allAlerts, _globalLastSeenMillis, _lastSeenMillisByChild) { alerts, globalLastSeen, perChild ->
             alerts.filter { a ->
                 a.reporterId == childId &&
-                        (lastSeen == null || tsMillis(a.timestamp) > lastSeen)
+                        run {
+                            val childSeen = perChild[childId]
+                            when {
+                                childSeen != null -> tsMillis(a.timestamp) > childSeen
+                                globalLastSeen != null -> tsMillis(a.timestamp) > globalLastSeen
+                                else -> true
+                            }
+                        }
             }
         }
 
+    fun getLastSeenForChild(childId: String): Flow<Long?> =
+        combine(_globalLastSeenMillis, _lastSeenMillisByChild) { globalLast, perChild ->
+            perChild[childId] ?: globalLast
+        }
 
     fun getAlertsByReason(reason: String): Flow<List<Alert>> =
         repository.getAlertsByReason(reason)

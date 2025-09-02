@@ -6,7 +6,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -28,21 +27,22 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import java.util.concurrent.TimeUnit
 import androidx.core.widget.doAfterTextChanged
+import androidx.fragment.app.activityViewModels
 
 class FeedFragment : Fragment() {
 
     private var _binding: FragmentFeedBinding? = null
     private val binding get() = _binding!!
-    private lateinit var viewModel: AlertViewModel
+    private val viewModel: AlertViewModel by activityViewModels {
+        val dao = AppDatabase.getDatabase(requireContext()).alertDao()
+        AlertViewModelFactory(AlertRepository(dao))
+    }
 
     private var childIds: List<String> = emptyList()
     private lateinit var adapter: AlertsAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val dao = AppDatabase.getDatabase(requireContext()).alertDao()
-        val repo = AlertRepository(dao)
-        viewModel = ViewModelProvider(this, AlertViewModelFactory(repo))[AlertViewModel::class.java]
     }
 
     override fun onCreateView(
