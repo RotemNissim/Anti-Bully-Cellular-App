@@ -60,6 +60,7 @@ class AlertsAdapter(
         private val title = itemView.findViewById<TextView>(R.id.unreadTitle)
         private val count = itemView.findViewById<TextView>(R.id.unreadCount)
         private val chevron = itemView.findViewById<ImageView>(R.id.chevron)
+        private val profileImage = itemView.findViewById<ImageView>(R.id.profileImage)
 
         fun bind(
             group: AlertItem.UnreadGroup,
@@ -72,6 +73,17 @@ class AlertsAdapter(
             count.text = itemView.context.getString(R.string.unread_count_fmt, group.count)
             itemView.setOnClickListener { onClick(group.childId) }
             chevron.rotation = 0f
+
+            val url = child?.imageUrl
+            if (!url.isNullOrEmpty()) {
+                Picasso.get()
+                    .load(url)
+                    .placeholder(R.drawable.ic_default_profile)
+                    .error(R.drawable.ic_default_profile)
+                    .into(profileImage)
+            } else {
+                profileImage.setImageResource(R.drawable.ic_default_profile)
+            }
         }
     }
 
