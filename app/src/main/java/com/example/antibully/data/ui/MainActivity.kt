@@ -71,7 +71,9 @@ class MainActivity : AppCompatActivity() {
                 R.id.editProfileFragment,
                 R.id.alertDetailsFragment,
                 R.id.addChildFragment,
-                R.id.editChildFragment
+                R.id.editChildFragment,
+                R.id.twoFactorSetupFragment,
+                R.id.securitySettingsFragment
             )
 
             // Fragments where we HIDE the BOTTOM NAV
@@ -82,7 +84,8 @@ class MainActivity : AppCompatActivity() {
                 R.id.editProfileFragment,
                 R.id.alertDetailsFragment,
                 R.id.addChildFragment,
-                R.id.editChildFragment
+                R.id.editChildFragment,
+                R.id.twoFactorSetupFragment
             )
 
             // Bottom nav visibility
@@ -99,19 +102,17 @@ class MainActivity : AppCompatActivity() {
                     R.id.alertDetailsFragment -> "Alert Details"
                     R.id.addChildFragment -> "Add Child"
                     R.id.editChildFragment -> "Edit Child"
+                    R.id.twoFactorSetupFragment -> "Two-Factor Setup"
+                    R.id.securitySettingsFragment -> "Settings"
                     else -> ""
                 }
                 supportActionBar?.title = title
-
-                // 🔥 Remove logo
                 supportActionBar?.setLogo(null)
 
             } else {
                 supportActionBar?.setDisplayHomeAsUpEnabled(false)
                 supportActionBar?.setDisplayShowTitleEnabled(false)
                 supportActionBar?.title = ""
-
-                // 🔥 Show logo
                 supportActionBar?.setLogo(R.drawable.untitled)
             }
 
@@ -134,7 +135,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // ✅ Request notification permission for Android 13+
         requestNotificationPermission()
     }
 
@@ -148,11 +148,9 @@ class MainActivity : AppCompatActivity() {
                     Log.d("MainActivity", "✅ Notification permission already granted")
                 }
                 shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS) -> {
-                    // Show explanation dialog
                     showNotificationPermissionDialog()
                 }
                 else -> {
-                    // Request permission
                     ActivityCompat.requestPermissions(
                         this,
                         arrayOf(Manifest.permission.POST_NOTIFICATIONS),
@@ -226,40 +224,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-//
-//    private fun sendCodeToServer(code: String?) {
-//        if (code.isNullOrEmpty()) return
-//
-//        val requestBody = JSONObject()
-//        requestBody.put("code", code)
-//
-//        val request = Request.Builder()
-//            .url("http://10.0.2.2:3000/api/oauth/discord/exchange") // אמולטור
-//            .post(
-//                requestBody.toString()
-//                    .toRequestBody("application/json".toMediaTypeOrNull())
-//            )
-//            .build()
-//
-//        OkHttpClient().newCall(request).enqueue(object : Callback {
-//            override fun onFailure(call: Call, e: IOException) {
-//                android.util.Log.e("OAuth", "Request failed: ${e.message}")
-//            }
-//
-//            override fun onResponse(call: Call, response: Response) {
-//                val body = response.body?.string()
-//                android.util.Log.d("OAuth", "Server response: $body")
-//
-//                if (response.isSuccessful) {
-//                    val discordId = JSONObject(body).optString("id")
-//                    runOnUiThread {
-//                        Toast.makeText(this@MainActivity, "Connected to Discord ID: $discordId", Toast.LENGTH_LONG).show()
-//                        // כאן תוכלי לשמור את ה־discordId או להעביר ל־ViewModel
-//                    }
-//                }
-//            }
-//        })
-//    }
     private fun sendCodeToServer(code: String?) {
         if (code.isNullOrEmpty()) {
             android.util.Log.e("OAuth", "Code is null or empty – aborting request")
