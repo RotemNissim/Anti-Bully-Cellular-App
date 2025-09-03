@@ -12,6 +12,7 @@ data class MeResponse(
     val username: String?,
     val notificationsLastSeenAt: String?
 )
+data class ChildLastSeenDto(val discordId: String, val lastSeenAt: String)
 
 interface UserApiService {
     @GET("api/me")
@@ -25,4 +26,10 @@ interface UserApiService {
         @Header("Authorization") bearer: String,
         @Path("childId") childId: String
     ): Response<Unit>
+
+    @GET("api/me/notifications/last-seen")
+    suspend fun getNotificationsLastSeen(
+        @Header("Authorization") bearer: String
+    ): List<ChildLastSeenDto>
+
 }
