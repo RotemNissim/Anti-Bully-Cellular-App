@@ -28,6 +28,7 @@ import kotlinx.coroutines.tasks.await
 import java.util.concurrent.TimeUnit
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.activityViewModels
+import com.example.antibully.data.ui.common.SwipeToDelete   // <-- הוסף
 
 class FeedFragment : Fragment() {
 
@@ -113,6 +114,10 @@ class FeedFragment : Fragment() {
 
             binding.alertsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
             binding.alertsRecyclerView.adapter = adapter
+
+            SwipeToDelete.attach(binding.alertsRecyclerView, adapter) { alert ->
+                viewModel.delete(alert)
+            }
 
             val backStackEntry = findNavController().getBackStackEntry(R.id.feedFragment)
             backStackEntry.savedStateHandle

@@ -10,11 +10,14 @@ import com.example.antibully.data.repository.AlertRepository
 import com.example.antibully.data.repository.NotificationsRepository
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
+
+
 
 class AlertViewModel(
     private val repository: AlertRepository
 ) : ViewModel() {
-
     private val notifications = NotificationsRepository()
 
     private fun tsMillis(t: Long) = if (t < 1_000_000_000_000L) t * 1000 else t
@@ -25,6 +28,14 @@ class AlertViewModel(
         MutableStateFlow<Map<String, Long>>(emptyMap())
 
     val lastSeenMillis: StateFlow<Long?> = _globalLastSeenMillis.asStateFlow()
+
+    fun deleteByPostId(postId: String) = viewModelScope.launch {
+        repository.deleteByPostId(postId)
+    }
+
+    fun delete(alert: Alert) = viewModelScope.launch {
+        repository.delete(alert)
+    }
 
     private val _expandedUnread = MutableStateFlow(false)
     fun toggleUnread() { _expandedUnread.value = !_expandedUnread.value }

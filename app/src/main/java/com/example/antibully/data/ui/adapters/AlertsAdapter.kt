@@ -22,9 +22,9 @@ class AlertsAdapter(
     private val onUnreadGroupClick: (childId: String) -> Unit
 ) : ListAdapter<AlertItem, RecyclerView.ViewHolder>(Diff()) {
 
-    private companion object {
-        const val TYPE_GROUP = 0
-        const val TYPE_ALERT = 1
+    companion object {
+        private const val TYPE_GROUP = 0
+        private const val TYPE_ALERT = 1
     }
 
     override fun getItemViewType(position: Int): Int = when (getItem(position)) {
@@ -54,6 +54,12 @@ class AlertsAdapter(
             is AlertItem.SingleAlert ->
                 (holder as AlertVH).bind(row.alert, childDataMap, onAlertClick)
         }
+    }
+
+    fun getAlertForPosition(position: Int): Alert? {
+        if (position !in 0 until itemCount) return null
+        val item = getItem(position)
+        return (item as? AlertItem.SingleAlert)?.alert
     }
 
     class UnreadGroupVH(itemView: View) : RecyclerView.ViewHolder(itemView) {
