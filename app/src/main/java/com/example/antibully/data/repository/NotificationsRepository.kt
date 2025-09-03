@@ -1,5 +1,6 @@
 package com.example.antibully.data.repository
 
+import com.example.antibully.data.api.ChildLastSeenDto
 import com.example.antibully.data.api.UserApiService
 import com.example.antibully.data.api.RetrofitClient
 import java.time.Instant
@@ -19,6 +20,9 @@ class NotificationsRepository(
         val res = api.markNotificationsReadForChild("Bearer $token", childId)
         if (!res.isSuccessful) error("markAllReadForChild failed ${res.code()}")
     }
+
+    suspend fun getNotificationsLastSeen(token: String): List<ChildLastSeenDto> =
+        api.getNotificationsLastSeen("Bearer $token")
 
     fun isoToMillis(iso: String): Long =
         Instant.parse(iso).toEpochMilli()

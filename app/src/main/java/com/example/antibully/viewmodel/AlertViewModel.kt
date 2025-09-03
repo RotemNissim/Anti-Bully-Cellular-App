@@ -35,20 +35,43 @@ class AlertViewModel(
     private val _children = MutableStateFlow<List<ChildLocalData>>(emptyList())
     fun setChildIds(children: List<ChildLocalData>) { _children.value = children }
 
+    private val _selectedCategory = MutableStateFlow<String?>(null)
+
+    private val categoryKeywords: Map<String, List<String>> = mapOf(
+        "Harassment"       to listOf("insult", "harassment"),
+        "Social Exclusion" to listOf("exclusion", "social exclusion"),
+        "Hate Speech"      to listOf("hate", "threat", "toxicity"),
+        "Cursing"          to listOf("obscene", "sexual_explicit", "profanity", "curse")
+    )
+
+    fun setCategory(category: String?) {
+        _selectedCategory.value = category
+    }
+
     val allAlerts: Flow<List<Alert>> = repository.allAlerts
 
     val visibleAlerts: StateFlow<List<Alert>> =
-        combine(allAlerts, _searchQuery, _children) { alerts, query, children ->
+        combine(allAlerts, _searchQuery, _children, _selectedCategory) { alerts, query, children, selectedCat ->
             val q = query.trim().lowercase()
             val childNameById = children.associate { it.childId to (it.name ?: "").lowercase() }
             val childIds = childNameById.keys
 
             alerts.filter { a ->
-                a.reporterId in childIds &&
-                        (q.isEmpty()
-                                || a.text.contains(q, ignoreCase = true)
-                                || a.reason.contains(q, ignoreCase = true)
-                                || (childNameById[a.reporterId]?.contains(q) == true))
+                val matchesChild = a.reporterId in childIds
+                val matchesSearch =
+                    q.isEmpty() ||
+                            a.text.contains(q, ignoreCase = true) ||
+                            a.reason.contains(q, ignoreCase = true) ||
+                            (childNameById[a.reporterId]?.contains(q) == true)
+
+                if (!matchesChild || !matchesSearch) return@filter false
+
+                if (selectedCat == null || selectedCat == "All") {
+                    true
+                } else {
+                    val keywords = categoryKeywords[selectedCat] ?: return@filter false
+                    keywords.any { kw -> a.reason.contains(kw, ignoreCase = true) }
+                }
             }
         }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
@@ -114,6 +137,18 @@ class AlertViewModel(
         combine(_globalLastSeenMillis, _lastSeenMillisByChild) { globalLast, perChild ->
             perChild[childId] ?: globalLast
         }
+
+    fun loadLastSeenForChildren(token: String) = viewModelScope.launch {
+        try {
+            val list = notifications.getNotificationsLastSeen(token)
+            val newMap = list.associate { dto ->
+                dto.discordId to notifications.isoToMillis(dto.lastSeenAt)
+            }
+            _lastSeenMillisByChild.value = newMap
+        } catch (e: Exception) {
+            android.util.Log.e("AlertViewModel", "Failed to load per-child lastSeen: ${e.message}", e)
+        }
+    }
 
     fun getAlertsByReason(reason: String): Flow<List<Alert>> =
         repository.getAlertsByReason(reason)
