@@ -102,7 +102,7 @@
         android:name="com.example.antibully.data.ui.alert.AlertDetailsFragment"
         android:label="Alert Details"
         tools:layout="@layout/fragment_alert_details">
-        
+
         <argument
             android:name="alertId"
             app:argType="string" />
@@ -116,16 +116,12 @@
         <deepLink
             app:uri="antibully://user-profile" />
         <action
-            android:id="@+id/action_profileFragment_to_twoFactorLoginFragment"
-            app:destination="@id/twoFactorLoginFragment" />
-        <action
             android:id="@+id/action_profileFragment_to_securitySettingsFragment"
             app:destination="@id/securitySettingsFragment" />
 
         <action
             android:id="@+id/action_profileFragment_to_editProfileFragment"
             app:destination="@id/editProfileFragment" />
-
         <action
             android:id="@+id/action_profileFragment_to_editChildFragment"
             app:destination="@id/editChildFragment"
@@ -141,11 +137,6 @@
         android:label="Edit Profile"
         tools:layout="@layout/fragment_edit_profile" />
 
-    <fragment
-        android:id="@+id/twoFactorLoginFragment"
-        android:name="com.example.antibully.data.ui.auth.TwoFactorLoginFragment"
-        android:label="Two Factor Login"
-        tools:layout="@layout/fragment_two_factor_login" />
     <fragment
         android:id="@+id/securitySettingsFragment"
         android:name="com.example.antibully.data.ui.settings.SecuritySettingsFragment"
