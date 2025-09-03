@@ -70,7 +70,6 @@ class MainActivity : AppCompatActivity() {
             val showBackAndTitle = setOf(
                 R.id.editProfileFragment,
                 R.id.alertDetailsFragment,
-                R.id.addChildFragment,
                 R.id.editChildFragment,
                 R.id.twoFactorSetupFragment,
                 R.id.securitySettingsFragment
@@ -83,7 +82,6 @@ class MainActivity : AppCompatActivity() {
                 R.id.splashFragment,
                 R.id.editProfileFragment,
                 R.id.alertDetailsFragment,
-                R.id.addChildFragment,
                 R.id.editChildFragment,
                 R.id.twoFactorSetupFragment
             )
