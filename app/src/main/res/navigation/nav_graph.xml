@@ -102,7 +102,7 @@
         android:name="com.example.antibully.data.ui.alert.AlertDetailsFragment"
         android:label="Alert Details"
         tools:layout="@layout/fragment_alert_details">
-        
+
         <argument
             android:name="alertId"
             app:argType="string" />
@@ -123,9 +123,6 @@
             android:id="@+id/action_profileFragment_to_editProfileFragment"
             app:destination="@id/editProfileFragment" />
         <action
-            android:id="@+id/action_profileFragment_to_addChildFragment"
-            app:destination="@id/addChildFragment" />
-        <action
             android:id="@+id/action_profileFragment_to_editChildFragment"
             app:destination="@id/editChildFragment"
             app:enterAnim="@anim/slide_in_right"
@@ -140,11 +137,6 @@
         android:label="Edit Profile"
         tools:layout="@layout/fragment_edit_profile" />
 
-    <fragment
-        android:id="@+id/addChildFragment"
-        android:name="com.example.antibully.data.ui.profile.AddChildFragment"
-        android:label="Add Child"
-        tools:layout="@layout/fragment_add_child" />
     <fragment
         android:id="@+id/securitySettingsFragment"
         android:name="com.example.antibully.data.ui.settings.SecuritySettingsFragment"
