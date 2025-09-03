@@ -100,7 +100,6 @@ class MainActivity : AppCompatActivity() {
                 val title = when (destination.id) {
                     R.id.editProfileFragment -> "Edit Profile"
                     R.id.alertDetailsFragment -> "Alert Details"
-                    R.id.addChildFragment -> "Add Child"
                     R.id.editChildFragment -> "Edit Child"
                     R.id.twoFactorSetupFragment -> "Two-Factor Setup"
                     R.id.securitySettingsFragment -> "Settings"
