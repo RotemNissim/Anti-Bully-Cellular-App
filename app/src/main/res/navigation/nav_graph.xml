@@ -116,9 +116,6 @@
         <deepLink
             app:uri="antibully://user-profile" />
         <action
-            android:id="@+id/action_profileFragment_to_twoFactorLoginFragment"
-            app:destination="@id/twoFactorLoginFragment" />
-        <action
             android:id="@+id/action_profileFragment_to_securitySettingsFragment"
             app:destination="@id/securitySettingsFragment" />
 
@@ -148,11 +145,6 @@
         android:name="com.example.antibully.data.ui.profile.AddChildFragment"
         android:label="Add Child"
         tools:layout="@layout/fragment_add_child" />
-    <fragment
-        android:id="@+id/twoFactorLoginFragment"
-        android:name="com.example.antibully.data.ui.auth.TwoFactorLoginFragment"
-        android:label="Two Factor Login"
-        tools:layout="@layout/fragment_two_factor_login" />
     <fragment
         android:id="@+id/securitySettingsFragment"
         android:name="com.example.antibully.data.ui.settings.SecuritySettingsFragment"
