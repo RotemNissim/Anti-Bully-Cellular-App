@@ -125,6 +125,7 @@ class FeedFragment : Fragment() {
 
             FirebaseAuth.getInstance().currentUser?.getIdToken(false)?.await()?.token?.let { token ->
                 viewModel.refreshLastSeen(token)
+                viewModel.loadLastSeenForChildren(token)
                 children.forEach { child -> viewModel.fetchAlerts(token, child.childId) }
             } ?: Log.e("FeedFragment", "Failed to get Firebase token")
 
@@ -148,14 +149,15 @@ class FeedFragment : Fragment() {
             viewModel.setSearchQuery(text?.toString().orEmpty())
         }
         binding.reasonToggleGroup.setOnCheckedChangeListener { _, checkedId ->
-            val reason = when (checkedId) {
+            val category: String? = when (checkedId) {
                 R.id.btnHarassment -> "Harassment"
-                R.id.btnExclusion -> "Social Exclusion"
+                R.id.btnExclusion  -> "Social Exclusion"
                 R.id.btnHateSpeech -> "Hate Speech"
-                R.id.btnCursing -> "Cursing"
-                else -> null
+                R.id.btnCursing    -> "Cursing"
+                R.id.btnAll        -> null
+                else               -> null
             }
-            Log.d("FeedFragment", "Reason filter: $reason")
+            viewModel.setCategory(category)
         }
     }
 
