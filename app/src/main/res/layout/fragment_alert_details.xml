@@ -163,7 +163,7 @@
                 android:textColorHint="#888" />
 
             <!-- Image picker icon -->
-            <ImageView
+            <androidx.appcompat.widget.AppCompatImageView
                 android:id="@+id/commentImagePicker"
                 android:layout_width="35dp"
                 android:layout_height="35dp"
@@ -172,12 +172,11 @@
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="@string/pick_image"
                 android:padding="4dp"
-                android:src="@drawable/ic_add_image"
-                android:tint="@color/black" />
+                app:srcCompat="@drawable/ic_add_image"
+                app:tint="@color/black" />
         </RelativeLayout>
 
-
-        <ImageView
+        <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/sendCommentButton"
             android:layout_width="40dp"
             android:layout_height="40dp"
@@ -185,6 +184,6 @@
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="@string/send"
             android:padding="6dp"
-            android:src="@drawable/ic_send_1" />
+            app:srcCompat="@drawable/ic_send_1" />
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

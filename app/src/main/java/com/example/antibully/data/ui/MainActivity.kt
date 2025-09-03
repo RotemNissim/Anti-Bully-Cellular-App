@@ -70,7 +70,6 @@ class MainActivity : AppCompatActivity() {
             val showBackAndTitle = setOf(
                 R.id.editProfileFragment,
                 R.id.alertDetailsFragment,
-                R.id.addChildFragment,
                 R.id.editChildFragment
             )
 
@@ -81,7 +80,6 @@ class MainActivity : AppCompatActivity() {
                 R.id.splashFragment,
                 R.id.editProfileFragment,
                 R.id.alertDetailsFragment,
-                R.id.addChildFragment,
                 R.id.editChildFragment
             )
 
@@ -97,7 +95,6 @@ class MainActivity : AppCompatActivity() {
                 val title = when (destination.id) {
                     R.id.editProfileFragment -> "Edit Profile"
                     R.id.alertDetailsFragment -> "Alert Details"
-                    R.id.addChildFragment -> "Add Child"
                     R.id.editChildFragment -> "Edit Child"
                     else -> ""
                 }

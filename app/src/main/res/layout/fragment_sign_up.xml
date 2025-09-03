@@ -19,13 +19,13 @@
         android:paddingBottom="64dp">
 
         <!-- Logo -->
-        <ImageView
+        <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/ivLogo"
             android:layout_width="120dp"
             android:layout_height="120dp"
             android:layout_marginBottom="40dp"
             android:contentDescription="App Logo"
-            android:src="@drawable/untitled" />
+            app:srcCompat="@drawable/untitled" />
 
         <!-- Title -->
         <TextView
@@ -64,13 +64,13 @@
                 app:strokeColor="@color/primary_button"
                 app:strokeWidth="2dp" />
 
-            <ImageView
+            <androidx.appcompat.widget.AppCompatImageView
                 android:id="@+id/ivProfilePlaceholder"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:layout_gravity="center"
-                android:src="@drawable/ic_default_profile"
-                android:tint="@color/primary_button" />
+                app:srcCompat="@drawable/ic_default_profile"
+                app:tint="@color/primary_button" />
 
             <com.google.android.material.floatingactionbutton.FloatingActionButton
                 android:id="@+id/fabChangePhoto"
@@ -87,6 +87,7 @@
                 app:borderWidth="0dp" />
 
         </FrameLayout>
+
         <!-- Spinner בזמן העלאת תמונה -->
         <ProgressBar
             android:id="@+id/spinnerProfileUpload"

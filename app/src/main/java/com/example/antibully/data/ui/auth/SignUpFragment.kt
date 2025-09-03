@@ -21,7 +21,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import com.example.antibully.data.api.CloudinaryUploader
 import com.squareup.picasso.Picasso
-import com.example.antibully.data.api.RetrofitClient
 
 class SignUpFragment : Fragment() {
 
