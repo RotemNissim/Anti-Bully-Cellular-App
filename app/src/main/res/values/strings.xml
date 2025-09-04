@@ -32,5 +32,34 @@
         <item quantity="other">%d new</item>
     </plurals>
     <string name="unread_since_template">%1$d new since %2$s</string>
+    <string name="title_settings">Settings</string>
+    <string name="title_edit_profile">Edit Profile</string>
+    <string name="title_two_factor">Two-Factor Setup</string>
+
+    <string name="settings_edit_profile">Edit Profile</string>
+    <string name="settings_connect_discord">Connect Discord</string>
+    <string name="settings_connect_discord_account">Connect Discord Account</string>
+    <string name="settings_add_bot_to_server">Add Bot to Server</string>
+    <string name="settings_add_child">Add Another Child</string>
+    <string name="settings_security">Security (2FA)</string>
+    <string name="settings_privacy">Privacy Settings</string>
+    <string name="settings_help_support">Help &amp; Support</string>
+
+    <string name="cd_profile_picture">Profile picture</string>
+
+    <string name="discord_connect_title">Connect Discord</string>
+    <string name="discord_cd_logo">Discord logo</string>
+    <string name="discord_connect_header">Add the AntiBULLY Bot</string>
+    <string name="discord_connect_subtitle">Connect your child’s Discord to receive alerts in real time.</string>
+
+    <string name="discord_steps_title">How it works</string>
+    <string name="discord_step1">Tap “Add Bot to Server” below and choose your child’s server.</string>
+    <string name="discord_step2">Grant required permissions so the bot can read messages in joined channels.</string>
+    <string name="discord_step3">Return to the app. We’ll start monitoring and notify you about harmful content.</string>
+
+    <string name="discord_note">Note: The bot only flags harmful content. We don’t expose usernames or private data.</string>
+    <string name="discord_add_bot_button">Add Bot to Server</string>
+
+
 
 </resources>
