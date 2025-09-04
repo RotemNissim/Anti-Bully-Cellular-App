@@ -73,7 +73,7 @@ class DiscordRedirectActivity : AppCompatActivity() {
                     val json = JSONObject(responseBody ?: "{}")
                     val discordId = json.optString("id")
                     val discordUsername = json.optString("username")
-                    val discordFullName = json.optString("global_name", discordUsername) // ✅ Use global_name if available
+                    val discordFullName = json.optString("fullName", discordUsername) // ✅ Use global_name if available
 
                     Log.d("OAuth", "Discord ID: $discordId, Username: $discordUsername, Full Name: $discordFullName")
 
