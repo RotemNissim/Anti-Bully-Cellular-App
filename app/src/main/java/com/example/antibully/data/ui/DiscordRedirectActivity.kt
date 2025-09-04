@@ -9,6 +9,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import com.example.antibully.data.db.AppDatabase
 import com.example.antibully.data.repository.ChildRepository
+import com.example.antibully.data.repository.LinkResult
 import com.example.antibully.viewmodel.ChildViewModel
 import com.example.antibully.viewmodel.ChildViewModelFactory
 import com.google.firebase.auth.FirebaseAuth
@@ -101,20 +102,47 @@ class DiscordRedirectActivity : AppCompatActivity() {
                             val token = FirebaseAuth.getInstance().currentUser?.getIdToken(false)?.await()?.token
                             if (token != null) {
                                 Log.d("OAuth", "Got Firebase token, calling linkChild API...")
-                                childViewModel.linkChild(token, userId, discordId, childName) { success ->
-                                    Log.d("OAuth", "Link child result: $success")
-                                    if (success) {
-                                        Log.d("OAuth", "Child linked successfully!")
-                                        val intent = Intent(this@DiscordRedirectActivity, MainActivity::class.java)
-                                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                                        intent.putExtra("navigateToProfile", true)
-                                        startActivity(intent)
-                                        finish()
-                                    } else {
-                                        Log.e("OAuth", "Failed to link child to backend")
-                                        finish()
+                                childViewModel.linkChild(token, userId, discordId, childName) { result ->
+                                    Log.d("OAuth", "Link child result: $result")
+                                    when (result) {
+                                        is LinkResult.Linked -> {
+                                            // Success → go to Profile
+                                            val intent = Intent(this@DiscordRedirectActivity, MainActivity::class.java)
+                                            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                                            intent.putExtra("navigateToProfile", true)
+                                            startActivity(intent)
+                                            finish()
+                                        }
+                                        is LinkResult.AlreadyLinked -> {
+                                            // Show friendly popup, then go to Profile
+                                            runOnUiThread {
+                                                androidx.appcompat.app.AlertDialog.Builder(this@DiscordRedirectActivity)
+                                                    .setTitle("Child account already added")
+                                                    .setMessage("This child is already linked to your account.")
+                                                    .setPositiveButton("OK") { _, _ ->
+                                                        val intent = Intent(this@DiscordRedirectActivity, MainActivity::class.java)
+                                                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                                                        intent.putExtra("navigateToProfile", true)
+                                                        startActivity(intent)
+                                                        finish()
+                                                    }
+                                                    .setOnCancelListener {
+                                                        val intent = Intent(this@DiscordRedirectActivity, MainActivity::class.java)
+                                                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                                                        intent.putExtra("navigateToProfile", true)
+                                                        startActivity(intent)
+                                                        finish()
+                                                    }
+                                                    .show()
+                                            }
+                                        }
+                                        is LinkResult.Error -> {
+                                            Log.e("OAuth", "Failed to link child (code=${result.code})")
+                                            finish()
+                                        }
                                     }
                                 }
+
                             } else {
                                 Log.e("OAuth", "Failed to get Firebase token")
                                 finish()
