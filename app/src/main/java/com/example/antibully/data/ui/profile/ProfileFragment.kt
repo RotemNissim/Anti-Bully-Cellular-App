@@ -68,9 +68,9 @@ class ProfileFragment : Fragment() {
         val addChildButton = view.findViewById<Button>(R.id.btnAddChild)
         noChildrenText = view.findViewById(R.id.tvNoChildren)
         val settingsButton = view.findViewById<ImageButton>(R.id.btnSettings)
-        
+
         settingsButton.setOnClickListener {
-            findNavController().navigate(R.id.action_profileFragment_to_securitySettingsFragment)
+            findNavController().navigate(R.id.action_profileFragment_to_settingsFragment)
         }
 
         // Initialize child repository and viewmodel
@@ -112,13 +112,7 @@ class ProfileFragment : Fragment() {
                 if (token != null) {
                     Log.d("ProfileFragment", "Fetching children from API for user: $userId")
                     childViewModel.fetchChildrenFromApi(token, userId)
-                    
-                    // ✅ Add a small delay and check again
-//                    kotlinx.coroutines.delay(2000)
-//
-//                    // ✅ Also try to get children from local DB directly
-//                    val localChildren = AppDatabase.getDatabase(requireContext()).childDao().getChildrenForUser(userId)
-//                    Log.d("ProfileFragment", "Local children count: ${localChildren.size}")
+
                 } else {
                     Log.e("ProfileFragment", "Failed to get Firebase token")
                 }

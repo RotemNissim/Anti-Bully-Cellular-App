@@ -116,8 +116,8 @@
         <deepLink
             app:uri="antibully://user-profile" />
         <action
-            android:id="@+id/action_profileFragment_to_securitySettingsFragment"
-            app:destination="@id/securitySettingsFragment" />
+            android:id="@+id/action_profileFragment_to_settingsFragment"
+            app:destination="@id/settingsFragment" />
 
         <action
             android:id="@+id/action_profileFragment_to_editProfileFragment"
@@ -166,4 +166,29 @@
             app:argType="string"
             android:defaultValue="" />
     </fragment>
+
+    <fragment
+        android:id="@+id/connectDiscordFragment"
+        android:name="com.example.antibully.data.ui.settings.ConnectDiscordFragment"
+        android:label="@string/discord_connect_title"
+        tools:layout="@layout/fragment_connect_discord" />
+
+    <fragment
+        android:id="@+id/settingsFragment"
+        android:name="com.example.antibully.data.ui.settings.SettingsFragment"
+        android:label="@string/title_settings"
+        tools:layout="@layout/fragment_settings">
+
+        <action
+            android:id="@+id/action_settingsFragment_to_editProfileFragment"
+            app:destination="@id/editProfileFragment" />
+
+        <action
+            android:id="@+id/action_settingsFragment_to_securitySettingsFragment"
+            app:destination="@id/securitySettingsFragment" />
+        <action
+            android:id="@+id/action_settingsFragment_to_connectDiscordFragment"
+            app:destination="@id/connectDiscordFragment" />
+    </fragment>
+
 </navigation>
