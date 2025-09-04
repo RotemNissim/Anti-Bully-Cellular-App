@@ -30,7 +30,10 @@ interface AlertDao {
     fun getAlertByPostId(postId: String): LiveData<Alert>
 
     @Delete
-    suspend fun deleteAlert(alert: Alert)
+    suspend fun delete(alert: Alert)
+
+    @Query("DELETE FROM alerts WHERE postId = :postId")
+    suspend fun deleteByPostId(postId: String)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAlert(alert: Alert)
