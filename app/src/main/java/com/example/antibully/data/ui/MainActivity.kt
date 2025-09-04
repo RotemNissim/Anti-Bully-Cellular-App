@@ -72,7 +72,8 @@ class MainActivity : AppCompatActivity() {
                 R.id.alertDetailsFragment,
                 R.id.editChildFragment,
                 R.id.twoFactorSetupFragment,
-                R.id.securitySettingsFragment
+                R.id.securitySettingsFragment,
+                R.id.settingsFragment
             )
 
             // Fragments where we HIDE the BOTTOM NAV
@@ -83,7 +84,8 @@ class MainActivity : AppCompatActivity() {
                 R.id.editProfileFragment,
                 R.id.alertDetailsFragment,
                 R.id.editChildFragment,
-                R.id.twoFactorSetupFragment
+                R.id.twoFactorSetupFragment,
+                R.id.settingsFragment
             )
 
             // Bottom nav visibility
@@ -100,7 +102,7 @@ class MainActivity : AppCompatActivity() {
                     R.id.alertDetailsFragment -> "Alert Details"
                     R.id.editChildFragment -> "Edit Child"
                     R.id.twoFactorSetupFragment -> "Two-Factor Setup"
-                    R.id.securitySettingsFragment -> "Settings"
+                    R.id.settingsFragment -> "Settings"
                     else -> ""
                 }
                 supportActionBar?.title = title
