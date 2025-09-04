@@ -21,7 +21,7 @@ import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
-import  com.example.antibully.R
+import com.example.antibully.R
 
 class AlertsFragment : Fragment() {
 
@@ -77,10 +77,17 @@ class AlertsFragment : Fragment() {
         binding.alertsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.alertsRecyclerView.adapter = adapter
 
-        val alertDao = AppDatabase.getDatabase(requireContext()).alertDao()
-        val repository = AlertRepository(alertDao)
+        // ----- FIX: Repository עם dismissedDao + currentUserId -----
+        val db = AppDatabase.getDatabase(requireContext())
+        val currentUserId = FirebaseAuth.getInstance().currentUser?.uid.orEmpty()
+        val repository = AlertRepository(
+            alertDao = db.alertDao(),
+            dismissedDao = db.dismissedAlertDao(),
+            currentUserId = currentUserId
+        )
         val factory = AlertViewModelFactory(repository)
         viewModel = ViewModelProvider(this, factory)[AlertViewModel::class.java]
+        // ------------------------------------------------------------
 
         lifecycleScope.launchWhenStarted {
             viewModel.rows.collectLatest { items ->
@@ -96,7 +103,7 @@ class AlertsFragment : Fragment() {
             }
             viewModel.refreshLastSeen(token)
             val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
-            val childDao = AppDatabase.getDatabase(requireContext()).childDao()
+            val childDao = db.childDao()
             val children = childDao.getChildrenForUser(userId)
             viewModel.setChildIds(children)
             children.forEach { child ->

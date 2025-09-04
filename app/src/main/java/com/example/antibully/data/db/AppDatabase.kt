@@ -8,15 +8,24 @@ import com.example.antibully.data.db.dao.*
 import com.example.antibully.data.models.*
 
 @Database(
-    entities = [Post::class, Alert::class, User::class, ChildLocalData::class],
-    version = 13,exportSchema = false)
-
+    entities = [
+        Post::class,
+        Alert::class,
+        User::class,
+        ChildLocalData::class,
+        DismissedAlert::class
+    ],
+    version = 14,
+    exportSchema = false
+)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun postDao(): PostDao
     abstract fun alertDao(): AlertDao
     abstract fun userDao(): UserDao
     abstract fun childDao(): ChildDao
+    abstract fun dismissedAlertDao(): DismissedAlertDao
+
     companion object {
         @Volatile
         private var INSTANCE: AppDatabase? = null
@@ -30,7 +39,6 @@ abstract class AppDatabase : RoomDatabase() {
                 )
                     .fallbackToDestructiveMigration()
                     .build()
-
                 INSTANCE = instance
                 instance
             }

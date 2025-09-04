@@ -5,12 +5,17 @@ import com.example.antibully.data.api.AlertApiService
 import com.example.antibully.data.api.ApiHelper
 import com.example.antibully.data.api.RetrofitClient
 import com.example.antibully.data.db.dao.AlertDao
+import com.example.antibully.data.db.dao.DismissedAlertDao
 import com.example.antibully.data.models.Alert
+import com.example.antibully.data.models.DismissedAlert
+import com.example.antibully.data.models.AlertApiResponse
 import com.example.antibully.utils.Encryption
 import kotlinx.coroutines.flow.Flow
 
 class AlertRepository(
     private val alertDao: AlertDao,
+    private val dismissedDao: DismissedAlertDao,
+    private val currentUserId: String,
     private val alertApiService: AlertApiService = RetrofitClient.alertApiService
 ) {
     val allAlerts: Flow<List<Alert>> = alertDao.getAllAlerts()
@@ -26,19 +31,22 @@ class AlertRepository(
             alertApiService.getAlertsForChild(bearer, encryptedChildId)
         }
         if (result.isSuccess) {
-            val remoteList = result.getOrNull() ?: emptyList()
-            val localAlerts = remoteList.map { apiAlert ->
-                Alert(
-                    postId = apiAlert.id,
-                    reporterId = apiAlert.childId,
-                    text = apiAlert.severity,
-                    reason = apiAlert.summary ?: "No reason provided",
-                    imageUrl = apiAlert.imageUrl,
-                    severity = apiAlert.severity,
-                    timestamp = apiAlert.timestamp
-                )
-            }
-            alertDao.insertAll(localAlerts)
+            val remote: List<AlertApiResponse> = result.getOrNull().orEmpty()
+            val dismissed = dismissedDao.getDismissedIds(currentUserId).toSet()
+            val locals = remote
+                .filter { it.id !in dismissed }
+                .map { api ->
+                    Alert(
+                        postId = api.id,
+                        reporterId = api.childId,
+                        text = api.severity,
+                        reason = api.summary ?: "No reason provided",
+                        imageUrl = api.imageUrl,
+                        severity = api.severity,
+                        timestamp = api.timestamp
+                    )
+                }
+            alertDao.insertAll(locals)
         } else {
             Log.e("AlertRepository", "Failed to fetch alerts: ${result.exceptionOrNull()?.message}")
         }
@@ -50,19 +58,23 @@ class AlertRepository(
     fun getAlertsForChild(childId: String): Flow<List<Alert>> =
         alertDao.getAlertsForChild(childId)
 
-    suspend fun delete(alert: Alert) =
+    suspend fun delete(alert: Alert) {
+        dismissedDao.insert(DismissedAlert(currentUserId, alert.postId))
         alertDao.delete(alert)
+    }
 
-    suspend fun deleteByPostId(postId: String) =
+    suspend fun deleteByPostId(postId: String) {
+        dismissedDao.insert(DismissedAlert(currentUserId, postId))
         alertDao.deleteByPostId(postId)
+    }
 
     suspend fun deleteRemote(token: String, postId: String) {
         val bearer = "Bearer $token"
-        val result = ApiHelper.safeApiCall { alertApiService.deleteAlert(bearer, postId) }
-        if (result.isSuccess) {
+        val res = ApiHelper.safeApiCall { alertApiService.deleteAlert(bearer, postId) }
+        if (res.isSuccess) {
             alertDao.deleteByPostId(postId)
         } else {
-            Log.e("AlertRepository", "Remote delete failed: ${result.exceptionOrNull()?.message}")
+            Log.w("AlertRepository", "Remote delete failed: ${res.exceptionOrNull()?.message}")
         }
     }
 }

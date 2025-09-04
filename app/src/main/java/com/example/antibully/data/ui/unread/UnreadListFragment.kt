@@ -30,8 +30,15 @@ class UnreadListFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val vm: AlertViewModel by activityViewModels {
-        val dao = AppDatabase.getDatabase(requireContext()).alertDao()
-        AlertViewModelFactory(AlertRepository(dao))
+        val db = AppDatabase.getDatabase(requireContext())
+        val currentUserId = FirebaseAuth.getInstance().currentUser?.uid.orEmpty()
+        AlertViewModelFactory(
+            AlertRepository(
+                alertDao = db.alertDao(),
+                dismissedDao = db.dismissedAlertDao(),
+                currentUserId = currentUserId
+            )
+        )
     }
 
     private lateinit var adapter: AlertsAdapter
