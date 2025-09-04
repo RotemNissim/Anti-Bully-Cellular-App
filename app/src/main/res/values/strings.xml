@@ -59,7 +59,14 @@
 
     <string name="discord_note">Note: The bot only flags harmful content. We don’t expose usernames or private data.</string>
     <string name="discord_add_bot_button">Add Bot to Server</string>
-
+    <string name="placeholder_email">email@example.com</string>
+    <string name="manage_notifications">Manage Notifications</string>
+    <string name="manage_notifications_desc">Enable or disable alerts for different types of flagged content</string>
+    <string name="notify_verbal_bullying">Verbal Bullying</string>
+    <string name="notify_harassment">Harassment</string>
+    <string name="notify_explicit">Explicit Content</string>
+    <string name="notify_social_exclusion">Social Exclusion</string>
+    <string name="notify_threats">Threats And Intimidation</string>
 
 
 </resources>
