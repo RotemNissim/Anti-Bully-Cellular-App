@@ -23,7 +23,6 @@ import com.github.mikephil.charting.data.*
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
 import com.github.mikephil.charting.formatter.ValueFormatter
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -59,9 +58,14 @@ class StatisticsFragment : Fragment() {
         auth       = FirebaseAuth.getInstance()
         progressBar = view.findViewById(R.id.progressBar)
 
-        // 2) Init ViewModel
-        val dao    = AppDatabase.getDatabase(requireContext()).alertDao()
-        val repo   = AlertRepository(dao)
+        // 2) Init ViewModel  **FIX: Repository עם dismissedDao + currentUserId**
+        val db = AppDatabase.getDatabase(requireContext())
+        val currentUserId = FirebaseAuth.getInstance().currentUser?.uid.orEmpty()
+        val repo = AlertRepository(
+            alertDao = db.alertDao(),
+            dismissedDao = db.dismissedAlertDao(),
+            currentUserId = currentUserId
+        )
         alertViewModel = ViewModelProvider(
             this,
             AlertViewModelFactory(repo)
@@ -81,7 +85,7 @@ class StatisticsFragment : Fragment() {
         val uid = auth.currentUser?.uid ?: return
 
         // ✅ Get children from local database instead of Firestore
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             val childDao = AppDatabase.getDatabase(requireContext()).childDao()
             children = childDao.getChildrenForUser(uid)
 
@@ -143,10 +147,10 @@ class StatisticsFragment : Fragment() {
             pieChart.apply {
                 clear()
                 centerText = "No Data"
-                setEntryLabelColor(Color.WHITE) // Set label color to white
-                setCenterTextColor(Color.WHITE) // Set center text color to white
-                setHoleColor(Color.TRANSPARENT) // Make the hole transparent
-                legend.textColor = Color.WHITE // Set legend text color to white
+                setEntryLabelColor(Color.WHITE)
+                setCenterTextColor(Color.WHITE)
+                setHoleColor(Color.TRANSPARENT)
+                legend.textColor = Color.WHITE
             }
             return
         }
@@ -162,24 +166,25 @@ class StatisticsFragment : Fragment() {
 
         val ds = PieDataSet(entries, "Alerts per Child").apply {
             this.colors = entries.map { e ->
-                childColorMap[ counts.keys.elementAt(entries.indexOf(e)).childId ] ?: Color.GRAY
+                childColorMap[counts.keys.elementAt(entries.indexOf(e)).childId] ?: Color.GRAY
             }
             valueTextSize = 14f
-            valueTextColor = Color.WHITE // Set value text color to white
-            valueLineColor = Color.WHITE // Set value line color to white
+            valueTextColor = Color.WHITE
+            valueLineColor = Color.WHITE
         }
 
         pieChart.apply {
             data = PieData(ds)
             description.isEnabled = false
             centerText = "Alerts"
-            setEntryLabelColor(Color.WHITE) // Set entry label color to white
-            setCenterTextColor(Color.WHITE) // Set center text color to white
-            setHoleColor(Color.TRANSPARENT) // Make the hole transparent
-            legend.textColor = Color.WHITE // Set legend text color to white
+            setEntryLabelColor(Color.WHITE)
+            setCenterTextColor(Color.WHITE)
+            setHoleColor(Color.TRANSPARENT)
+            legend.textColor = Color.WHITE
             invalidate()
         }
     }
+
     private class CustomSpinnerAdapter(
         context: Context,
         private val items: List<String>
@@ -206,8 +211,6 @@ class StatisticsFragment : Fragment() {
     private fun setupSpinner() {
         val names = children.map { it.name }
         val adapter = CustomSpinnerAdapter(requireContext(), names)
-
-        // Set the dropdown layout style
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
 
         spinner.adapter = adapter
@@ -245,7 +248,7 @@ class StatisticsFragment : Fragment() {
             daily[key] = (daily[key] ?: 0) + 1
         }
 
-        val entries = daily.entries.mapIndexed { idx, (day, cnt) ->
+        val entries = daily.entries.mapIndexed { idx, (_, cnt) ->
             BarEntry(idx.toFloat(), cnt.toFloat())
         }
         val labels = daily.keys.toList()
@@ -253,7 +256,7 @@ class StatisticsFragment : Fragment() {
         val ds = BarDataSet(entries, "Alerts / Day").apply {
             color = childColorMap[childId] ?: Color.BLUE
             valueTextSize = 12f
-            valueTextColor = Color.WHITE // Set value text color to white
+            valueTextColor = Color.WHITE
             valueFormatter = object : ValueFormatter() {
                 override fun getFormattedValue(value: Float) = value.toInt().toString()
             }
@@ -266,16 +269,16 @@ class StatisticsFragment : Fragment() {
                 granularity = 1f
                 labelRotationAngle = -45f
                 valueFormatter = IndexAxisValueFormatter(labels)
-                textColor = Color.WHITE // Set X-axis text color to white
-                gridColor = Color.GRAY // Set grid lines to gray
+                textColor = Color.WHITE
+                gridColor = Color.GRAY
             }
             axisLeft.apply {
-                textColor = Color.WHITE // Set Y-axis text color to white
-                gridColor = Color.GRAY // Set grid lines to gray
+                textColor = Color.WHITE
+                gridColor = Color.GRAY
             }
             axisRight.isEnabled = false
-            legend.textColor = Color.WHITE // Set legend text color to white
-            description.textColor = Color.WHITE // Set description text color to white
+            legend.textColor = Color.WHITE
+            description.textColor = Color.WHITE
             setFitBars(true)
             description.isEnabled = false
             invalidate()

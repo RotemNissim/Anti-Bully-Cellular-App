@@ -17,8 +17,8 @@ interface AlertApiService {
         @Query("childId") childId: String
     ): Response<List<AlertApiResponse>> // ✅ Use AlertApiResponse
 
-    @DELETE("api/alerts/{id}") // ✅ Add 'api/' prefix
-    suspend fun deleteAlert(
+    @DELETE("api/alerts/{id}")
+        suspend fun deleteAlert(
         @Header("Authorization") token: String,
         @Path("id") alertId: String
     ): Response<Unit>

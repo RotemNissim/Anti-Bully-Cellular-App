@@ -28,15 +28,22 @@ import kotlinx.coroutines.tasks.await
 import java.util.concurrent.TimeUnit
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.activityViewModels
-import com.example.antibully.data.ui.common.SwipeToDelete   // <-- הוסף
+import com.example.antibully.data.ui.common.SwipeToDelete
 
 class FeedFragment : Fragment() {
 
     private var _binding: FragmentFeedBinding? = null
     private val binding get() = _binding!!
     private val viewModel: AlertViewModel by activityViewModels {
-        val dao = AppDatabase.getDatabase(requireContext()).alertDao()
-        AlertViewModelFactory(AlertRepository(dao))
+        val db = AppDatabase.getDatabase(requireContext())
+        val currentUserId = FirebaseAuth.getInstance().currentUser?.uid.orEmpty()
+        AlertViewModelFactory(
+            AlertRepository(
+                db.alertDao(),
+                db.dismissedAlertDao(),
+                currentUserId
+            )
+        )
     }
 
     private var childIds: List<String> = emptyList()
