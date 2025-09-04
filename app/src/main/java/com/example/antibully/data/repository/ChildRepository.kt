@@ -10,6 +10,11 @@ import com.example.antibully.data.models.LinkChildRequest
 import com.example.antibully.data.models.UpdateChildRequest
 import kotlinx.coroutines.flow.Flow
 
+sealed class LinkResult {
+    object Linked : LinkResult()
+    object AlreadyLinked : LinkResult()
+    data class Error(val code: Int, val body: String? = null) : LinkResult()
+}
 class ChildRepository(
     private val childDao: ChildDao,
     private val childApiService: ChildApiService = RetrofitClient.childApiService
@@ -46,35 +51,63 @@ class ChildRepository(
             result.exceptionOrNull()?.printStackTrace()
         }
     }
-    
-    suspend fun linkChild(token: String, parentId: String, discordId: String, name: String, imageUrl: String? = null): Boolean {
+
+    suspend fun linkChild(
+        token: String,
+        parentId: String,
+        discordId: String,
+        name: String,
+        imageUrl: String? = null
+    ): LinkResult {
         Log.d("ChildRepository", "Linking child: $discordId to parent: $parentId")
         val bearer = "Bearer $token"
         val request = LinkChildRequest(discordId, name, imageUrl)
-        
-        val result = ApiHelper.safeApiCall {
-            childApiService.linkChild(bearer, parentId, request)
-        }
-        
-        if (result.isSuccess) {
-            val apiChild = result.getOrNull()
-            if (apiChild != null) {
-                Log.d("ChildRepository", "Successfully linked child: ${apiChild.discordId}")
-                val localChild = ChildLocalData(
-                    childId = apiChild.discordId,
-                    parentUserId = parentId,
-                    name = apiChild.name ?: name,
-                    imageUrl = apiChild.imageUrl
-                )
-                childDao.insertChild(localChild)
-                return true
+
+        // IMPORTANT: call Retrofit directly (not via ApiHelper) so we can read resp.code()
+        return try {
+            val resp = childApiService.linkChild(bearer, parentId, request)
+
+            when {
+                resp.isSuccessful -> {
+                    val apiChild = resp.body()
+                    if (apiChild != null) {
+                        Log.d("ChildRepository", "Successfully linked child: ${apiChild.discordId}")
+
+                        // Upsert locally (your DAO is REPLACE so it’s idempotent)
+                        val localChild = ChildLocalData(
+                            childId = apiChild.discordId,
+                            parentUserId = parentId,
+                            name = apiChild.name ?: name,
+                            imageUrl = apiChild.imageUrl
+                        )
+                        childDao.insertChild(localChild)
+
+                        LinkResult.Linked
+                    } else {
+                        Log.e("ChildRepository", "Empty body on success")
+                        LinkResult.Error(resp.code(), "Empty body")
+                    }
+                }
+
+                resp.code() == 409 -> {
+                    // DUPLICATE → no local insert; optionally ensure local list is fresh
+                    Log.d("ChildRepository", "Child already linked (409)")
+                    LinkResult.AlreadyLinked
+                }
+
+                else -> {
+                    val err = resp.errorBody()?.string()
+                    Log.e("ChildRepository", "Failed to link child: API error: $err")
+                    LinkResult.Error(resp.code(), err)
+                }
             }
-        } else {
-            Log.e("ChildRepository", "Failed to link child: ${result.exceptionOrNull()?.message}")
+        } catch (e: Exception) {
+            Log.e("ChildRepository", "Failed to link child", e)
+            LinkResult.Error(-1, e.message)
         }
-        return false
     }
-    
+
+
     suspend fun updateChild(token: String, parentId: String, discordId: String, name: String?, imageUrl: String?): Boolean {
         val bearer = "Bearer $token"
         val request = UpdateChildRequest(name, imageUrl)

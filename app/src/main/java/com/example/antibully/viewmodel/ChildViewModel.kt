@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.antibully.data.repository.ChildRepository
 import com.example.antibully.data.models.ChildLocalData
+import com.example.antibully.data.repository.LinkResult
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -35,23 +36,29 @@ class ChildViewModel(private val repository: ChildRepository) : ViewModel() {
             }
         }
     }
-    
-    fun linkChild(token: String, parentId: String, discordId: String, name: String, imageUrl: String? = null, onResult: (Boolean) -> Unit) {
+
+    suspend fun linkChild(
+        token: String,
+        parentId: String,
+        discordId: String,
+        name: String,
+        imageUrl: String? = null
+    ): LinkResult = repository.linkChild(token, parentId, discordId, name, imageUrl)
+
+    // callback version to match your current calling style in DiscordRedirectActivity
+    fun linkChild(
+        token: String,
+        parentId: String,
+        discordId: String,
+        name: String,
+        imageUrl: String? = null,
+        onResult: (LinkResult) -> Unit
+    ) {
         viewModelScope.launch {
-            _loading.value = true
-            _error.value = null
-            try {
-                val success = repository.linkChild(token, parentId, discordId, name, imageUrl)
-                onResult(success)
-            } catch (e: Exception) {
-                _error.value = e.message
-                onResult(false)
-            } finally {
-                _loading.value = false
-            }
+            val result = repository.linkChild(token, parentId, discordId, name, imageUrl)
+            onResult(result)
         }
     }
-    
     fun updateChild(token: String, parentId: String, discordId: String, name: String?, imageUrl: String?, onResult: (Boolean) -> Unit) {
         viewModelScope.launch {
             _loading.value = true
