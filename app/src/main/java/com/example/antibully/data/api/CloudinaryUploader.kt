@@ -14,6 +14,7 @@ object CloudinaryUploader {
 
     private const val CLOUD_NAME = "dddcxg6w1"
     private const val UPLOAD_PRESET = "antibully_uploads"
+    private val httpClient by lazy { OkHttpClient() }
 
     fun uploadImage(
         context: Context,
@@ -67,4 +68,49 @@ object CloudinaryUploader {
             onFailure(e)
         }
     }
+
+    fun uploadImageFromUrl(
+        imageUrl: String,
+        onSuccess: (String) -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        try {
+            val requestBody = MultipartBody.Builder()
+                .setType(MultipartBody.FORM)
+                // Important: send the remote URL as the `file` field
+                .addFormDataPart("file", imageUrl)
+                .addFormDataPart("upload_preset", UPLOAD_PRESET)
+                .build()
+
+            val request = Request.Builder()
+                .url("https://api.cloudinary.com/v1_1/$CLOUD_NAME/image/upload")
+                .post(requestBody)
+                .build()
+
+            httpClient.newCall(request).enqueue(object : Callback {
+                override fun onFailure(call: Call, e: IOException) {
+                    Log.e("CloudinaryUpload", "Failed: ${e.message}", e)
+                    onFailure(e)
+                }
+
+                override fun onResponse(call: Call, response: Response) {
+                    val body = response.body?.string()
+                    if (response.isSuccessful && body != null) {
+                        val json = JSONObject(body)
+                        val secureUrl = json.getString("secure_url")
+                        Log.d("CloudinaryUpload", "Success (remote)! URL: $secureUrl")
+                        onSuccess(secureUrl)
+                    } else {
+                        val error = body ?: "Unknown error"
+                        Log.e("CloudinaryUpload", "Remote upload failed: $error")
+                        onFailure(Exception("Upload failed: $error"))
+                    }
+                }
+            })
+        } catch (e: Exception) {
+            Log.e("CloudinaryUpload", "Exception (remote): ${e.message}", e)
+            onFailure(e)
+        }
+    }
+
 }
