@@ -110,19 +110,18 @@ class FeedFragment : Fragment() {
 
             adapter = AlertsAdapter(
                 childDataMap = childDataMap,
-                onAlertClick = { alert ->
-                    val action = FeedFragmentDirections
-                        .actionFeedFragmentToAlertDetailsFragment(alert.postId)
-                    findNavController().navigate(action)
-                },
+                // Clicking on an alert no longer navigates to a details screen.  The
+                // AlertDetailsFragment has been removed, so this lambda is empty.
+                onAlertClick = { /* no-op */ },
                 onUnreadGroupClick = { childId ->
                     val childName = childDataMap[childId]?.name.orEmpty()
-                    val action = FeedFragmentDirections
-                        .actionFeedFragmentToUnreadListFragment(
-                            childId = childId,
-                            childName = childName
-                        )
-                    findNavController().navigate(action)
+                    // Navigate to the unread list for the selected child using the
+                    // existing navigation action defined in nav_graph.xml.
+                    val args = Bundle().apply {
+                        putString("childId", childId)
+                        putString("childName", childName)
+                    }
+                    findNavController().navigate(R.id.action_feedFragment_to_unreadListFragment, args)
                 }
             )
 
@@ -144,10 +143,10 @@ class FeedFragment : Fragment() {
 
             FirebaseAuth.getInstance().currentUser?.getIdToken(false)
                 ?.await()?.token?.let { token ->
-                viewModel.refreshLastSeen(token)
-                viewModel.loadLastSeenForChildren(token)
-                children.forEach { child -> viewModel.fetchAlerts(token, child.childId) }
-            } ?: Log.e("FeedFragment", "Failed to get Firebase token")
+                    viewModel.refreshLastSeen(token)
+                    viewModel.loadLastSeenForChildren(token)
+                    children.forEach { child -> viewModel.fetchAlerts(token, child.childId) }
+                } ?: Log.e("FeedFragment", "Failed to get Firebase token")
 
             viewLifecycleOwner.lifecycleScope.launch {
                 viewModel.rows.collectLatest { items ->

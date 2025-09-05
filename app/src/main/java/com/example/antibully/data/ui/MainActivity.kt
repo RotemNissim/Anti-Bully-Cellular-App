@@ -65,7 +65,6 @@ class MainActivity : AppCompatActivity() {
             // Fragments where we show BACK ARROW + TITLE
             val showBackAndTitle = setOf(
                 R.id.editProfileFragment,
-                R.id.alertDetailsFragment,
                 R.id.editChildFragment,
                 R.id.twoFactorSetupFragment,
                 R.id.securitySettingsFragment,
@@ -80,7 +79,6 @@ class MainActivity : AppCompatActivity() {
                 R.id.signUpFragment,
                 R.id.splashFragment,
                 R.id.editProfileFragment,
-                R.id.alertDetailsFragment,
                 R.id.editChildFragment,
                 R.id.twoFactorSetupFragment,
                 R.id.settingsFragment,
@@ -99,7 +97,6 @@ class MainActivity : AppCompatActivity() {
 
                 val title = when (destination.id) {
                     R.id.editProfileFragment -> "Edit Profile"
-                    R.id.alertDetailsFragment -> "Alert Details"
                     R.id.editChildFragment -> "Edit Child"
                     R.id.twoFactorSetupFragment -> "Two-Factor Setup"
                     R.id.settingsFragment -> "Settings"

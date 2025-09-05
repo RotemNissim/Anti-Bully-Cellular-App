@@ -90,11 +90,9 @@ class UnreadListFragment : Fragment() {
             val childDataMap = children.associateBy { it.childId }
             adapter = AlertsAdapter(
                 childDataMap = childDataMap,
-                onAlertClick = { alert ->
-                    Log.d("UnreadListFragment", "onAlertClick postId=${alert.postId} -> navigate")
-                    val args = Bundle().apply { putString("alertId", alert.postId) }
-                    findNavController().navigate(R.id.alertDetailsFragment, args)
-                },
+                // The alert details screen has been removed.  Clicking on an alert in
+                // the unread list no longer navigates anywhere.
+                onAlertClick = { /* no-op */ },
                 onUnreadGroupClick = { }
             )
             binding.unreadRecycler.adapter = adapter

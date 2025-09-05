@@ -45,10 +45,7 @@ class AlertsFragment : Fragment() {
 
         val adapter = AlertsAdapter(
             childDataMap = childDataMap,
-            onAlertClick = { alert ->
-                val args = Bundle().apply { putString("alertId", alert.postId) }
-                findNavController().navigate(R.id.alertDetailsFragment, args)
-            },
+            onAlertClick = { /* no-op */ },
             onUnreadGroupClick = { childId ->
                 val childName = childDataMap[childId]?.name ?: ""
                 Log.d("AlertsFragment", ">>> navigate to UnreadList for child=$childId name=$childName")
@@ -77,7 +74,6 @@ class AlertsFragment : Fragment() {
         binding.alertsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.alertsRecyclerView.adapter = adapter
 
-        // ----- FIX: Repository עם dismissedDao + currentUserId -----
         val db = AppDatabase.getDatabase(requireContext())
         val currentUserId = FirebaseAuth.getInstance().currentUser?.uid.orEmpty()
         val repository = AlertRepository(
@@ -87,7 +83,6 @@ class AlertsFragment : Fragment() {
         )
         val factory = AlertViewModelFactory(repository)
         viewModel = ViewModelProvider(this, factory)[AlertViewModel::class.java]
-        // ------------------------------------------------------------
 
         lifecycleScope.launchWhenStarted {
             viewModel.rows.collectLatest { items ->
