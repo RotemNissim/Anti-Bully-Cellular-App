@@ -11,6 +11,8 @@ import com.example.antibully.data.repository.NotificationsRepository
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import androidx.lifecycle.viewModelScope
+import com.example.antibully.utils.extractCatsFromSummary
+import com.example.antibully.utils.isImageFromSummary
 import kotlinx.coroutines.launch
 
 
@@ -48,44 +50,50 @@ class AlertViewModel(
 
     private val _selectedCategory = MutableStateFlow<String?>(null)
 
-    private val categoryKeywords: Map<String, List<String>> = mapOf(
-        "Harassment"       to listOf("insult", "harassment"),
-        "Social Exclusion" to listOf("exclusion", "social exclusion"),
-        "Hate Speech"      to listOf("hate", "threat", "toxicity"),
-        "Cursing"          to listOf("obscene", "sexual_explicit", "profanity", "curse")
-    )
-
     fun setCategory(category: String?) {
         _selectedCategory.value = category
     }
 
+    private val _imagesOnly = MutableStateFlow(false)
+    fun setImagesOnly(enabled: Boolean) { _imagesOnly.value = enabled }
+
     val allAlerts: Flow<List<Alert>> = repository.allAlerts
 
     val visibleAlerts: StateFlow<List<Alert>> =
-        combine(allAlerts, _searchQuery, _children, _selectedCategory) { alerts, query, children, selectedCat ->
+        combine(
+            allAlerts,
+            _searchQuery,
+            _children,
+            _selectedCategory,
+            _imagesOnly
+        ) { alerts, query, children, selectedCat, imagesOnly ->
+
             val q = query.trim().lowercase()
             val childNameById = children.associate { it.childId to (it.name ?: "").lowercase() }
             val childIds = childNameById.keys
+            val selected = selectedCat?.lowercase()
 
             alerts.filter { a ->
-                val matchesChild = a.reporterId in childIds
+                // 1) Restrict to my children
+                if (a.reporterId !in childIds) return@filter false
+
+                // 2) Search (reason OR text OR child name)
                 val matchesSearch =
                     q.isEmpty() ||
                             a.text.contains(q, ignoreCase = true) ||
                             a.reason.contains(q, ignoreCase = true) ||
                             (childNameById[a.reporterId]?.contains(q) == true)
+                if (!matchesSearch) return@filter false
 
-                if (!matchesChild || !matchesSearch) return@filter false
+                // 3) Images-only toggle
+                if (imagesOnly && !isImageFromSummary(a.reason)) return@filter false
 
-                if (selectedCat == null || selectedCat == "All") {
-                    true
-                } else {
-                    val keywords = categoryKeywords[selectedCat] ?: return@filter false
-                    keywords.any { kw -> a.reason.contains(kw, ignoreCase = true) }
-                }
+                // 4) Category OR-logic (contains selected cat among 1..3)
+                if (selected == null) return@filter true
+                val cats = extractCatsFromSummary(a.reason) // e.g., ["profanity","insult","harassment"]
+                cats.contains(selected)
             }
         }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
-
     val rows: StateFlow<List<AlertItem>> =
         combine(visibleAlerts, _globalLastSeenMillis, _lastSeenMillisByChild, _expandedUnread) { alerts, globalLastSeen, perChild, _ ->
             val (unread, read) = if (globalLastSeen == null && perChild.isEmpty()) {

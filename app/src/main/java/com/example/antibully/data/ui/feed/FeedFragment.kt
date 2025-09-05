@@ -29,6 +29,9 @@ import java.util.concurrent.TimeUnit
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.activityViewModels
 import com.example.antibully.data.ui.common.SwipeToDelete
+import android.graphics.Typeface
+import com.google.android.material.chip.Chip
+
 
 class FeedFragment : Fragment() {
 
@@ -175,18 +178,35 @@ class FeedFragment : Fragment() {
             viewModel.setSearchQuery(text?.toString().orEmpty())
         }
         binding.reasonToggleGroup.setOnCheckedChangeListener { _, checkedId ->
-            val category: String? = when (checkedId) {
-                R.id.btnHarassment -> "Harassment"
-                R.id.btnExclusion -> "Social Exclusion"
-                R.id.btnHateSpeech -> "Hate Speech"
-                R.id.btnCursing -> "Cursing"
-                R.id.btnAll -> null
-                else -> null
+
+            when (checkedId) {
+                R.id.btnAll -> { viewModel.setCategory(null); viewModel.setImagesOnly(false) }
+                R.id.btnProfanity        -> { viewModel.setCategory("profanity");        viewModel.setImagesOnly(false) }
+                R.id.btnInsult           -> { viewModel.setCategory("insult");           viewModel.setImagesOnly(false) }
+                R.id.btnHarassment       -> { viewModel.setCategory("harassment");       viewModel.setImagesOnly(false) }
+                R.id.btnThreat           -> { viewModel.setCategory("threat");           viewModel.setImagesOnly(false) }
+                R.id.btnSelfHarm         -> { viewModel.setCategory("self-harm-wish");   viewModel.setImagesOnly(false) }
+                R.id.btnExclusion        -> { viewModel.setCategory("exclusion");        viewModel.setImagesOnly(false) }
+                R.id.btnAgeInappropriate -> { viewModel.setCategory("age-inappropriate");viewModel.setImagesOnly(false) }
+                R.id.btnImages -> { viewModel.setCategory(null); viewModel.setImagesOnly(true) }
+                else -> { viewModel.setCategory(null); viewModel.setImagesOnly(false) }
+
             }
-            viewModel.setCategory(category)
+            updateChipBoldStates()
         }
+        updateChipBoldStates()
     }
 
+    private fun updateChipBoldStates() {
+        val group = binding.reasonToggleGroup
+        for (i in 0 until group.childCount) {
+            val chip = group.getChildAt(i) as? Chip ?: continue
+            chip.typeface = Typeface.create(
+                chip.typeface,
+                if (chip.isChecked) Typeface.BOLD else Typeface.NORMAL
+            )
+        }
+    }
     private fun startPolling(token: String) {
         viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
             while (isActive) {
