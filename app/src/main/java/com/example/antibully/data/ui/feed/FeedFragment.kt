@@ -85,7 +85,11 @@ class FeedFragment : Fragment() {
 
                 val imageUrl = doc.getString("profileImageUrl")
                 if (!imageUrl.isNullOrEmpty()) {
-                    Glide.with(b.root).load(imageUrl).circleCrop().into(b.profileImage)
+                    Glide.with(b.root)
+                        .load(imageUrl)
+                        .centerCrop()
+                        .circleCrop()
+                        .into(b.profileImage)
                     b.profileImage.visibility = View.VISIBLE
                 } else {
                     b.profileImage.setImageResource(R.drawable.ic_default_profile)
@@ -138,7 +142,8 @@ class FeedFragment : Fragment() {
                     }
                 }
 
-            FirebaseAuth.getInstance().currentUser?.getIdToken(false)?.await()?.token?.let { token ->
+            FirebaseAuth.getInstance().currentUser?.getIdToken(false)
+                ?.await()?.token?.let { token ->
                 viewModel.refreshLastSeen(token)
                 viewModel.loadLastSeenForChildren(token)
                 children.forEach { child -> viewModel.fetchAlerts(token, child.childId) }
@@ -173,6 +178,7 @@ class FeedFragment : Fragment() {
             viewModel.setSearchQuery(text?.toString().orEmpty())
         }
         binding.reasonToggleGroup.setOnCheckedChangeListener { _, checkedId ->
+
             when (checkedId) {
                 R.id.btnAll -> { viewModel.setCategory(null); viewModel.setImagesOnly(false) }
                 R.id.btnProfanity        -> { viewModel.setCategory("profanity");        viewModel.setImagesOnly(false) }
@@ -184,6 +190,7 @@ class FeedFragment : Fragment() {
                 R.id.btnAgeInappropriate -> { viewModel.setCategory("age-inappropriate");viewModel.setImagesOnly(false) }
                 R.id.btnImages -> { viewModel.setCategory(null); viewModel.setImagesOnly(true) }
                 else -> { viewModel.setCategory(null); viewModel.setImagesOnly(false) }
+
             }
             updateChipBoldStates()
         }
@@ -206,8 +213,11 @@ class FeedFragment : Fragment() {
                 if (childIds.isNotEmpty()) {
                     Log.d("FeedFragment", "Polling server for children: $childIds")
                     childIds.forEach { id ->
-                        try { viewModel.fetchAlerts(token, id) }
-                        catch (e: Exception) { Log.e("FeedFragment", "Error fetching $id: ${e.message}") }
+                        try {
+                            viewModel.fetchAlerts(token, id)
+                        } catch (e: Exception) {
+                            Log.e("FeedFragment", "Error fetching $id: ${e.message}")
+                        }
                     }
                 } else {
                     Log.w("FeedFragment", "No children found - skipping poll")

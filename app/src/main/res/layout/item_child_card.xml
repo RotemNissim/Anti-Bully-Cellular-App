@@ -8,8 +8,8 @@
     android:layout_marginVertical="8dp"
     app:cardElevation="4dp"
     app:cardCornerRadius="16dp"
-    app:cardBackgroundColor="#2C2C2E"
-    app:strokeColor="#3C3C3E"
+    app:cardBackgroundColor="@color/card_background"
+    app:strokeColor="@color/card_stroke"
     app:strokeWidth="1dp">
 
     <LinearLayout
@@ -29,7 +29,9 @@
             android:src="@drawable/ic_default_profile"
             app:shapeAppearanceOverlay="@style/CircleImage"
             app:strokeColor="#95B4F2"
-            app:strokeWidth="2dp"/>
+            app:strokeWidth="2dp"
+            android:padding="1dp"
+            android:background="#2C2C2E"/>
 
         <LinearLayout
             android:layout_width="0dp"
