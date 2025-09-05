@@ -15,6 +15,7 @@ import com.example.antibully.data.models.AlertItem
 import com.example.antibully.data.models.ChildLocalData
 import com.google.android.material.imageview.ShapeableImageView
 import com.squareup.picasso.Picasso
+import com.example.antibully.utils.humanSummary
 
 class AlertsAdapter(
     private val childDataMap: Map<String, ChildLocalData>,
@@ -110,7 +111,7 @@ class AlertsAdapter(
 
             val child = childMap[alert.reporterId]
             title.text = child?.name ?: alert.reporterId
-            reason.text = alert.reason
+            reason.text = humanSummary(alert.reason ?: "")
             time.text = DateUtils.getRelativeTimeSpanString(
                 displayTime, System.currentTimeMillis(), DateUtils.MINUTE_IN_MILLIS
             )
