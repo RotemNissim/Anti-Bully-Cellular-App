@@ -1,0 +1,6 @@
+<resources>
+    <style name="Theme.AntiBully.Splash" parent="@style/Theme.AntiBully">
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/ic_splash_logo_square</item>
+        <item name="android:windowSplashScreenBackground">@color/dark_background</item>
+    </style>
+</resources>
