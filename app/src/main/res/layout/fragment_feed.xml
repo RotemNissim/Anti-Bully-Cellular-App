@@ -109,9 +109,10 @@
 
         <com.google.android.material.chip.ChipGroup
             android:id="@+id/reasonToggleGroup"
-            android:layout_width="wrap_content"
+            android:layout_width="20dp"
             android:layout_height="wrap_content"
             android:paddingHorizontal="16dp"
+            android:checkable="true"
             app:singleSelection="true"
             app:selectionRequired="false">
 
@@ -123,6 +124,20 @@
                 android:text="All" />
 
             <com.google.android.material.chip.Chip
+                android:id="@+id/btnProfanity"
+                style="@style/Widget.AntiBully.FilterChip"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Profanity" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/btnInsult"
+                style="@style/Widget.AntiBully.FilterChip"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Insult" />
+
+            <com.google.android.material.chip.Chip
                 android:id="@+id/btnHarassment"
                 style="@style/Widget.AntiBully.FilterChip"
                 android:layout_width="wrap_content"
@@ -130,26 +145,42 @@
                 android:text="Harassment" />
 
             <com.google.android.material.chip.Chip
+                android:id="@+id/btnThreat"
+                style="@style/Widget.AntiBully.FilterChip"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Threat" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/btnSelfHarm"
+                style="@style/Widget.AntiBully.FilterChip"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Self-harm wish" />
+
+            <com.google.android.material.chip.Chip
                 android:id="@+id/btnExclusion"
                 style="@style/Widget.AntiBully.FilterChip"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Social Exclusion" />
+                android:text="Exclusion" />
 
             <com.google.android.material.chip.Chip
-                android:id="@+id/btnHateSpeech"
+                android:id="@+id/btnAgeInappropriate"
                 style="@style/Widget.AntiBully.FilterChip"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Hate Speech" />
+                android:text="Age-inappropriate" />
 
             <com.google.android.material.chip.Chip
-                android:id="@+id/btnCursing"
+                android:id="@+id/btnImages"
                 style="@style/Widget.AntiBully.FilterChip"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Cursing" />
+                android:text="Images" />
         </com.google.android.material.chip.ChipGroup>
+
+
     </HorizontalScrollView>
 
     <TextView
