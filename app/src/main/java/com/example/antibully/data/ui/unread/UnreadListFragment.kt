@@ -90,8 +90,6 @@ class UnreadListFragment : Fragment() {
             val childDataMap = children.associateBy { it.childId }
             adapter = AlertsAdapter(
                 childDataMap = childDataMap,
-                // The alert details screen has been removed.  Clicking on an alert in
-                // the unread list no longer navigates anywhere.
                 onAlertClick = { /* no-op */ },
                 onUnreadGroupClick = { }
             )

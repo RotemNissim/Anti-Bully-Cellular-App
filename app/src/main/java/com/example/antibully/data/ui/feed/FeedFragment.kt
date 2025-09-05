@@ -110,13 +110,9 @@ class FeedFragment : Fragment() {
 
             adapter = AlertsAdapter(
                 childDataMap = childDataMap,
-                // Clicking on an alert no longer navigates to a details screen.  The
-                // AlertDetailsFragment has been removed, so this lambda is empty.
                 onAlertClick = { /* no-op */ },
                 onUnreadGroupClick = { childId ->
                     val childName = childDataMap[childId]?.name.orEmpty()
-                    // Navigate to the unread list for the selected child using the
-                    // existing navigation action defined in nav_graph.xml.
                     val args = Bundle().apply {
                         putString("childId", childId)
                         putString("childName", childName)
