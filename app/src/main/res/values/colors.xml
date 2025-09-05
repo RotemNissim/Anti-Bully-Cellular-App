@@ -39,4 +39,9 @@
     <color name="unread_stroke">#2E627C</color>   <!-- מסגרת כחול-בהיר -->
     <color name="blueAccent">#3DA8FF</color>      <!-- טקסט/אייקון כחול -->
     <color name="ai_primary_text">#212121</color>
+    <color name="discord_card">#1C1B1F</color>
+    <color name="discord_card_bg">#23272A</color>
+    <color name="discord_divider">#3A3C43</color>
+    <color name="discord_note">#B9BBBE</color>
+    <color name="discord_button_bg">#5865F2</color>
 </resources>

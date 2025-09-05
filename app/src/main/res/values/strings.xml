@@ -56,6 +56,12 @@
     <string name="discord_step1">Tap “Add Bot to Server” below and choose your child’s server.</string>
     <string name="discord_step2">Grant required permissions so the bot can read messages in joined channels.</string>
     <string name="discord_step3">Return to the app. We’ll start monitoring and notify you about harmful content.</string>
+    <string name="discord_step_number_1">1.</string>
+    <string name="discord_step_number_2">2.</string>
+    <string name="discord_step_number_3">3.</string>
+    <string name="discord_step1_number">1.</string>
+    <string name="discord_step2_number">2.</string>
+    <string name="discord_step3_number">3.</string>
 
     <string name="discord_note">Note: The bot only flags harmful content. We don’t expose usernames or private data.</string>
     <string name="discord_add_bot_button">Add Bot to Server</string>

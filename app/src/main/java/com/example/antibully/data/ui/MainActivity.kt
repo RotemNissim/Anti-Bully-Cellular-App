@@ -47,14 +47,10 @@ class MainActivity : AppCompatActivity() {
         bottomNav = findViewById(R.id.bottom_nav_menu)
         topNav = findViewById(R.id.top_nav_bar)
 
-        // Set the toolbar as the ActionBar
         setSupportActionBar(topNav)
         NavigationUI.setupActionBarWithNavController(this, navController)
 
-        // Setup bottom nav
         bottomNav.setupWithNavController(navController)
-
-        // Make top nav always visible
 
 
         navController.addOnDestinationChangedListener { _, destination, _ ->
@@ -73,7 +69,8 @@ class MainActivity : AppCompatActivity() {
                 R.id.editChildFragment,
                 R.id.twoFactorSetupFragment,
                 R.id.securitySettingsFragment,
-                R.id.settingsFragment
+                R.id.settingsFragment,
+                R.id.connectDiscordFragment
             )
 
             // Fragments where we HIDE the BOTTOM NAV
@@ -85,7 +82,8 @@ class MainActivity : AppCompatActivity() {
                 R.id.alertDetailsFragment,
                 R.id.editChildFragment,
                 R.id.twoFactorSetupFragment,
-                R.id.settingsFragment
+                R.id.settingsFragment,
+                R.id.connectDiscordFragment
             )
 
             // Bottom nav visibility
@@ -103,6 +101,7 @@ class MainActivity : AppCompatActivity() {
                     R.id.editChildFragment -> "Edit Child"
                     R.id.twoFactorSetupFragment -> "Two-Factor Setup"
                     R.id.settingsFragment -> "Settings"
+                    R.id.connectDiscordFragment -> "Connect Discord"
                     else -> ""
                 }
                 supportActionBar?.title = title
