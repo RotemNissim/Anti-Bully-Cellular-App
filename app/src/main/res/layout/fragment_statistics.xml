@@ -4,7 +4,7 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#1C1B1F">
+    android:background="@drawable/bg_settings_gradient">
 
     <!-- Header Section with Gradient Background -->
     <androidx.cardview.widget.CardView

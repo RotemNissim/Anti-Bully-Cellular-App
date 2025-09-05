@@ -103,7 +103,11 @@ class SettingsFragment : Fragment() {
         binding.tvName.text = name
         binding.tvEmail.text = email
         if (!profileUrl.isNullOrEmpty()) {
-            Picasso.get().load(profileUrl).into(binding.imgAvatar)
+            Picasso.get()
+                .load(profileUrl)
+                .fit()
+                .centerCrop()
+                .into(binding.imgAvatar)
         }
     }
 

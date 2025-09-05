@@ -70,7 +70,8 @@ class MainActivity : AppCompatActivity() {
                 R.id.twoFactorSetupFragment,
                 R.id.securitySettingsFragment,
                 R.id.settingsFragment,
-                R.id.connectDiscordFragment
+                R.id.connectDiscordFragment,
+                R.id.unreadListFragment
             )
 
             // Fragments where we HIDE the BOTTOM NAV
@@ -83,7 +84,8 @@ class MainActivity : AppCompatActivity() {
                 R.id.editChildFragment,
                 R.id.twoFactorSetupFragment,
                 R.id.settingsFragment,
-                R.id.connectDiscordFragment
+                R.id.connectDiscordFragment,
+                R.id.unreadListFragment
             )
 
             // Bottom nav visibility
@@ -102,6 +104,7 @@ class MainActivity : AppCompatActivity() {
                     R.id.twoFactorSetupFragment -> "Two-Factor Setup"
                     R.id.settingsFragment -> "Settings"
                     R.id.connectDiscordFragment -> "Connect Discord"
+                    R.id.unreadListFragment -> "Unread List"
                     else -> ""
                 }
                 supportActionBar?.title = title
