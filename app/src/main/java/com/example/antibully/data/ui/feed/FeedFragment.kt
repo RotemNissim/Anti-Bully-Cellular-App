@@ -142,7 +142,16 @@ class FeedFragment : Fragment() {
             } ?: Log.e("FeedFragment", "Failed to get Firebase token")
 
             viewLifecycleOwner.lifecycleScope.launch {
-                viewModel.rows.collectLatest { items -> adapter.submitList(items) }
+                viewModel.rows.collectLatest { items ->
+                    adapter.submitList(items)
+                    if (items.isEmpty()) {
+                        binding.alertsRecyclerView.visibility = View.GONE
+                        binding.emptyStateText.visibility = View.VISIBLE
+                    } else {
+                        binding.alertsRecyclerView.visibility = View.VISIBLE
+                        binding.emptyStateText.visibility = View.GONE
+                    }
+                }
             }
         }
 
