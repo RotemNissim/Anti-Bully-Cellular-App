@@ -4,7 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/dark_background">
+    android:background="@drawable/bg_settings_gradient">
 
     <!-- Header -->
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -42,7 +42,9 @@
                 android:contentDescription="Profile"
                 app:shapeAppearanceOverlay="@style/CircleImage"
                 app:strokeColor="@color/accent_blue"
-                app:strokeWidth="2dp"/>
+                app:strokeWidth="2dp"
+                android:padding="1dp"
+                android:background="#2C2C2E"/>
         </FrameLayout>
 
         <!-- Welcome Text -->

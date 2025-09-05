@@ -33,14 +33,16 @@
 
                     <com.google.android.material.imageview.ShapeableImageView
                         android:id="@+id/imgAvatar"
-                        android:layout_width="92dp"
-                        android:layout_height="92dp"
+                        android:layout_width="100dp"
+                        android:layout_height="100dp"
                         android:src="@drawable/ic_default_profile"
                         android:scaleType="centerCrop"
                         android:contentDescription="@string/cd_profile_picture"
                         app:shapeAppearanceOverlay="@style/CircleImage"
                         app:strokeColor="@color/accent_blue"
-                        app:strokeWidth="2dp" />
+                        app:strokeWidth="2dp"
+                        android:padding="1dp"
+                        android:background="#2C2C2E"/>
 
                     <LinearLayout
                         android:layout_width="wrap_content"
