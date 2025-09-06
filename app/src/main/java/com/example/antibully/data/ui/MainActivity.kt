@@ -47,14 +47,10 @@ class MainActivity : AppCompatActivity() {
         bottomNav = findViewById(R.id.bottom_nav_menu)
         topNav = findViewById(R.id.top_nav_bar)
 
-        // Set the toolbar as the ActionBar
         setSupportActionBar(topNav)
         NavigationUI.setupActionBarWithNavController(this, navController)
 
-        // Setup bottom nav
         bottomNav.setupWithNavController(navController)
-
-        // Make top nav always visible
 
 
         navController.addOnDestinationChangedListener { _, destination, _ ->
@@ -69,10 +65,12 @@ class MainActivity : AppCompatActivity() {
             // Fragments where we show BACK ARROW + TITLE
             val showBackAndTitle = setOf(
                 R.id.editProfileFragment,
-                R.id.alertDetailsFragment,
                 R.id.editChildFragment,
                 R.id.twoFactorSetupFragment,
-                R.id.securitySettingsFragment
+                R.id.securitySettingsFragment,
+                R.id.settingsFragment,
+                R.id.connectDiscordFragment,
+                R.id.unreadListFragment
             )
 
             // Fragments where we HIDE the BOTTOM NAV
@@ -81,9 +79,11 @@ class MainActivity : AppCompatActivity() {
                 R.id.signUpFragment,
                 R.id.splashFragment,
                 R.id.editProfileFragment,
-                R.id.alertDetailsFragment,
                 R.id.editChildFragment,
-                R.id.twoFactorSetupFragment
+                R.id.twoFactorSetupFragment,
+                R.id.settingsFragment,
+                R.id.connectDiscordFragment,
+                R.id.unreadListFragment
             )
 
             // Bottom nav visibility
@@ -97,10 +97,11 @@ class MainActivity : AppCompatActivity() {
 
                 val title = when (destination.id) {
                     R.id.editProfileFragment -> "Edit Profile"
-                    R.id.alertDetailsFragment -> "Alert Details"
                     R.id.editChildFragment -> "Edit Child"
                     R.id.twoFactorSetupFragment -> "Two-Factor Setup"
-                    R.id.securitySettingsFragment -> "Settings"
+                    R.id.settingsFragment -> "Settings"
+                    R.id.connectDiscordFragment -> "Connect Discord"
+                    R.id.unreadListFragment -> "Unread List"
                     else -> ""
                 }
                 supportActionBar?.title = title

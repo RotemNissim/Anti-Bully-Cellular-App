@@ -7,4 +7,8 @@
     <color name="input_background">#2C2C2C</color>
     <color name="input_text">#FFFFFF</color>
     <color name="button_text">#FFFFFF</color>
+    <color name="discord_card_bg">#23272A</color>
+    <color name="discord_divider">#3A3C43</color>
+    <color name="discord_note">#B9BBBE</color>
+    <color name="discord_button_bg">#5865F2</color>
 </resources>

@@ -4,9 +4,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/dark_background">
+    android:background="@drawable/bg_settings_gradient">
 
-    <!-- Header -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/headerLayout"
         android:layout_width="match_parent"
@@ -14,7 +13,6 @@
         android:padding="16dp"
         app:layout_constraintTop_toTopOf="parent">
 
-        <!-- Profile Image + Loading -->
         <FrameLayout
             android:id="@+id/profileContainer"
             android:layout_width="40dp"
@@ -22,7 +20,6 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
-            <!-- Spinner -->
             <ProgressBar
                 android:id="@+id/nameLoading"
                 style="?android:attr/progressBarStyleSmall"
@@ -32,7 +29,6 @@
                 android:indeterminateTint="@color/primary"
                 android:visibility="visible" />
 
-            <!-- Profile Image -->
             <com.google.android.material.imageview.ShapeableImageView
                 android:id="@+id/profileImage"
                 android:layout_width="match_parent"
@@ -42,10 +38,11 @@
                 android:contentDescription="Profile"
                 app:shapeAppearanceOverlay="@style/CircleImage"
                 app:strokeColor="@color/accent_blue"
-                app:strokeWidth="2dp"/>
+                app:strokeWidth="2dp"
+                android:padding="1dp"
+                android:background="#2C2C2E"/>
         </FrameLayout>
 
-        <!-- Welcome Text -->
         <TextView
             android:id="@+id/welcomeText"
             android:layout_width="0dp"
@@ -61,7 +58,6 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@id/profileContainer" />
 
-        <!-- Subtitle -->
         <TextView
             android:id="@+id/subtitleText"
             android:layout_width="0dp"
@@ -76,7 +72,6 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/welcomeText" />
 
-        <!-- Search Bar -->
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/searchLayout"
             android:layout_width="match_parent"
@@ -104,7 +99,6 @@
         </com.google.android.material.textfield.TextInputLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <!-- Filter Chips -->
     <HorizontalScrollView
         android:id="@+id/horizontalFilterScroll"
         android:layout_width="0dp"
@@ -117,9 +111,10 @@
 
         <com.google.android.material.chip.ChipGroup
             android:id="@+id/reasonToggleGroup"
-            android:layout_width="wrap_content"
+            android:layout_width="20dp"
             android:layout_height="wrap_content"
             android:paddingHorizontal="16dp"
+            android:checkable="true"
             app:singleSelection="true"
             app:selectionRequired="false">
 
@@ -131,6 +126,20 @@
                 android:text="All" />
 
             <com.google.android.material.chip.Chip
+                android:id="@+id/btnProfanity"
+                style="@style/Widget.AntiBully.FilterChip"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Profanity" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/btnInsult"
+                style="@style/Widget.AntiBully.FilterChip"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Insult" />
+
+            <com.google.android.material.chip.Chip
                 android:id="@+id/btnHarassment"
                 style="@style/Widget.AntiBully.FilterChip"
                 android:layout_width="wrap_content"
@@ -138,29 +147,44 @@
                 android:text="Harassment" />
 
             <com.google.android.material.chip.Chip
+                android:id="@+id/btnThreat"
+                style="@style/Widget.AntiBully.FilterChip"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Threat" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/btnSelfHarm"
+                style="@style/Widget.AntiBully.FilterChip"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Self-harm wish" />
+
+            <com.google.android.material.chip.Chip
                 android:id="@+id/btnExclusion"
                 style="@style/Widget.AntiBully.FilterChip"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Social Exclusion" />
+                android:text="Exclusion" />
 
             <com.google.android.material.chip.Chip
-                android:id="@+id/btnHateSpeech"
+                android:id="@+id/btnAgeInappropriate"
                 style="@style/Widget.AntiBully.FilterChip"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Hate Speech" />
+                android:text="Age-inappropriate" />
 
             <com.google.android.material.chip.Chip
-                android:id="@+id/btnCursing"
+                android:id="@+id/btnImages"
                 style="@style/Widget.AntiBully.FilterChip"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Cursing" />
+                android:text="Images" />
         </com.google.android.material.chip.ChipGroup>
+
+
     </HorizontalScrollView>
 
-    <!-- Recent Updates Header -->
     <TextView
         android:id="@+id/recentUpdatesHeader"
         android:layout_width="wrap_content"
@@ -174,7 +198,22 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/horizontalFilterScroll" />
 
-    <!-- RecyclerView with increased bottom padding -->
+    <TextView
+        android:id="@+id/emptyStateText"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:text="no alerts yet"
+        android:textColor="@color/text_secondary"
+        android:textSize="16sp"
+        android:fontFamily="@font/assistant_regular"
+        android:gravity="center"
+        android:paddingHorizontal="16dp"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/recentUpdatesHeader"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/alertsRecyclerView"
         android:layout_width="0dp"

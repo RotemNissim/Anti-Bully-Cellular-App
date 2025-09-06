@@ -99,7 +99,7 @@ class ProfileFragment : Fragment() {
                     view.findViewById<ProgressBar>(R.id.profileLoading)?.visibility = View.GONE
 
                     if (!it.profileImageUrl.isNullOrEmpty()) {
-                        Picasso.get().load(it.profileImageUrl).into(profileImageView)
+                        Picasso.get().load(it.profileImageUrl).fit().centerCrop().into(profileImageView)
                     } else if (it.localProfileImagePath.isNotEmpty()) {
                         profileImageView.setImageURI(Uri.parse(it.localProfileImagePath))
                     }
@@ -212,7 +212,7 @@ class ProfileFragment : Fragment() {
             holder.childNameText.text = child.name
 
             if (!child.imageUrl.isNullOrEmpty()) {
-                Picasso.get().load(child.imageUrl).into(holder.childImage)
+                Picasso.get().load(child.imageUrl).fit().centerCrop().into(holder.childImage)
             } else {
                 holder.childImage.setImageResource(R.drawable.ic_default_profile)
             }

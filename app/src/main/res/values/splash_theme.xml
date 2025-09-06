@@ -1,0 +1,5 @@
+<resources>
+    <style name="Theme.AntiBully.Splash" parent="@style/Theme.AntiBully">
+        <item name="android:windowBackground">@drawable/splash_background</item>
+    </style>
+</resources>

@@ -70,7 +70,7 @@ class EditChildFragment : Fragment() {
                     idField.setText(it.childId)
                     nameField.setText(it.name)
                     if (!it.imageUrl.isNullOrEmpty()) {
-                        Picasso.get().load(it.imageUrl).into(imageView)
+                        Picasso.get().load(it.imageUrl).fit().centerCrop().into(imageView)
                     }
                 }
             }

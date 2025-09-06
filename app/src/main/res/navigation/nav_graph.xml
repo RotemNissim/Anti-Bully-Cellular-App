@@ -60,13 +60,6 @@
         <action
             android:id="@+id/action_feedFragment_to_unreadListFragment"
             app:destination="@id/unreadListFragment" />
-        <action
-            android:id="@+id/action_feedFragment_to_alertDetailsFragment"
-            app:destination="@id/alertDetailsFragment"
-            app:enterAnim="@anim/slide_in_right"
-            app:exitAnim="@anim/slide_out_left"
-            app:popEnterAnim="@anim/slide_in_left"
-            app:popExitAnim="@anim/slide_out_right" />
     </fragment>
 
     <fragment
@@ -87,27 +80,7 @@
         <action
             android:id="@+id/action_alertsFragment_to_unreadListFragment"
             app:destination="@id/unreadListFragment" />
-
-        <action
-            android:id="@+id/action_alertsFragment_to_alertDetailsFragment"
-            app:destination="@id/alertDetailsFragment">
-            <argument
-                android:name="alertId"
-                app:argType="string" />
-        </action>
     </fragment>
-
-    <fragment
-        android:id="@+id/alertDetailsFragment"
-        android:name="com.example.antibully.data.ui.alert.AlertDetailsFragment"
-        android:label="Alert Details"
-        tools:layout="@layout/fragment_alert_details">
-
-        <argument
-            android:name="alertId"
-            app:argType="string" />
-    </fragment>
-
     <fragment
         android:id="@+id/profileFragment"
         android:name="com.example.antibully.data.ui.profile.ProfileFragment"

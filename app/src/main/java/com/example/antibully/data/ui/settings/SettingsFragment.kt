@@ -37,9 +37,16 @@ class SettingsFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        binding.settingsLoading.visibility = View.VISIBLE
+        binding.settingsContentContainer.visibility = View.GONE
 
         // Load header (name/email/avatar)
-        MainScope().launch { bindUserHeader() }
+        MainScope().launch {
+            bindUserHeader()
+            // After loading is done, show content and hide loader
+            binding.settingsLoading.visibility = View.GONE
+            binding.settingsContentContainer.visibility = View.VISIBLE
+        }
 
         // ===== Edit Profile =====
         binding.rowEditProfile.icon.setImageResource(R.drawable.ic_edit)
@@ -96,7 +103,11 @@ class SettingsFragment : Fragment() {
         binding.tvName.text = name
         binding.tvEmail.text = email
         if (!profileUrl.isNullOrEmpty()) {
-            Picasso.get().load(profileUrl).into(binding.imgAvatar)
+            Picasso.get()
+                .load(profileUrl)
+                .fit()
+                .centerCrop()
+                .into(binding.imgAvatar)
         }
     }
 
