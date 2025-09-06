@@ -45,20 +45,22 @@
                 android:src="@drawable/ic_default_profile"
                 app:shapeAppearanceOverlay="@style/CircleImage"
                 app:strokeColor="@color/accent_blue"
-                app:strokeWidth="2dp" />
+                app:strokeWidth="2dp"
+                android:padding="1dp"
+                android:background="#2C2C2E"/>
 
             <com.google.android.material.floatingactionbutton.FloatingActionButton
                 android:id="@+id/btnChangeProfileImage"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom|end"
-                android:layout_marginEnd="-8dp"
-                android:layout_marginBottom="-8dp"
+                android:layout_marginEnd="-5dp"
+                android:layout_marginBottom="-5dp"
                 android:contentDescription="Change Profile Image"
                 app:backgroundTint="@color/accent_blue"
                 app:fabCustomSize="40dp"
                 app:srcCompat="@drawable/ic_camera"
-                app:tint="@color/white" />
+                app:tint="@color/white"/>
 
             <ProgressBar
                 android:id="@+id/spinnerProfileUpload"
