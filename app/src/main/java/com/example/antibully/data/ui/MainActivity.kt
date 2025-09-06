@@ -9,11 +9,11 @@ import android.view.View
 import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
+import androidx.navigation.NavOptions
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.NavigationUI
 import androidx.navigation.ui.setupWithNavController
@@ -36,6 +36,18 @@ class MainActivity : AppCompatActivity() {
     private lateinit var bottomNav: BottomNavigationView
     private lateinit var topNav: MaterialToolbar
 
+    private val auth by lazy { FirebaseAuth.getInstance() }
+    private val authStateListener = FirebaseAuth.AuthStateListener { fa ->
+        val user = fa.currentUser
+        val dest = navController.currentDestination?.id
+        if (user == null && dest != R.id.loginFragment && dest != R.id.splashFragment) {
+            val opts = NavOptions.Builder()
+                .setPopUpTo(R.id.nav_graph, /* inclusive = */ true)
+                .build()
+            navController.navigate(R.id.loginFragment, null, opts)
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -49,12 +61,9 @@ class MainActivity : AppCompatActivity() {
 
         setSupportActionBar(topNav)
         NavigationUI.setupActionBarWithNavController(this, navController)
-
         bottomNav.setupWithNavController(navController)
 
-
         navController.addOnDestinationChangedListener { _, destination, _ ->
-
             val hideTopNav = setOf(
                 R.id.loginFragment,
                 R.id.signUpFragment,
@@ -101,15 +110,14 @@ class MainActivity : AppCompatActivity() {
                 }
                 supportActionBar?.title = title
                 supportActionBar?.setLogo(null)
-
             } else {
                 supportActionBar?.setDisplayHomeAsUpEnabled(false)
                 supportActionBar?.setDisplayShowTitleEnabled(false)
                 supportActionBar?.title = ""
                 supportActionBar?.setLogo(R.drawable.untitled)
             }
-
         }
+
         bottomNav.setOnItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.logout -> {
@@ -117,10 +125,12 @@ class MainActivity : AppCompatActivity() {
                     lifecycleScope.launch(Dispatchers.IO) {
                         AppDatabase.getDatabase(this@MainActivity).userDao().deleteAllUsers()
                     }
-                    navController.navigate(R.id.loginFragment)
+                    val navOptions = NavOptions.Builder()
+                        .setPopUpTo(R.id.nav_graph, /* inclusive = */ true)
+                        .build()
+                    navController.navigate(R.id.loginFragment, null, navOptions)
                     true
                 }
-
                 else -> {
                     navController.navigate(item.itemId)
                     true
@@ -129,6 +139,16 @@ class MainActivity : AppCompatActivity() {
         }
 
         requestNotificationPermission()
+    }
+
+    override fun onStart() {
+        super.onStart()
+        auth.addAuthStateListener(authStateListener)
+    }
+
+    override fun onStop() {
+        super.onStop()
+        auth.removeAuthStateListener(authStateListener)
     }
 
     private fun requestNotificationPermission() {
@@ -201,29 +221,29 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun handleDiscordOAuthCode(intent: Intent?) {
-        android.util.Log.d("OAuth", "handleDiscordOAuthCode triggered")
+        Log.d("OAuth", "handleDiscordOAuthCode triggered")
 
         intent?.data?.let { uri ->
-            android.util.Log.d("OAuth", "Intent data URI: $uri")
+            Log.d("OAuth", "Intent data URI: $uri")
 
             if (uri.scheme == "antibully" && uri.host == "discord-callback") {
                 val code = uri.getQueryParameter("code")
-                android.util.Log.d("OAuth", "Extracted code: $code")
+                Log.d("OAuth", "Extracted code: $code")
 
                 sendCodeToServer(code)
             } else {
-                android.util.Log.w("OAuth", "URI doesn't match expected scheme/host")
+                Log.w("OAuth", "URI doesn't match expected scheme/host")
             }
         }
     }
 
     private fun sendCodeToServer(code: String?) {
         if (code.isNullOrEmpty()) {
-            android.util.Log.e("OAuth", "Code is null or empty – aborting request")
+            Log.e("OAuth", "Code is null or empty – aborting request")
             return
         }
 
-        android.util.Log.d("OAuth", "Sending code to backend: $code")
+        Log.d("OAuth", "Sending code to backend: $code")
 
         val requestBody = JSONObject().apply {
             put("code", code)
@@ -239,13 +259,13 @@ class MainActivity : AppCompatActivity() {
 
         OkHttpClient().newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
-                android.util.Log.e("OAuth", "Network failure: ${e.message}")
+                Log.e("OAuth", "Network failure: ${e.message}")
             }
 
             override fun onResponse(call: Call, response: Response) {
                 val body = response.body?.string()
-                android.util.Log.d("OAuth", "Backend response status: ${response.code}")
-                android.util.Log.d("OAuth", "Backend response body: $body")
+                Log.d("OAuth", "Backend response status: ${response.code}")
+                Log.d("OAuth", "Backend response body: $body")
 
                 if (response.isSuccessful) {
                     val discordId = JSONObject(body ?: "{}").optString("id")
@@ -253,12 +273,11 @@ class MainActivity : AppCompatActivity() {
                         Toast.makeText(this@MainActivity, "Connected to Discord ID: $discordId", Toast.LENGTH_LONG).show()
                     }
                 } else {
-                    android.util.Log.e("OAuth", "Request failed with status: ${response.code}")
+                    Log.e("OAuth", "Request failed with status: ${response.code}")
                 }
             }
         })
     }
-
 
     override fun onSupportNavigateUp(): Boolean {
         return navController.navigateUp() || super.onSupportNavigateUp()
