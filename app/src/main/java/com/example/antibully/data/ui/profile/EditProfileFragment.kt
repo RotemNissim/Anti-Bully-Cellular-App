@@ -58,27 +58,49 @@ class EditProfileFragment : Fragment() {
 
         spinner.visibility = View.GONE
 
-        lifecycleScope.launch(Dispatchers.IO) {
-            val localUser = userDao.getUserById(uid)
-            existingImagePath = localUser?.localProfileImagePath ?: ""
+        lifecycleScope.launch {
+            var localImagePath: String? = null
+            var remoteImageUrl: String? = null
 
-            withContext(Dispatchers.Main) {
-                if (existingImagePath.isNotEmpty()) {
-                    profileImageView.setImageURI(Uri.parse(existingImagePath))
-                }
+            val localUser = withContext(Dispatchers.IO) {
+                userDao.getUserById(uid)
             }
-        }
+            localImagePath = localUser?.localProfileImagePath
 
-        db.collection("users").document(uid).get()
-            .addOnSuccessListener { document ->
-                if (document.exists()) {
-                    fullNameEditText.setText(document.getString("fullName") ?: "")
-                    val profileImageUrl = document.getString("profileImageUrl")
-                    if (!profileImageUrl.isNullOrEmpty() && existingImagePath.isEmpty()) {
-                        Picasso.get().load(profileImageUrl).into(profileImageView)
+            db.collection("users").document(uid).get()
+                .addOnSuccessListener { document ->
+                    if (document.exists()) {
+                        val fullNameEditText = view.findViewById<EditText>(R.id.etEditFullName)
+                        fullNameEditText.setText(document.getString("fullName") ?: "")
+                        remoteImageUrl = document.getString("profileImageUrl")
+
+                        when {
+                            !remoteImageUrl.isNullOrEmpty() -> {
+                                Picasso.get().load(remoteImageUrl).fit().centerCrop().into(profileImageView)
+                            }
+                            !localImagePath.isNullOrEmpty() -> {
+                                profileImageView.setImageURI(Uri.parse(localImagePath))
+                            }
+                            else -> {
+                                profileImageView.setImageResource(R.drawable.ic_default_profile)
+                            }
+                        }
+                    } else {
+                        if (!localImagePath.isNullOrEmpty()) {
+                            profileImageView.setImageURI(Uri.parse(localImagePath))
+                        } else {
+                            profileImageView.setImageResource(R.drawable.ic_default_profile)
+                        }
                     }
                 }
-            }
+                .addOnFailureListener {
+                    if (!localImagePath.isNullOrEmpty()) {
+                        profileImageView.setImageURI(Uri.parse(localImagePath))
+                    } else {
+                        profileImageView.setImageResource(R.drawable.ic_default_profile)
+                    }
+                }
+        }
 
         changeImageButton.setOnClickListener {
             val intent = Intent(Intent.ACTION_PICK).apply { type = "image/*" }
