@@ -70,7 +70,6 @@ class SecuritySettingsFragment : Fragment() {
 
 
     private fun setupListeners() {
-        // Detect user-initiated touch
         binding.twoFactorSwitch.setOnTouchListener { _, event ->
             if (event.action == MotionEvent.ACTION_DOWN) {
                 userInitiatedChange = true
@@ -96,21 +95,6 @@ class SecuritySettingsFragment : Fragment() {
         }
     }
 
-//    private fun showEnableDialog() {
-//        AlertDialog.Builder(requireContext())
-//            .setTitle("Enable Two-Factor Authentication")
-//            .setMessage("Do you want to enable two-factor authentication and add an extra layer of security to your account?")
-//            .setPositiveButton("Continue") { _, _ ->
-//                findNavController().navigate(R.id.action_securitySettingsFragment_to_twoFactorSetupFragment)
-//            }
-//            .setNegativeButton("Cancel") { _, _ ->
-//                binding.twoFactorSwitch.setOnCheckedChangeListener(null)
-//                binding.twoFactorSwitch.isChecked = false
-//                setupListeners()
-//            }
-//            .setCancelable(false)
-//            .show()
-//    }
 private fun showEnableDialog() {
     val dialogView = LayoutInflater.from(requireContext())
         .inflate(R.layout.dialog_enable_2fa, null)

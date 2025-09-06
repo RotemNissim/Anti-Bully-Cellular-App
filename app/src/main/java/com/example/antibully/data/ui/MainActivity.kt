@@ -61,8 +61,6 @@ class MainActivity : AppCompatActivity() {
                 R.id.splashFragment
             )
 
-
-            // Fragments where we show BACK ARROW + TITLE
             val showBackAndTitle = setOf(
                 R.id.editProfileFragment,
                 R.id.editChildFragment,
@@ -73,7 +71,6 @@ class MainActivity : AppCompatActivity() {
                 R.id.unreadListFragment
             )
 
-            // Fragments where we HIDE the BOTTOM NAV
             val hideBottomNav = setOf(
                 R.id.loginFragment,
                 R.id.signUpFragment,
@@ -86,11 +83,9 @@ class MainActivity : AppCompatActivity() {
                 R.id.unreadListFragment
             )
 
-            // Bottom nav visibility
             bottomNav.visibility = if (destination.id in hideBottomNav) View.GONE else View.VISIBLE
             topNav.visibility = if (destination.id in hideTopNav) View.GONE else View.VISIBLE
 
-            // Top nav behavior
             if (destination.id in showBackAndTitle) {
                 supportActionBar?.setDisplayHomeAsUpEnabled(true)
                 supportActionBar?.setDisplayShowTitleEnabled(true)

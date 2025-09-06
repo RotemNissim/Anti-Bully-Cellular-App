@@ -9,20 +9,20 @@ import retrofit2.http.*
 
 interface ChildApiService {
     
-    @POST("api/child/parents/{parentId}/children") // ✅ Add 'api/' prefix
+    @POST("api/child/parents/{parentId}/children")
     suspend fun linkChild(
         @Header("Authorization") token: String,
         @Path("parentId") parentId: String,
         @Body childData: LinkChildRequest
     ): Response<ChildResponse>
     
-    @GET("api/child/parents/{parentId}/children") // ✅ Add 'api/' prefix
+    @GET("api/child/parents/{parentId}/children")
     suspend fun getChildrenForParent(
         @Header("Authorization") token: String,
         @Path("parentId") parentId: String
     ): Response<List<ChildResponse>>
     
-    @PUT("api/child/parents/{parentId}/children/{discordId}") // ✅ Add 'api/' prefix
+    @PUT("api/child/parents/{parentId}/children/{discordId}")
     suspend fun updateChild(
         @Header("Authorization") token: String,
         @Path("parentId") parentId: String,
@@ -30,7 +30,7 @@ interface ChildApiService {
         @Body updateData: UpdateChildRequest
     ): Response<ChildResponse>
     
-    @DELETE("api/child/parents/{parentId}/children/{discordId}") // ✅ Add 'api/' prefix
+    @DELETE("api/child/parents/{parentId}/children/{discordId}")
     suspend fun unlinkChild(
         @Header("Authorization") token: String,
         @Path("parentId") parentId: String,

@@ -11,35 +11,30 @@ import kotlinx.coroutines.withContext
 
 class PostRepository(private val postDao: PostDao, private val firestore: FirebaseFirestore) {
 
-    // Get posts from ROOM based on alertId (so we can link them to an alert)
     fun getPostsForAlert(alertId: String): Flow<List<Post>> {
         return postDao.getPostsForAlert(alertId)
     }
 
-    // Insert post into ROOM + Firestore
     suspend fun insert(post: Post) {
         val postWithFirebaseId = if (post.firebaseId.isEmpty()) {
             post.copy(firebaseId = firestore.collection("posts").document().id)
         } else {
             post
         }
-        postDao.insertPost(postWithFirebaseId)  // Save locally first
-        savePostToFirestore(postWithFirebaseId) // Sync to Firestore
+        postDao.insertPost(postWithFirebaseId)
+        savePostToFirestore(postWithFirebaseId)
     }
 
-    // Delete post from ROOM + Firestore
     suspend fun delete(post: Post) {
         postDao.deletePost(post)
         deletePostFromFirestore(post.firebaseId)
     }
 
-    // Update post in ROOM + Firestore
     suspend fun update(post: Post) {
         postDao.updatePost(post)
         updatePostInFirestore(post)
     }
 
-    // Sync ROOM with Firestore (in case new posts were added from another device)
     suspend fun syncPostsFromFirestore(alertId: String) = withContext(Dispatchers.IO) {
         try {
             val snapshot = firestore.collection("posts")
@@ -63,8 +58,6 @@ class PostRepository(private val postDao: PostDao, private val firestore: Fireba
             Log.e("Firestore", "Failed to sync posts", e)
         }
     }
-
-
 
     private fun savePostToFirestore(post: Post) {
         val data = mapOf(

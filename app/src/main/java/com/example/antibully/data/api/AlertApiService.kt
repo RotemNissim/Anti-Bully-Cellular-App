@@ -9,14 +9,11 @@ import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface AlertApiService {
-
-    /** GET  /alerts          → List all alerts (optionally filter by parentId) */
-    @GET("api/alerts") // ✅ Add 'api/' prefix
+    @GET("api/alerts")
     suspend fun getAlertsForChild(
         @Header("Authorization") token: String,
         @Query("childId") childId: String
-    ): Response<List<AlertApiResponse>> // ✅ Use AlertApiResponse
-
+    ): Response<List<AlertApiResponse>>
     @DELETE("api/alerts/{id}")
         suspend fun deleteAlert(
         @Header("Authorization") token: String,

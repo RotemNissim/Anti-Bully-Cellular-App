@@ -104,7 +104,7 @@ class PostAdapter(
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val post = getItem(position)
-        val user = userMap[post.userId]  // Make sure Post has this field!
+        val user = userMap[post.userId]
         holder.bind(post, user)
     }
 }

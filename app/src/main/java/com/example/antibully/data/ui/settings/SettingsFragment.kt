@@ -9,14 +9,17 @@ import android.view.ViewGroup
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.example.antibully.R
+import com.example.antibully.data.prefs.NotificationPrefs
 import com.example.antibully.databinding.FragmentSettingsBinding
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.squareup.picasso.Picasso
 import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
@@ -24,8 +27,6 @@ class SettingsFragment : Fragment() {
 
     private var _binding: FragmentSettingsBinding? = null
     private val binding get() = _binding!!
-
-    // Toggle this if you decide to hide Add Child from the Settings screen
     private val showAddChildRow = true
 
     override fun onCreateView(
@@ -43,7 +44,6 @@ class SettingsFragment : Fragment() {
         // Load header (name/email/avatar)
         MainScope().launch {
             bindUserHeader()
-            // After loading is done, show content and hide loader
             binding.settingsLoading.visibility = View.GONE
             binding.settingsContentContainer.visibility = View.VISIBLE
         }
@@ -56,12 +56,11 @@ class SettingsFragment : Fragment() {
         }
 
         // ===== Discord (OAuth + Bot Invite) =====
-        // Use an icon that exists in your project:
         binding.rowDiscord.icon.setImageResource(R.drawable.ic_discord_hollow)
         binding.rowDiscord.title.text = getString(R.string.settings_connect_discord)
         binding.rowDiscord.root.setOnClickListener { findNavController().navigate(R.id.connectDiscordFragment) }
 
-        // ===== Add Child (optional) =====
+        // ===== Add Child =====
         binding.rowAddChild.root.isVisible = showAddChildRow
         if (showAddChildRow) {
             binding.rowAddChild.icon.setImageResource(R.drawable.ic_add_24dp)
@@ -90,6 +89,35 @@ class SettingsFragment : Fragment() {
         binding.rowHelp.title.text = getString(R.string.settings_help_support)
         binding.rowHelp.root.setOnClickListener {
             // findNavController().navigate(R.id.action_settingsFragment_to_helpFragment)
+        }
+
+        var bindingTextListenerEnabled = true
+        var bindingImageListenerEnabled = true
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            NotificationPrefs.flow(requireContext()).collectLatest { st ->
+                bindingTextListenerEnabled = false
+                binding.swTextNotifications.isChecked = st.textEnabled
+                bindingTextListenerEnabled = true
+
+                bindingImageListenerEnabled = false
+                binding.swImageNotifications.isChecked = st.imageEnabled
+                bindingImageListenerEnabled = true
+            }
+        }
+
+        binding.swTextNotifications.setOnCheckedChangeListener { _, isChecked ->
+            if (!bindingTextListenerEnabled) return@setOnCheckedChangeListener
+            viewLifecycleOwner.lifecycleScope.launch {
+                NotificationPrefs.setText(requireContext(), isChecked)
+            }
+        }
+
+        binding.swImageNotifications.setOnCheckedChangeListener { _, isChecked ->
+            if (!bindingImageListenerEnabled) return@setOnCheckedChangeListener
+            viewLifecycleOwner.lifecycleScope.launch {
+                NotificationPrefs.setImage(requireContext(), isChecked)
+            }
         }
     }
 

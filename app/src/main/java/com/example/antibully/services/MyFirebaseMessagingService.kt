@@ -11,35 +11,44 @@ import androidx.core.app.NotificationCompat
 import com.example.antibully.R
 import com.example.antibully.data.ui.MainActivity
 import com.example.antibully.utils.DeviceTokenManager
-import com.example.antibully.utils.SessionManager // ✅ Add this import
-import com.google.firebase.auth.FirebaseAuth
+import com.example.antibully.utils.SessionManager
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
-import okhttp3.*
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.RequestBody.Companion.toRequestBody
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.flow.first
+import com.example.antibully.data.prefs.NotificationPrefs
 
 class MyFirebaseMessagingService : FirebaseMessagingService() {
 
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         super.onMessageReceived(remoteMessage)
+
+        val data = remoteMessage.data
+        if (data.isEmpty()) {
+            Log.d(TAG, "No data payload; ignoring.")
+            return
+        }
+
+        val type = (remoteMessage.data["type"] ?: "").lowercase()
+
+        val prefs = runBlocking { NotificationPrefs.flow(applicationContext).first() }
+        val textBlocked = (type == "text" && !prefs.textEnabled)
+        val imageBlocked = (type == "image" && !prefs.imageEnabled)
+
+        if (textBlocked || imageBlocked) {
+            Log.d(TAG, "🧹 Dropping '${type}' notification because user disabled it.")
+            return
+        }
         
         Log.d(TAG, "🔔 NOTIFICATION RECEIVED!")
         Log.d(TAG, "From: ${remoteMessage.from}")
         Log.d(TAG, "Data: ${remoteMessage.data}")
         Log.d(TAG, "Notification: ${remoteMessage.notification}")
-        
-        val title = remoteMessage.notification?.title 
-            ?: remoteMessage.data["title"] 
-            ?: "Alert"
-            
-        val body = remoteMessage.notification?.body 
-            ?: remoteMessage.data["body"] 
-            ?: "New alert received"
+
+        val title = data["title"]?.takeIf { it.isNotBlank() } ?: return
+        val body  = data["body"] ?.takeIf { it.isNotBlank() } ?: return
+
+        Log.d(TAG, "🔔 Data push received | type=$type | title=$title")
             
         showNotification(title, body)
     }
@@ -71,8 +80,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         )
 
         val channelId = "alert_notifications"
-        
-        // ✅ Force create the notification channel every time
+
         createNotificationChannel()
         
         val notificationBuilder = NotificationCompat.Builder(this, channelId)

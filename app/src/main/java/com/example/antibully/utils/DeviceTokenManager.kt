@@ -18,7 +18,7 @@ object DeviceTokenManager {
     private const val PREFS_NAME = "device_token_prefs"
     private const val KEY_TOKEN = "fcm_token"
     private const val KEY_USER_ID = "user_id"
-    private const val BASE_URL = "http://10.0.2.2:3000" // For emulator, use your actual IP for physical device
+    private const val BASE_URL = "http://10.0.2.2:3000"
     
     private val client = OkHttpClient()
     private val gson = Gson()
@@ -39,14 +39,11 @@ object DeviceTokenManager {
                 return@addOnCompleteListener
             }
 
-            // Get new FCM registration token
             val token = task.result
             Log.d(TAG, "FCM Registration Token: $token")
-            
-            // Save token locally
+
             prefs.edit().putString(KEY_TOKEN, token).apply()
-            
-            // Send token to server
+
             sendTokenToServer(context, token)
         }
     }
