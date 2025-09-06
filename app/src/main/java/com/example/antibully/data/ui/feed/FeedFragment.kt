@@ -31,10 +31,11 @@ import androidx.fragment.app.activityViewModels
 import com.example.antibully.data.ui.common.SwipeToDelete
 import android.graphics.Typeface
 import com.google.android.material.chip.Chip
+import com.google.android.material.chip.ChipGroup
+import kotlinx.coroutines.flow.combine
 
 
 class FeedFragment : Fragment() {
-
     private var _binding: FragmentFeedBinding? = null
     private val binding get() = _binding!!
     private val viewModel: AlertViewModel by activityViewModels {
@@ -51,6 +52,36 @@ class FeedFragment : Fragment() {
 
     private var childIds: List<String> = emptyList()
     private lateinit var adapter: AlertsAdapter
+
+    private var suppressChipCallback = false
+
+    private fun categoryToChipId(cat: String?): Int = when (cat) {
+        null -> R.id.btnAll
+        "profanity" -> R.id.btnProfanity
+        "insult" -> R.id.btnInsult
+        "harassment" -> R.id.btnHarassment
+        "threat" -> R.id.btnThreat
+        "self-harm-wish" -> R.id.btnSelfHarm
+        "exclusion" -> R.id.btnExclusion
+        "age-inappropriate" -> R.id.btnAgeInappropriate
+        else -> R.id.btnAll
+    }
+
+    private fun applyFilterStateToChips(cat: String?, imagesOnly: Boolean) {
+        val group = binding.reasonToggleGroup as ChipGroup
+        val targetId = if (imagesOnly) R.id.btnImages else categoryToChipId(cat)
+
+        if (group.checkedChipId != targetId) {
+            suppressChipCallback = true
+            if (targetId == View.NO_ID) {
+                group.clearCheck()
+            } else {
+                group.check(targetId)
+            }
+            suppressChipCallback = false
+            updateChipBoldStates()
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -174,6 +205,8 @@ class FeedFragment : Fragment() {
         }
         binding.reasonToggleGroup.setOnCheckedChangeListener { _, checkedId ->
 
+            if (suppressChipCallback) return@setOnCheckedChangeListener
+
             when (checkedId) {
                 R.id.btnAll -> { viewModel.setCategory(null); viewModel.setImagesOnly(false) }
                 R.id.btnProfanity        -> { viewModel.setCategory("profanity");        viewModel.setImagesOnly(false) }
@@ -189,8 +222,16 @@ class FeedFragment : Fragment() {
             }
             updateChipBoldStates()
         }
+        viewLifecycleOwner.lifecycleScope.launch {
+            combine(viewModel.selectedCategory, viewModel.imagesOnly) { cat, imagesOnly -> cat to imagesOnly }
+                .collectLatest { (cat, imagesOnly) ->
+                    applyFilterStateToChips(cat, imagesOnly)
+                }
+        }
+
         updateChipBoldStates()
     }
+
 
     private fun updateChipBoldStates() {
         val group = binding.reasonToggleGroup
@@ -223,6 +264,7 @@ class FeedFragment : Fragment() {
     }
 
     override fun onDestroyView() {
+        viewModel.resetFilters()
         super.onDestroyView()
         _binding = null
     }

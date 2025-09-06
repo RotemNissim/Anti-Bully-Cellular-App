@@ -54,8 +54,16 @@ class AlertViewModel(
         _selectedCategory.value = category
     }
 
+    val selectedCategory: StateFlow<String?> = _selectedCategory.asStateFlow()
     private val _imagesOnly = MutableStateFlow(false)
     fun setImagesOnly(enabled: Boolean) { _imagesOnly.value = enabled }
+
+    fun resetFilters() {
+        _selectedCategory.value = null
+        _imagesOnly.value = false
+    }
+
+    val imagesOnly: StateFlow<Boolean> = _imagesOnly.asStateFlow()
 
     val allAlerts: Flow<List<Alert>> = repository.allAlerts
 
