@@ -14,7 +14,7 @@ interface AlertDao {
     @Query("SELECT * FROM alerts ORDER BY timestamp DESC")
     fun getAllAlerts(): Flow<List<Alert>>
 
-    @Query("SELECT * FROM alerts ORDER BY timestamp DESC") // ✅ Add this method
+    @Query("SELECT * FROM alerts ORDER BY timestamp DESC")
     suspend fun getAllAlertsSync(): List<Alert>
 
     @Query("SELECT * FROM alerts WHERE reason = :reason ORDER BY timestamp DESC")

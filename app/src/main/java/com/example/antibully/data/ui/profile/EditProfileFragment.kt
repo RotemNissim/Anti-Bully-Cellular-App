@@ -53,7 +53,7 @@ class EditProfileFragment : Fragment() {
         val fullNameEditText = view.findViewById<EditText>(R.id.etEditFullName)
         val passwordEditText = view.findViewById<EditText>(R.id.etEditPassword)
         val saveButton = view.findViewById<Button>(R.id.btnSaveProfile)
-        val changeImageButton = view.findViewById<View>(R.id.btnChangeProfileImage) // NEW
+        val changeImageButton = view.findViewById<View>(R.id.btnChangeProfileImage)
         val uid = auth.currentUser?.uid ?: return
 
         spinner.visibility = View.GONE

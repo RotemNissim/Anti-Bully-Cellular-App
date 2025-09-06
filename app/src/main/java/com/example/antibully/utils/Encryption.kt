@@ -9,7 +9,6 @@ import javax.crypto.spec.SecretKeySpec
 
 
 object Encryption {
-    // This key must be the **hex string** (same as backend!)
     private const val SECRET_KEY = "47318c6256e5cf68f9a6e6bce9a04d459bee29226a3cd9a981526f1b2ba35561"
 
     private fun hexStringToByteArray(s: String): ByteArray {

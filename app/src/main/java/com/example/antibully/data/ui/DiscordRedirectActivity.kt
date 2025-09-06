@@ -95,7 +95,6 @@ class DiscordRedirectActivity : AppCompatActivity() {
                     discordUsername
                 }
 
-                // Fallback avatar URL if backend didn't send it for some reason
                 val safeAvatarUrl = if (avatarUrlFromApi.isNotEmpty()) {
                     avatarUrlFromApi
                 } else {
@@ -103,7 +102,6 @@ class DiscordRedirectActivity : AppCompatActivity() {
                     "https://cdn.discordapp.com/embed/avatars/$idx.png"
                 }
 
-                // Build VM (same as your current flow)
                 val childDao = AppDatabase.getDatabase(this@DiscordRedirectActivity).childDao()
                 val childRepository = ChildRepository(childDao)
                 val factory = ChildViewModelFactory(childRepository)
@@ -112,7 +110,6 @@ class DiscordRedirectActivity : AppCompatActivity() {
                     factory
                 )[ChildViewModel::class.java]
 
-                // 1) Mirror to Cloudinary, 2) link child (with imageUrl)
                 CloudinaryUploader.uploadImageFromUrl(
                     imageUrl = safeAvatarUrl,
                     onSuccess = { cloudinaryUrl ->
@@ -141,7 +138,6 @@ class DiscordRedirectActivity : AppCompatActivity() {
                     onFailure = { e ->
                         Log.e("OAuth", "Cloudinary mirror failed, fallback to Discord CDN URL. ${e.message}")
 
-                        // Fallback: just use Discord CDN URL directly
                         runOnUiThread {
                             CoroutineScope(Dispatchers.Main).launch {
                                 val token = FirebaseAuth.getInstance().currentUser?.getIdToken(false)?.await()?.token

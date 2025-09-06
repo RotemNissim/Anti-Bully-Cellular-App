@@ -6,7 +6,7 @@ data class AlertApiResponse(
     @SerializedName("_id")
     val id: String,
     
-    @SerializedName("discordId") // ✅ Change from "childId" to "discordId" to match your backend
+    @SerializedName("discordId")
     val childId: String,
     
     @SerializedName("summary")
@@ -19,7 +19,7 @@ data class AlertApiResponse(
     val imageUrl: String?,
     
     @SerializedName("timestamp")
-    val timestamp: Long, // ✅ This should now be a number from your backend
+    val timestamp: Long, //
     
     @SerializedName("createdAt")
     val createdAt: String?,

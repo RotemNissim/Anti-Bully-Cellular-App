@@ -36,14 +36,12 @@ class SplashFragment : Fragment() {
             val userDao = AppDatabase.getDatabase(requireContext()).userDao()
             val userInRoom = currentUser?.uid?.let { userDao.getUserById(it) }
 
-            // ✅ Also check SessionManager
             val isLoggedInSession = SessionManager.isLoggedIn(requireContext())
             val sessionUserId = SessionManager.getCurrentUserId(requireContext())
 
-            delay(1000) // brief pause for splash feel
+            delay(1000)
 
             withContext(Dispatchers.Main) {
-                // ✅ Check both Firebase and SessionManager
                 if (currentUser != null && userInRoom != null && isLoggedInSession && sessionUserId != null) {
                     Log.d("SplashFragment", "User is fully logged in - navigating to feed")
                     findNavController().navigate(R.id.action_splashFragment_to_feedFragment)

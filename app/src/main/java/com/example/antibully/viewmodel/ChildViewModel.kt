@@ -45,7 +45,6 @@ class ChildViewModel(private val repository: ChildRepository) : ViewModel() {
         imageUrl: String? = null
     ): LinkResult = repository.linkChild(token, parentId, discordId, name, imageUrl)
 
-    // callback version to match your current calling style in DiscordRedirectActivity
     fun linkChild(
         token: String,
         parentId: String,

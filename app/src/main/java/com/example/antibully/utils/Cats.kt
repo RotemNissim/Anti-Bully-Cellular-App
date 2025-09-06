@@ -14,7 +14,6 @@ fun humanSummary(summary: String): String =
     summary.replace(CAT_TAG_RE, "").trim()
 
 fun isImageFromSummary(summary: String): Boolean {
-    // Fallback heuristic based on your human text patterns:
     val s = summary.lowercase()
     return s.contains(" image was detected near your child")
             || (s.contains(" posted a ") && s.contains(" image"))

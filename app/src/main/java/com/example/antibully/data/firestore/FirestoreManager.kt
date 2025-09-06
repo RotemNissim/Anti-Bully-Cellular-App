@@ -42,7 +42,7 @@ object FirestoreManager {
             }
             .addOnFailureListener { e ->
                 Log.e("FirestoreFetch", "Failed to fetch users", e)
-                onResult(emptyMap()) // fallback so your adapter still initializes
+                onResult(emptyMap())
             }
     }
 
@@ -52,7 +52,7 @@ object FirestoreManager {
         storageRef.putFile(imageUri)
             .addOnSuccessListener {
                 storageRef.downloadUrl.addOnSuccessListener { uri ->
-                    onSuccess(uri.toString()) // Get downloadable image URL
+                    onSuccess(uri.toString())
                 }
             }
             .addOnFailureListener {
@@ -122,7 +122,6 @@ object FirestoreManager {
                     timestamp = timestamp
                 )
 
-                // 🔥 LAUNCH A COROUTINE to call suspend API
                 kotlinx.coroutines.GlobalScope.launch(Dispatchers.IO) {
                     try {
                         val response = apiService.addMessage(apiMessage)

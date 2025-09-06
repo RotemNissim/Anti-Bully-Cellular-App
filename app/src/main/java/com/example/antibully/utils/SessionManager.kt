@@ -18,16 +18,13 @@ object SessionManager {
             .putString(KEY_USER_ID, userId)
             .putBoolean(KEY_IS_LOGGED_IN, true)
             .apply()
-        
-        // Initialize FCM token
+
         DeviceTokenManager.initializeToken(context, userId)
     }
     
     fun logout(context: Context) {
-        // Unregister FCM token first
         DeviceTokenManager.unregisterToken(context)
-        
-        // Clear session
+
         val prefs = getPrefs(context)
         prefs.edit().clear().apply()
     }

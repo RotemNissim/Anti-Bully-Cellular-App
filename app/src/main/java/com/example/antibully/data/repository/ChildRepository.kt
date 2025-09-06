@@ -63,7 +63,6 @@ class ChildRepository(
         val bearer = "Bearer $token"
         val request = LinkChildRequest(discordId, name, imageUrl)
 
-        // IMPORTANT: call Retrofit directly (not via ApiHelper) so we can read resp.code()
         return try {
             val resp = childApiService.linkChild(bearer, parentId, request)
 
@@ -90,7 +89,6 @@ class ChildRepository(
                 }
 
                 resp.code() == 409 -> {
-                    // DUPLICATE → no local insert; optionally ensure local list is fresh
                     Log.d("ChildRepository", "Child already linked (409)")
                     LinkResult.AlreadyLinked
                 }
@@ -145,8 +143,7 @@ class ChildRepository(
         }
         return false
     }
-    
-    // Local operations for offline support
+
     suspend fun insertChildLocally(child: ChildLocalData) {
         childDao.insertChild(child)
     }

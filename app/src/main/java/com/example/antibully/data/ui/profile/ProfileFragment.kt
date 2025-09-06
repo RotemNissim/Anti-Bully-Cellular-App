@@ -73,7 +73,6 @@ class ProfileFragment : Fragment() {
             findNavController().navigate(R.id.action_profileFragment_to_settingsFragment)
         }
 
-        // Initialize child repository and viewmodel
         childRepository = ChildRepository(childDao)
         val factory = ChildViewModelFactory(childRepository)
         childViewModel = ViewModelProvider(this, factory)[ChildViewModel::class.java]
@@ -105,7 +104,6 @@ class ProfileFragment : Fragment() {
                     }
                 }
 
-                // Get Firebase token and fetch children from backend
                 val token = auth.currentUser?.getIdToken(false)?.await()?.token
                 Log.d("ProfileFragment", "Firebase token obtained: ${token != null}")
                 
@@ -147,8 +145,7 @@ class ProfileFragment : Fragment() {
             startActivity(intent)
 
         }
-        
-        // ✅ FOR DEBUGGING - uncomment this line
+
         debugLocalData()
     }
 
@@ -255,7 +252,6 @@ class ProfileFragment : Fragment() {
                 childViewModel.unlinkChild(token, child.parentUserId, child.childId) { success ->
                     if (success) {
                         Toast.makeText(requireContext(), "Child removed successfully", Toast.LENGTH_SHORT).show()
-                        // Children list will be automatically updated through Flow
                     } else {
                         Toast.makeText(requireContext(), "Failed to remove child", Toast.LENGTH_SHORT).show()
                     }
@@ -264,7 +260,6 @@ class ProfileFragment : Fragment() {
         }
     }
 
-    // ✅ Add this debugging method
     private fun debugLocalData() {
         lifecycleScope.launch {
             val userId = auth.currentUser?.uid ?: return@launch

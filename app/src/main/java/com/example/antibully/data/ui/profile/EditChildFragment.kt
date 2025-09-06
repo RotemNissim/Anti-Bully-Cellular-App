@@ -110,7 +110,6 @@ class EditChildFragment : Fragment() {
         lifecycleScope.launch {
             val token = auth.currentUser?.getIdToken(false)?.await()?.token
             if (token != null) {
-                // Initialize child repository and viewmodel
                 val childDao = AppDatabase.getDatabase(requireContext()).childDao()
                 val childRepository = ChildRepository(childDao)
                 val factory = ChildViewModelFactory(childRepository)

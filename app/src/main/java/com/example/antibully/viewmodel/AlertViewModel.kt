@@ -74,10 +74,8 @@ class AlertViewModel(
             val selected = selectedCat?.lowercase()
 
             alerts.filter { a ->
-                // 1) Restrict to my children
                 if (a.reporterId !in childIds) return@filter false
 
-                // 2) Search (reason OR text OR child name)
                 val matchesSearch =
                     q.isEmpty() ||
                             a.text.contains(q, ignoreCase = true) ||
@@ -85,12 +83,10 @@ class AlertViewModel(
                             (childNameById[a.reporterId]?.contains(q) == true)
                 if (!matchesSearch) return@filter false
 
-                // 3) Images-only toggle
                 if (imagesOnly && !isImageFromSummary(a.reason)) return@filter false
 
-                // 4) Category OR-logic (contains selected cat among 1..3)
                 if (selected == null) return@filter true
-                val cats = extractCatsFromSummary(a.reason) // e.g., ["profanity","insult","harassment"]
+                val cats = extractCatsFromSummary(a.reason)
                 cats.contains(selected)
             }
         }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())

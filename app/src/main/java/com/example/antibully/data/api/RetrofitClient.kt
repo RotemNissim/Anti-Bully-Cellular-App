@@ -12,8 +12,6 @@ object RetrofitClient {
 
     // === Alerts API ===
     private const val ALERT_BASE_URL = "http://10.0.2.2:3000/"
-
-    // Shared logging interceptor for debugging
     private val logging = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.BODY
     }
@@ -22,7 +20,6 @@ object RetrofitClient {
         .addInterceptor(logging)
         .build()
 
-    // Retrofit for messages (unchanged)
     private val messageRetrofit: Retrofit by lazy {
         Retrofit.Builder()
             .baseUrl(MESSAGE_BASE_URL)
@@ -35,7 +32,6 @@ object RetrofitClient {
         messageRetrofit.create(MessageApiService::class.java)
     }
 
-    // Retrofit for alerts
     private val alertRetrofit: Retrofit by lazy {
         Retrofit.Builder()
             .baseUrl(ALERT_BASE_URL)
@@ -48,8 +44,6 @@ object RetrofitClient {
         alertRetrofit.create(AlertApiService::class.java)
     }
 
-
-    // Retrofit for children (newly added)
     private val childRetrofit: Retrofit by lazy {
         Retrofit.Builder()
             .baseUrl(ALERT_BASE_URL) // Assuming the base URL is the same as MESSAGE_BASE_URL

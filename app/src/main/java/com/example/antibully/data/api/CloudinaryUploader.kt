@@ -77,7 +77,6 @@ object CloudinaryUploader {
         try {
             val requestBody = MultipartBody.Builder()
                 .setType(MultipartBody.FORM)
-                // Important: send the remote URL as the `file` field
                 .addFormDataPart("file", imageUrl)
                 .addFormDataPart("upload_preset", UPLOAD_PRESET)
                 .build()

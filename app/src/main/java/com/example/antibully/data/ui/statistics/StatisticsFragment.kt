@@ -37,8 +37,6 @@ class StatisticsFragment : Fragment() {
     private lateinit var alertViewModel: AlertViewModel
     private lateinit var auth: FirebaseAuth
     private lateinit var progressBar: ProgressBar
-
-    // Our data holders
     private var children: List<ChildLocalData> = emptyList()
     private var allAlerts: List<Alert> = emptyList()
     private val childColorMap = mutableMapOf<String, Int>()
@@ -51,14 +49,12 @@ class StatisticsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // 1) Wire up views
         pieChart   = view.findViewById(R.id.pieChart)
         barChart   = view.findViewById(R.id.barChart)
         spinner    = view.findViewById(R.id.spinnerChildren)
         auth       = FirebaseAuth.getInstance()
         progressBar = view.findViewById(R.id.progressBar)
 
-        // 2) Init ViewModel  **FIX: Repository עם dismissedDao + currentUserId**
         val db = AppDatabase.getDatabase(requireContext())
         val currentUserId = FirebaseAuth.getInstance().currentUser?.uid.orEmpty()
         val repo = AlertRepository(
@@ -71,7 +67,6 @@ class StatisticsFragment : Fragment() {
             AlertViewModelFactory(repo)
         )[AlertViewModel::class.java]
 
-        // 3) Get ID token then load everything
         auth.currentUser
             ?.getIdToken(false)
             ?.addOnSuccessListener { result ->
@@ -84,7 +79,6 @@ class StatisticsFragment : Fragment() {
         progressBar.visibility = View.VISIBLE
         val uid = auth.currentUser?.uid ?: return
 
-        // ✅ Get children from local database instead of Firestore
         viewLifecycleOwner.lifecycleScope.launch {
             val childDao = AppDatabase.getDatabase(requireContext()).childDao()
             children = childDao.getChildrenForUser(uid)
@@ -102,17 +96,14 @@ class StatisticsFragment : Fragment() {
                 return@launch
             }
 
-            // Fetch alerts for each child
             children.forEach { child ->
                 Log.d("StatisticsFragment", "Fetching alerts for child: ${child.childId}")
                 alertViewModel.fetchAlerts(token, child.childId)
             }
 
-            // Observe alerts and update charts
             alertViewModel.allAlerts.collectLatest { alerts ->
                 Log.d("StatisticsFragment", "Received ${alerts.size} total alerts")
 
-                // Filter alerts for our children
                 allAlerts = alerts.filter { alert ->
                     children.any { child -> child.childId == alert.reporterId }
                 }.map { alert ->
@@ -138,7 +129,6 @@ class StatisticsFragment : Fragment() {
     }
 
     private fun setupPieChart() {
-        // count alerts per child
         val counts = children.associateWith { child ->
             allAlerts.count { it.reporterId == child.childId }
         }.filterValues { it > 0 }
@@ -155,7 +145,6 @@ class StatisticsFragment : Fragment() {
             return
         }
 
-        // assign colors
         val colors = com.github.mikephil.charting.utils.ColorTemplate.MATERIAL_COLORS.toList()
         var idx = 0
         val entries = counts.map { (child, cnt) ->
@@ -223,14 +212,12 @@ class StatisticsFragment : Fragment() {
             override fun onNothingSelected(parent: AdapterView<*>) {}
         }
 
-        // preload first child's chart
         if (children.isNotEmpty()) {
             loadBarChartForChild(children[0].childId)
         }
     }
 
     private fun loadBarChartForChild(childId: String) {
-        // bucket alerts by day (past 7 days)
         val daily = linkedMapOf<String, Int>()
         val cal   = Calendar.getInstance()
 
