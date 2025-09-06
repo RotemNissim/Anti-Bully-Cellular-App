@@ -67,21 +67,6 @@
                     app:strokeWidth="2dp"
                     android:padding="1dp"
                     android:background="#2C2C2E"/>
-
-                <com.google.android.material.floatingactionbutton.FloatingActionButton
-                    android:id="@+id/btnEditProfile"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="bottom|end"
-                    android:layout_marginEnd="-5dp"
-                    android:layout_marginBottom="-5dp"
-                    android:contentDescription="Edit Profile"
-                    app:fabCustomSize="32dp"
-                    app:backgroundTint="@color/accent_blue"
-                    app:tint="@color/white"
-                    app:layout_anchor="@id/ivProfileImage"
-                    app:srcCompat="@drawable/ic_edit"
-                    android:visibility="gone" />
             </FrameLayout>
 
             <!-- Username -->
