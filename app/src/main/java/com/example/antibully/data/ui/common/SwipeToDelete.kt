@@ -22,6 +22,7 @@ object SwipeToDelete {
         val paint = Paint().apply {
             color = Color.parseColor("#D32F2F")
             isAntiAlias = true
+            alpha = 128 // 0..255 => 128 = ~50% שקיפות
         }
 
         val callback = object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
