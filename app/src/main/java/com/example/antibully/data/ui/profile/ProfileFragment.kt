@@ -64,8 +64,6 @@ class ProfileFragment : Fragment() {
         profileImageView = view.findViewById(R.id.ivProfileImage)
         usernameTextView = view.findViewById(R.id.tvUsername)
         val emailTextView = view.findViewById<TextView>(R.id.tvUserEmail)
-        val editProfileButton = view.findViewById<FloatingActionButton>(R.id.btnEditProfile)
-        val addChildButton = view.findViewById<Button>(R.id.btnAddChild)
         noChildrenText = view.findViewById(R.id.tvNoChildren)
         val settingsButton = view.findViewById<ImageButton>(R.id.btnSettings)
 
@@ -94,8 +92,6 @@ class ProfileFragment : Fragment() {
                     emailTextView.text = it.email
                     emailTextView.visibility = View.VISIBLE
                     profileImageView.visibility = View.VISIBLE
-                    editProfileButton?.visibility = View.VISIBLE
-                    view.findViewById<ProgressBar>(R.id.profileLoading)?.visibility = View.GONE
 
                     if (!it.profileImageUrl.isNullOrEmpty()) {
                         Picasso.get().load(it.profileImageUrl).fit().centerCrop().into(profileImageView)
@@ -122,6 +118,7 @@ class ProfileFragment : Fragment() {
                             recyclerView.layoutManager = LinearLayoutManager(requireContext())
                             recyclerView.adapter = ChildrenAdapter(children)
                             noChildrenText.visibility = if (children.isEmpty()) View.VISIBLE else View.GONE
+                            view.findViewById<ProgressBar>(R.id.profileLoading)?.visibility = View.GONE
                         }
                     }
                 }
@@ -133,17 +130,6 @@ class ProfileFragment : Fragment() {
         
         lifecycleScope.launch {
             checkTwoFactorStatus()
-        }
-
-        editProfileButton.setOnClickListener {
-            findNavController().navigate(R.id.action_profileFragment_to_editProfileFragment)
-        }
-
-        addChildButton.setOnClickListener {
-            val oauthUrl = "https://discord.com/oauth2/authorize?client_id=1373612221166391397&response_type=code&redirect_uri=http%3A%2F%2F10.0.2.2%3A3000%2Fapi%2Foauth%2Fdiscord%2Fcallback&scope=identify"
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(oauthUrl))
-            startActivity(intent)
-
         }
 
         debugLocalData()
