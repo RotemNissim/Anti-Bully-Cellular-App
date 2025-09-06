@@ -8,28 +8,28 @@ import com.example.antibully.data.models.AlertItem
 import com.example.antibully.data.models.ChildLocalData
 import com.example.antibully.data.repository.AlertRepository
 import com.example.antibully.data.repository.NotificationsRepository
-import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
-import androidx.lifecycle.viewModelScope
 import com.example.antibully.utils.extractCatsFromSummary
 import com.example.antibully.utils.isImageFromSummary
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-
-
+import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.random.Random
 
 class AlertViewModel(
     private val repository: AlertRepository
 ) : ViewModel() {
+
     private val notifications = NotificationsRepository()
 
     private fun tsMillis(t: Long) = if (t < 1_000_000_000_000L) t * 1000 else t
 
     private val _globalLastSeenMillis = MutableStateFlow<Long?>(null)
-
-    private val _lastSeenMillisByChild =
-        MutableStateFlow<Map<String, Long>>(emptyMap())
-
     val lastSeenMillis: StateFlow<Long?> = _globalLastSeenMillis.asStateFlow()
+
+    private val _lastSeenMillisByChild = MutableStateFlow<Map<String, Long>>(emptyMap())
 
     fun deleteByPostId(postId: String) = viewModelScope.launch {
         repository.deleteByPostId(postId)
@@ -39,6 +39,7 @@ class AlertViewModel(
         repository.delete(alert)
     }
 
+    // ---------- Filters ----------
     private val _expandedUnread = MutableStateFlow(false)
     fun toggleUnread() { _expandedUnread.value = !_expandedUnread.value }
 
@@ -49,12 +50,9 @@ class AlertViewModel(
     fun setChildIds(children: List<ChildLocalData>) { _children.value = children }
 
     private val _selectedCategory = MutableStateFlow<String?>(null)
-
-    fun setCategory(category: String?) {
-        _selectedCategory.value = category
-    }
-
+    fun setCategory(category: String?) { _selectedCategory.value = category }
     val selectedCategory: StateFlow<String?> = _selectedCategory.asStateFlow()
+
     private val _imagesOnly = MutableStateFlow(false)
     fun setImagesOnly(enabled: Boolean) { _imagesOnly.value = enabled }
 
@@ -64,6 +62,7 @@ class AlertViewModel(
     }
 
     val imagesOnly: StateFlow<Boolean> = _imagesOnly.asStateFlow()
+    // -----------------------------
 
     val allAlerts: Flow<List<Alert>> = repository.allAlerts
 
@@ -98,6 +97,7 @@ class AlertViewModel(
                 cats.contains(selected)
             }
         }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+
     val rows: StateFlow<List<AlertItem>> =
         combine(visibleAlerts, _globalLastSeenMillis, _lastSeenMillisByChild, _expandedUnread) { alerts, globalLastSeen, perChild, _ ->
             val (unread, read) = if (globalLastSeen == null && perChild.isEmpty()) {
@@ -124,6 +124,7 @@ class AlertViewModel(
             }
         }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
+    // ---------- Notifications last-seen ----------
     fun refreshLastSeen(token: String) = viewModelScope.launch {
         val me = notifications.getMe(token)
         _globalLastSeenMillis.value = me.notificationsLastSeenAt?.let { notifications.isoToMillis(it) }
@@ -137,22 +138,29 @@ class AlertViewModel(
         }
     }
 
-    fun fetchAlerts(token: String, childId: String? = null) = viewModelScope.launch {
-        repository.fetchAlertsFromApi(token, childId)
+    fun loadLastSeenForChildren(token: String) = viewModelScope.launch {
+        try {
+            val list = notifications.getNotificationsLastSeen(token)
+            val newMap = list.associate { dto -> dto.discordId to notifications.isoToMillis(dto.lastSeenAt) }
+            _lastSeenMillisByChild.value = newMap
+        } catch (e: Exception) {
+            android.util.Log.e("AlertViewModel", "Failed to load per-child lastSeen: ${e.message}", e)
+        }
     }
+    // --------------------------------------------
 
+    // ---------- Room pass-through ----------
     fun getUnreadForChild(childId: String): Flow<List<Alert>> =
         combine(allAlerts, _globalLastSeenMillis, _lastSeenMillisByChild) { alerts, globalLastSeen, perChild ->
             alerts.filter { a ->
-                a.reporterId == childId &&
-                        run {
-                            val childSeen = perChild[childId]
-                            when {
-                                childSeen != null -> tsMillis(a.timestamp) > childSeen
-                                globalLastSeen != null -> tsMillis(a.timestamp) > globalLastSeen
-                                else -> true
-                            }
-                        }
+                a.reporterId == childId && run {
+                    val childSeen = perChild[childId]
+                    when {
+                        childSeen != null -> tsMillis(a.timestamp) > childSeen
+                        globalLastSeen != null -> tsMillis(a.timestamp) > globalLastSeen
+                        else -> true
+                    }
+                }
             }
         }
 
@@ -161,23 +169,83 @@ class AlertViewModel(
             perChild[childId] ?: globalLast
         }
 
-    fun loadLastSeenForChildren(token: String) = viewModelScope.launch {
-        try {
-            val list = notifications.getNotificationsLastSeen(token)
-            val newMap = list.associate { dto ->
-                dto.discordId to notifications.isoToMillis(dto.lastSeenAt)
-            }
-            _lastSeenMillisByChild.value = newMap
-        } catch (e: Exception) {
-            android.util.Log.e("AlertViewModel", "Failed to load per-child lastSeen: ${e.message}", e)
-        }
-    }
-
     fun getAlertsByReason(reason: String): Flow<List<Alert>> =
         repository.getAlertsByReason(reason)
 
     fun getAlertsForChild(childId: String): Flow<List<Alert>> =
         repository.getAlertsForChild(childId)
+    // ---------------------------------------
+
+    // ===== Single guarded poller with adaptive backoff + round-robin =====
+    private val isPolling = AtomicBoolean(false)
+    private var pollJob: Job? = null
+
+    // Adaptive cadence
+    private val baseIntervalMs = 15_000L      // start fast
+    private val maxIntervalMs  = 180_000L     // back off up to 3 min
+    private var currentIntervalMs = baseIntervalMs
+    private var idleTicks = 0                 // how many ticks with no inserts
+    private var nextChildIndex = 0            // round-robin pointer
+
+    /** One-shot fetch (e.g., initial). */
+    fun fetchAlerts(token: String, childId: String? = null) = viewModelScope.launch {
+        repository.fetchAlertsFromApi(token, childId) // return value ignored (used only by poller)
+    }
+
+    /** Start background polling; safe to call multiple times — only starts once. */
+    fun startPolling(token: String) {
+        if (!isPolling.compareAndSet(false, true)) return
+        pollJob?.cancel()
+        pollJob = viewModelScope.launch {
+            try {
+                while (isActive) {
+                    val ids = _children.value.map { it.childId }.filter { it.isNotBlank() }
+                    if (ids.isNotEmpty()) {
+                        // Fetch exactly ONE child per tick (round-robin) to stagger load
+                        val childId = ids[nextChildIndex % ids.size]
+                        android.util.Log.d("AlertViewModel", "POLL_TICK child=$childId interval=$currentIntervalMs")
+                        val inserted = try {
+                            repository.fetchAlertsFromApi(token, childId)
+                        } catch (_: Exception) { 0 }
+
+                        if (inserted > 0) {
+                            // New data arrived -> reset interval and idle counter
+                            idleTicks = 0
+                            currentIntervalMs = baseIntervalMs
+                        } else {
+                            // No new data -> progressively back off
+                            idleTicks++
+                            if (idleTicks >= 3 && currentIntervalMs < maxIntervalMs) {
+                                currentIntervalMs = (currentIntervalMs * 2).coerceAtMost(maxIntervalMs)
+                                idleTicks = 0
+                            }
+                        }
+                        nextChildIndex = (nextChildIndex + 1) % ids.size
+                    } else {
+                        // No children yet, wait a bit
+                        android.util.Log.d("AlertViewModel", "POLL_TICK no-children")
+                    }
+
+                    // Add small jitter to avoid perfect sync if multiple devices
+                    val jitter = Random.nextLong(500L, 1500L)
+                    delay(currentIntervalMs + jitter)
+                }
+            } finally {
+                isPolling.set(false)
+            }
+        }
+    }
+
+    fun stopPolling() {
+        pollJob?.cancel()
+        pollJob = null
+        isPolling.set(false)
+    }
+
+    override fun onCleared() {
+        pollJob?.cancel()
+        super.onCleared()
+    }
 }
 
 class AlertViewModelFactory(

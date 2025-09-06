@@ -36,4 +36,13 @@ object SessionManager {
     fun isLoggedIn(context: Context): Boolean {
         return getPrefs(context).getBoolean(KEY_IS_LOGGED_IN, false)
     }
+
+    fun setLoggedIn(context: Context, loggedIn: Boolean) {
+        val prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+        prefs.edit().putBoolean(KEY_IS_LOGGED_IN, loggedIn).apply()
+    }
+    fun setCurrentUserId(context: Context, userId: String) {
+        val prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+        prefs.edit().putString(KEY_USER_ID, userId).apply()
+    }
 }
