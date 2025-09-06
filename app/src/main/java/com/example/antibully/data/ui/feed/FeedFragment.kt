@@ -19,13 +19,9 @@ import com.example.antibully.viewmodel.AlertViewModel
 import com.example.antibully.viewmodel.AlertViewModelFactory
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
-import java.util.concurrent.TimeUnit
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.activityViewModels
 import com.example.antibully.data.ui.common.SwipeToDelete
@@ -34,10 +30,11 @@ import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import kotlinx.coroutines.flow.combine
 
-
 class FeedFragment : Fragment() {
+
     private var _binding: FragmentFeedBinding? = null
     private val binding get() = _binding!!
+
     private val viewModel: AlertViewModel by activityViewModels {
         val db = AppDatabase.getDatabase(requireContext())
         val currentUserId = FirebaseAuth.getInstance().currentUser?.uid.orEmpty()
@@ -50,9 +47,7 @@ class FeedFragment : Fragment() {
         )
     }
 
-    private var childIds: List<String> = emptyList()
     private lateinit var adapter: AlertsAdapter
-
     private var suppressChipCallback = false
 
     private fun categoryToChipId(cat: String?): Int = when (cat) {
@@ -73,18 +68,10 @@ class FeedFragment : Fragment() {
 
         if (group.checkedChipId != targetId) {
             suppressChipCallback = true
-            if (targetId == View.NO_ID) {
-                group.clearCheck()
-            } else {
-                group.check(targetId)
-            }
+            if (targetId == View.NO_ID) group.clearCheck() else group.check(targetId)
             suppressChipCallback = false
             updateChipBoldStates()
         }
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
     }
 
     override fun onCreateView(
@@ -99,6 +86,7 @@ class FeedFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // Header (name + avatar)
         val currentUserId = FirebaseAuth.getInstance().currentUser?.uid.orEmpty()
         viewLifecycleOwner.lifecycleScope.launch {
             try {
@@ -131,11 +119,11 @@ class FeedFragment : Fragment() {
             }
         }
 
+        // Recycler + adapter + initial data
         viewLifecycleOwner.lifecycleScope.launch {
             val childDao = AppDatabase.getDatabase(requireContext()).childDao()
             val children = childDao.getChildrenForUser(currentUserId)
 
-            childIds = children.map { it.childId }
             viewModel.setChildIds(children)
             val childDataMap = children.associateBy { it.childId }
 
@@ -151,7 +139,6 @@ class FeedFragment : Fragment() {
                     findNavController().navigate(R.id.action_feedFragment_to_unreadListFragment, args)
                 }
             )
-
             binding.alertsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
             binding.alertsRecyclerView.adapter = adapter
 
@@ -159,6 +146,7 @@ class FeedFragment : Fragment() {
                 viewModel.delete(alert)
             }
 
+            // Clear-then-refresh backstack flag (if you use it elsewhere)
             val backStackEntry = findNavController().getBackStackEntry(R.id.feedFragment)
             backStackEntry.savedStateHandle
                 .getLiveData<Boolean>("refresh_feed")
@@ -168,13 +156,16 @@ class FeedFragment : Fragment() {
                     }
                 }
 
+            // Initial sync + start polling once
             FirebaseAuth.getInstance().currentUser?.getIdToken(false)
                 ?.await()?.token?.let { token ->
                     viewModel.refreshLastSeen(token)
                     viewModel.loadLastSeenForChildren(token)
                     children.forEach { child -> viewModel.fetchAlerts(token, child.childId) }
+                    viewModel.startPolling(token) // single guarded poller in VM
                 } ?: Log.e("FeedFragment", "Failed to get Firebase token")
 
+            // Room -> UI
             viewLifecycleOwner.lifecycleScope.launch {
                 viewModel.rows.collectLatest { items ->
                     adapter.submitList(items)
@@ -189,49 +180,36 @@ class FeedFragment : Fragment() {
             }
         }
 
-        viewLifecycleOwner.lifecycleScope.launch {
-            delay(1000)
-            FirebaseAuth.getInstance().currentUser?.getIdToken(false)?.await()?.token?.let {
-                startPolling(it)
-            }
-        }
-
+        // Search + chips
         binding.searchInput.setOnEditorActionListener { tv, _, _ ->
-            viewModel.setSearchQuery(tv.text.toString().trim())
-            true
+            viewModel.setSearchQuery(tv.text.toString().trim()); true
         }
         binding.searchInput.doAfterTextChanged { text ->
             viewModel.setSearchQuery(text?.toString().orEmpty())
         }
         binding.reasonToggleGroup.setOnCheckedChangeListener { _, checkedId ->
-
             if (suppressChipCallback) return@setOnCheckedChangeListener
-
             when (checkedId) {
                 R.id.btnAll -> { viewModel.setCategory(null); viewModel.setImagesOnly(false) }
-                R.id.btnProfanity        -> { viewModel.setCategory("profanity");        viewModel.setImagesOnly(false) }
-                R.id.btnInsult           -> { viewModel.setCategory("insult");           viewModel.setImagesOnly(false) }
-                R.id.btnHarassment       -> { viewModel.setCategory("harassment");       viewModel.setImagesOnly(false) }
-                R.id.btnThreat           -> { viewModel.setCategory("threat");           viewModel.setImagesOnly(false) }
-                R.id.btnSelfHarm         -> { viewModel.setCategory("self-harm-wish");   viewModel.setImagesOnly(false) }
-                R.id.btnExclusion        -> { viewModel.setCategory("exclusion");        viewModel.setImagesOnly(false) }
-                R.id.btnAgeInappropriate -> { viewModel.setCategory("age-inappropriate");viewModel.setImagesOnly(false) }
-                R.id.btnImages -> { viewModel.setCategory(null); viewModel.setImagesOnly(true) }
+                R.id.btnProfanity        -> { viewModel.setCategory("profanity");         viewModel.setImagesOnly(false) }
+                R.id.btnInsult           -> { viewModel.setCategory("insult");            viewModel.setImagesOnly(false) }
+                R.id.btnHarassment       -> { viewModel.setCategory("harassment");        viewModel.setImagesOnly(false) }
+                R.id.btnThreat           -> { viewModel.setCategory("threat");            viewModel.setImagesOnly(false) }
+                R.id.btnSelfHarm         -> { viewModel.setCategory("self-harm-wish");    viewModel.setImagesOnly(false) }
+                R.id.btnExclusion        -> { viewModel.setCategory("exclusion");         viewModel.setImagesOnly(false) }
+                R.id.btnAgeInappropriate -> { viewModel.setCategory("age-inappropriate"); viewModel.setImagesOnly(false) }
+                R.id.btnImages           -> { viewModel.setCategory(null);                viewModel.setImagesOnly(true) }
                 else -> { viewModel.setCategory(null); viewModel.setImagesOnly(false) }
-
             }
             updateChipBoldStates()
         }
         viewLifecycleOwner.lifecycleScope.launch {
             combine(viewModel.selectedCategory, viewModel.imagesOnly) { cat, imagesOnly -> cat to imagesOnly }
-                .collectLatest { (cat, imagesOnly) ->
-                    applyFilterStateToChips(cat, imagesOnly)
-                }
+                .collectLatest { (cat, imagesOnly) -> applyFilterStateToChips(cat, imagesOnly) }
         }
 
         updateChipBoldStates()
     }
-
 
     private fun updateChipBoldStates() {
         val group = binding.reasonToggleGroup
@@ -243,29 +221,25 @@ class FeedFragment : Fragment() {
             )
         }
     }
-    private fun startPolling(token: String) {
-        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
-            while (isActive) {
-                if (childIds.isNotEmpty()) {
-                    Log.d("FeedFragment", "Polling server for children: $childIds")
-                    childIds.forEach { id ->
-                        try {
-                            viewModel.fetchAlerts(token, id)
-                        } catch (e: Exception) {
-                            Log.e("FeedFragment", "Error fetching $id: ${e.message}")
-                        }
-                    }
-                } else {
-                    Log.w("FeedFragment", "No children found - skipping poll")
-                }
-                delay(TimeUnit.SECONDS.toMillis(15))
-            }
-        }
-    }
 
     override fun onDestroyView() {
         viewModel.resetFilters()
         super.onDestroyView()
         _binding = null
     }
+
+    override fun onStart() {
+        super.onStart()
+        viewLifecycleOwner.lifecycleScope.launch {
+            val token = FirebaseAuth.getInstance()
+                .currentUser?.getIdToken(false)?.await()?.token ?: return@launch
+            viewModel.startPolling(token)   // VM guard prevents duplicates
+        }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        viewModel.stopPolling()
+    }
+
 }
