@@ -1,6 +1,7 @@
 package com.example.antibully.data.ui.auth
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -19,6 +20,7 @@ import com.example.antibully.utils.SessionManager
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.firestore.FirebaseFirestore
@@ -32,17 +34,31 @@ class LoginFragment : Fragment() {
 
     private val googleSignInLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+            val data = result.data
+            if (data == null) {
+                Toast.makeText(requireContext(), "Google sign-in cancelled.", Toast.LENGTH_SHORT).show()
+                return@registerForActivityResult
+            }
+            val task = GoogleSignIn.getSignedInAccountFromIntent(data)
             try {
-                val account = task.getResult(Exception::class.java)!!
-                firebaseAuthWithGoogle(account.idToken!!)
-            } catch (e: Exception) {
-                e.printStackTrace()
+                val account = task.getResult(ApiException::class.java)!!
+                val idToken = account.idToken
+                if (idToken.isNullOrBlank()) {
+                    Toast.makeText(requireContext(), "Missing ID token from Google.", Toast.LENGTH_LONG).show()
+                    return@registerForActivityResult
+                }
+                firebaseAuthWithGoogle(idToken)
+            } catch (e: ApiException) {
+                // This is where you'll see statusCode = 10 (DEVELOPER_ERROR) if config is wrong
+                Log.e("LoginFragment", "Google sign-in failed. code=${e.statusCode}, msg=${e.message}", e)
                 Toast.makeText(
                     requireContext(),
-                    "Google sign-in failed: ${e.message}",
+                    "Google sign-in failed (code ${e.statusCode}). ${e.message ?: ""}",
                     Toast.LENGTH_LONG
                 ).show()
+            } catch (e: Exception) {
+                Log.e("LoginFragment", "Google sign-in failed (unknown).", e)
+                Toast.makeText(requireContext(), "Google sign-in failed: ${e.message}", Toast.LENGTH_LONG).show()
             }
         }
 
@@ -56,8 +72,12 @@ class LoginFragment : Fragment() {
 
         auth = FirebaseAuth.getInstance()
 
+        // Verify we loaded the correct google-services.json at runtime
+        val webClientId = getString(R.string.default_web_client_id)
+        Log.d("LoginFragment", "default_web_client_id: $webClientId")
+
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken(getString(R.string.default_web_client_id))
+            .requestIdToken(webClientId)
             .requestEmail()
             .build()
 
@@ -72,15 +92,10 @@ class LoginFragment : Fragment() {
         loginButton.setOnClickListener {
             val email = emailInput.text.toString().trim()
             val password = passwordInput.text.toString().trim()
-
             if (email.isNotEmpty() && password.isNotEmpty()) {
                 loginUser(email, password)
             } else {
-                Toast.makeText(
-                    requireContext(),
-                    "Please enter email and password",
-                    Toast.LENGTH_SHORT
-                ).show()
+                Toast.makeText(requireContext(), "Please enter email and password", Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -93,97 +108,95 @@ class LoginFragment : Fragment() {
         }
     }
 
-    private fun registerUserToServer(
-        token: String,
-        email: String,
-        name: String,
-        imageUrl: String?
-    ) {
+    private fun registerUserToServer(token: String, email: String, name: String, imageUrl: String?) {
         lifecycleScope.launch {
             try {
                 val body = mutableMapOf(
                     "email" to email,
                     "username" to name
                 )
+                imageUrl?.takeIf { it.isNotBlank() }?.let { body["profileImageUrl"] = it }
 
-                imageUrl?.let {
-                    body["profileImageUrl"] = it
+                val resp = com.example.antibully.data.api.AuthRetrofitClient.authService
+                    .registerFirebaseUser("Bearer $token", body)
+
+                if (!resp.isSuccessful) {
+                    val code = resp.code()
+                    val err = resp.errorBody()?.string()
+                    Log.e("Register", "Failed: HTTP $code, error=$err")
+                    Toast.makeText(requireContext(), "Register failed: $code", Toast.LENGTH_SHORT).show()
+                    return@launch
                 }
 
-                val response =
-                    com.example.antibully.data.api.AuthRetrofitClient.authService.registerFirebaseUser(
-                        "Bearer $token", body
-                    )
-                if (!response.isSuccessful) {
-                    Toast.makeText(
-                        requireContext(),
-                        "Failed to register user to server",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
+                Toast.makeText(requireContext(), "Registered on server!", Toast.LENGTH_SHORT).show()
             } catch (e: Exception) {
-                Toast.makeText(
-                    requireContext(),
-                    "Error registering user to server: ${e.message}",
-                    Toast.LENGTH_SHORT
-                ).show()
+                android.util.Log.e("Register", "Exception", e)
+                Toast.makeText(requireContext(), "Register error: ${e.message}", Toast.LENGTH_SHORT).show()
             }
         }
     }
 
+
     private fun signInWithGoogle() {
-        val signInIntent = googleSignInClient.signInIntent
-        googleSignInLauncher.launch(signInIntent)
+        // Optional: clear any cached Google session to avoid stale account/token issues
+        googleSignInClient.signOut().addOnCompleteListener {
+            val signInIntent = googleSignInClient.signInIntent
+            googleSignInLauncher.launch(signInIntent)
+        }
     }
 
     private fun firebaseAuthWithGoogle(idToken: String) {
         val credential = GoogleAuthProvider.getCredential(idToken, null)
         auth.signInWithCredential(credential)
             .addOnCompleteListener(requireActivity()) { task ->
-                if (task.isSuccessful) {
-                    val firebaseUser = auth.currentUser
-                    val uid = firebaseUser?.uid ?: return@addOnCompleteListener
-                    val name = firebaseUser.displayName ?: "No Name"
-                    val email = firebaseUser.email ?: ""
-                    val profileImageUrl = firebaseUser.photoUrl?.toString() ?: ""
+                if (!task.isSuccessful) {
+                    Toast.makeText(requireContext(), "Google Sign-In Failed!", Toast.LENGTH_SHORT).show()
+                    Log.e("LoginFragment", "Firebase signInWithCredential failed", task.exception)
+                    return@addOnCompleteListener
+                }
 
-                    val db = FirebaseFirestore.getInstance()
-                    val userDocRef = db.collection("users").document(uid)
+                val firebaseUser = auth.currentUser ?: return@addOnCompleteListener
+                val uid = firebaseUser.uid
+                val name = firebaseUser.displayName ?: "No Name"
+                val email = firebaseUser.email ?: ""
+                val profileImageUrl = firebaseUser.photoUrl?.toString() ?: ""
 
-                    userDocRef.get().addOnSuccessListener { document ->
-                        if (!document.exists()) {
-                            val newUser = hashMapOf(
-                                "fullName" to name,
-                                "email" to email,
-                                "profileImageUrl" to profileImageUrl
-                            )
-                            userDocRef.set(newUser)
-                        }
+                val db = FirebaseFirestore.getInstance()
+                val userDocRef = db.collection("users").document(uid)
 
-                        val apiUser = UserApiResponse(uid, name, email, profileImageUrl)
-                        val userEntity = User.fromApi(apiUser, localImagePath = "")
-                        val userDao = AppDatabase.getDatabase(requireContext()).userDao()
-                        lifecycleScope.launch(Dispatchers.IO) {
-                            userDao.insertUser(userEntity)
-                        }
-
-                        Toast.makeText(requireContext(), "Google Sign-In Successful!", Toast.LENGTH_SHORT).show()
-
-                        firebaseUser.getIdToken(false).addOnSuccessListener { result ->
-                            val token = result.token ?: return@addOnSuccessListener
-                            loginWithFirebaseToServer(token)
-                            registerUserToServer(token, email, name, profileImageUrl)
-
-                            SessionManager.login(requireContext(), uid)
-                        }
-
-                        findNavController().navigate(R.id.feedFragment)
-                    }.addOnFailureListener { e ->
-                        Toast.makeText(requireContext(), "Failed to check/create Firestore user: ${e.message}", Toast.LENGTH_SHORT).show()
+                userDocRef.get().addOnSuccessListener { document ->
+                    if (!document.exists()) {
+                        val newUser = hashMapOf(
+                            "fullName" to name,
+                            "email" to email,
+                            "profileImageUrl" to profileImageUrl
+                        )
+                        userDocRef.set(newUser)
                     }
 
-                } else {
-                    Toast.makeText(requireContext(), "Google Sign-In Failed!", Toast.LENGTH_SHORT).show()
+                    val apiUser = UserApiResponse(uid, name, email, profileImageUrl)
+                    val userEntity = User.fromApi(apiUser, localImagePath = "")
+                    val userDao = AppDatabase.getDatabase(requireContext()).userDao()
+                    lifecycleScope.launch(Dispatchers.IO) {
+                        userDao.insertUser(userEntity)
+                    }
+
+                    firebaseUser.getIdToken(false).addOnSuccessListener { result ->
+                        val token = result.token ?: return@addOnSuccessListener
+                        // Hit your backend
+                        loginWithFirebaseToServer(token)
+                        registerUserToServer(token, email, name, profileImageUrl)
+                        // Persist session
+                        SessionManager.login(requireContext(), uid)
+                        // Navigate only after session is set & calls fired
+                        Toast.makeText(requireContext(), "Google Sign-In Successful!", Toast.LENGTH_SHORT).show()
+                        findNavController().navigate(R.id.feedFragment)
+                    }.addOnFailureListener { e ->
+                        Toast.makeText(requireContext(), "Failed to get Firebase token: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
+
+                }.addOnFailureListener { e ->
+                    Toast.makeText(requireContext(), "Failed to check/create Firestore user: ${e.message}", Toast.LENGTH_SHORT).show()
                 }
             }
     }
@@ -192,8 +205,8 @@ class LoginFragment : Fragment() {
         auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    val firebaseUser = auth.currentUser
-                    val uid = firebaseUser?.uid ?: return@addOnCompleteListener
+                    val firebaseUser = auth.currentUser ?: return@addOnCompleteListener
+                    val uid = firebaseUser.uid
 
                     firebaseUser.getIdToken(false).addOnSuccessListener { result ->
                         val token = result.token ?: return@addOnSuccessListener
@@ -202,18 +215,16 @@ class LoginFragment : Fragment() {
                         val profileImageUrl = firebaseUser.photoUrl?.toString() ?: ""
 
                         registerUserToServer(token, emailFromUser, name, profileImageUrl)
-
                         SessionManager.login(requireContext(), uid)
+
+                        Toast.makeText(requireContext(), "Login successful!", Toast.LENGTH_SHORT).show()
+                        findNavController().navigate(R.id.feedFragment)
+                    }.addOnFailureListener {
+                        Toast.makeText(requireContext(), "Failed to get Firebase token.", Toast.LENGTH_SHORT).show()
                     }
 
-                    Toast.makeText(requireContext(), "Login successful!", Toast.LENGTH_SHORT).show()
-                    findNavController().navigate(R.id.feedFragment)
                 } else {
-                    Toast.makeText(
-                        requireContext(),
-                        "Login failed: ${task.exception?.message}",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    Toast.makeText(requireContext(), "Login failed: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
                 }
             }
     }
@@ -221,19 +232,14 @@ class LoginFragment : Fragment() {
     private fun loginWithFirebaseToServer(token: String) {
         lifecycleScope.launch {
             try {
-                val response =
-                    com.example.antibully.data.api.AuthRetrofitClient.authService.loginWithFirebase(
-                        "Bearer $token"
-                    )
+                val response = com.example.antibully.data.api.AuthRetrofitClient.authService
+                    .loginWithFirebase("Bearer $token")
                 if (!response.isSuccessful) {
-                    Toast.makeText(requireContext(), "Server login failed", Toast.LENGTH_SHORT)
-                        .show()
+                    Toast.makeText(requireContext(), "Server login failed", Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
-                Toast.makeText(requireContext(), "Login error: ${e.message}", Toast.LENGTH_SHORT)
-                    .show()
+                Toast.makeText(requireContext(), "Login error: ${e.message}", Toast.LENGTH_SHORT).show()
             }
         }
     }
-
 }

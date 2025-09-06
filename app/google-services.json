@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "486337947693-dq5j6chf04p1jec4e7qon58q81pe7db9.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.antibully",
+            "certificate_hash": "4ea4b1e5fec0dcd22a57c85339fef6e82da32d29"
+          }
+        },
+        {
           "client_id": "486337947693-jmpr39nod5qla6tjf9d19kis4h30eq7m.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
