@@ -112,6 +112,7 @@ class FeedFragment : Fragment() {
                     b.profileImage.visibility = View.VISIBLE
                 } else {
                     b.profileImage.setImageResource(R.drawable.ic_default_profile)
+                    b.profileImage.visibility = View.VISIBLE
                 }
             } catch (e: Exception) {
                 _binding?.nameLoading?.visibility = View.GONE
