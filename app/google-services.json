@@ -38,6 +38,14 @@
           }
         },
         {
+          "client_id": "486337947693-rtd8b7bp6o1vqo6478kro5jaa19il08t.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.antibully",
+            "certificate_hash": "887f9ad792949efa01071e9f703e91e7fa338c6c"
+          }
+        },
+        {
           "client_id": "486337947693-p24rhnp669jl8f622q8g0ei7jb0i0s2o.apps.googleusercontent.com",
           "client_type": 3
         }

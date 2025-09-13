@@ -14,3 +14,7 @@
 .externalNativeBuild
 .cxx
 local.properties
+/android/keystore/*
+!android/keystore/.keep
+keystore/antibully-release.jks
+app/keystore/antibully-release.jks
