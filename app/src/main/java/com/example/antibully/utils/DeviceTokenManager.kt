@@ -18,7 +18,7 @@ object DeviceTokenManager {
     private const val PREFS_NAME = "device_token_prefs"
     private const val KEY_TOKEN = "fcm_token"
     private const val KEY_USER_ID = "user_id"
-    private const val BASE_URL = "http://10.0.2.2:3000"
+    private const val BASE_URL = "http://193.106.55.138:3000"
     
     private val client = OkHttpClient()
     private val gson = Gson()

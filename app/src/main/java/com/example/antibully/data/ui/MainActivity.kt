@@ -250,7 +250,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         val request = Request.Builder()
-            .url("http://10.0.2.2:3000/api/oauth/discord/exchange")
+            .url("http://193.106.55.138:3000/api/oauth/discord/exchange")
             .post(
                 requestBody.toString()
                     .toRequestBody("application/json".toMediaTypeOrNull())

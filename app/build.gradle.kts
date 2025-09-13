@@ -7,35 +7,83 @@ plugins {
     id("androidx.navigation.safeargs.kotlin")
 }
 
+val STORE_FILE: String? = project.findProperty("MYAPP_UPLOAD_STORE_FILE") as String?
+val STORE_PASSWORD: String? = project.findProperty("MYAPP_UPLOAD_STORE_PASSWORD") as String?
+val KEY_ALIAS: String? = project.findProperty("MYAPP_UPLOAD_KEY_ALIAS") as String?
+val KEY_PASSWORD: String? = project.findProperty("MYAPP_UPLOAD_KEY_PASSWORD") as String?
+
 android {
     namespace = "com.example.antibully"
     compileSdk = 35
+
+    buildFeatures {
+        compose = true
+        buildConfig = true
+        viewBinding = true
+    }
 
     defaultConfig {
         applicationId = "com.example.antibully"
         minSdk = 29
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 3
+        versionName = "1.0.3"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        create("release") {
+            if (STORE_FILE != null && STORE_PASSWORD != null && KEY_ALIAS != null && KEY_PASSWORD != null) {
+                storeFile = file(STORE_FILE!!)
+                storePassword = STORE_PASSWORD!!
+                keyAlias = KEY_ALIAS!!
+                keyPassword = KEY_PASSWORD!!
+            }
+        }
+    }
+
+
+
     buildTypes {
-        release {
+        getByName("debug") {
+            // Emulator/dev
+            buildConfigField("String", "BASE_URL", "\"http://10.0.2.2:3000\"")
+        }
+        getByName("release") {
+            buildConfigField("String", "BASE_URL", "\"http://193.106.55.138:3000/\"")
+
+            // Start with no shrinking to avoid surprises; we can turn these on later.
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("release")
         }
     }
+
+    lint {
+        abortOnError = false
+        checkReleaseBuilds = false
+    }
+
+    packaging {
+        resources {
+            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes += "META-INF/DEPENDENCIES"
+            excludes += "META-INF/LICENSE*"
+            excludes += "META-INF/NOTICE*"
+            excludes += "META-INF/*.kotlin_module"
+        }
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
     kotlinOptions { jvmTarget = "11" }
-    buildFeatures { viewBinding = true }
 }
+
 
 dependencies {
     // --- AndroidX core / UI ---
